@@ -158,6 +158,7 @@
   const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec";
   const LIFF_ID = "2007416974-JzvPy6DZ";
   let userId = "";
+  let existingNames = [];
 
   const form = document.getElementById("myForm");
   const successMsg = document.getElementById("successMsg");
@@ -181,7 +182,6 @@
         liff.getProfile().then(profile => {
           userId = profile.userId;
           loadRecords();
-          // 不鎖定姓名欄，不呼叫 checkUserRegistration()
         });
       } else {
         liff.login();
@@ -219,6 +219,17 @@
     }
 
     const itemString = selectedItems.join("、");
+
+    // 如果該姓名已存在，跳出確認覆寫
+    if (existingNames.includes(name)) {
+      if (!confirm(`姓名「${name}」已報名，是否要覆寫報名資料？`)) {
+        // 使用者取消覆寫，停止送出
+        successMsg.style.color = "orange";
+        successMsg.textContent = "已取消送出報名";
+        return;
+      }
+    }
+
     const formData = new URLSearchParams();
     formData.append("name", name);
     formData.append("item", itemString);
@@ -238,6 +249,7 @@
       if (data.success) {
         successMsg.style.color = "lightgreen";
         successMsg.innerHTML = `✅ ${submitBtn.textContent}成功！<br>🙋‍♂️ 姓名：<strong>${name}</strong>`;
+        alert(`成功報名：${name}`);
         form.reset();
         otherInput.style.display = "none";
         submitBtn.textContent = "送出報名";
@@ -253,95 +265,58 @@
     });
   });
 
-  // 當姓名輸入時，重新檢查是否重複報名
   nameInput.addEventListener("input", () => {
-    fetch(scriptURL)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && Array.isArray(data.records)) {
-          const records = data.records.slice(1).reverse();
-          checkDuplicateRegistration(records);
-        } else {
-          enableForm();
-        }
-      })
-      .catch(() => {
-        enableForm();
-      });
+    // 使用者輸入姓名時不禁用表單，也不立即警告，只是更新 existingNames
+    // 方便送出時做覆寫判斷
+    loadRecords(false);
   });
 
-  function loadRecords() {
-    loadingRecords.style.display = "block";
-    recordsTable.style.display = "none";
-    totalCount.textContent = "總報名人數：0";
-    successMsg.textContent = "";
-
-    fetch(scriptURL)
+  function loadRecords(showLoading = true) {
+    if (showLoading) {
+      loadingRecords.style.display = "block";
+      recordsTable.style.display = "none";
+    }
+    fetch(scriptURL + "?action=get")
       .then(res => res.json())
       .then(data => {
-        if (data.success && Array.isArray(data.records)) {
-          const records = data.records.slice(1).reverse();
-          totalCount.textContent = `總報名人數：${records.length}`;
-          recordsBody.innerHTML = "";
-
-          if (records.length === 0) {
-            loadingRecords.textContent = "目前無報名資料";
-            enableForm();
-            return;
-          }
-
-          for (let i = 0; i < records.length; i++) {
-            const row = records[i];
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td>${records.length - i}</td>
-              <td>${row[0] || ""}</td>
-              <td>${row[1] || ""}</td>
-            `;
-            recordsBody.appendChild(tr);
-          }
-
-          loadingRecords.style.display = "none";
-          recordsTable.style.display = "table";
-
-          checkDuplicateRegistration(records);
+        if (data.success && data.records) {
+          existingNames = data.records.map(r => r[0]);
+          renderRecords(data.records);
+          successMsg.textContent = "";
+        } else {
+          existingNames = [];
+          renderRecords([]);
+          successMsg.style.color = "red";
+          successMsg.textContent = "❌ 讀取資料失敗";
         }
       })
       .catch(() => {
-        loadingRecords.textContent = "❌ 資料載入失敗";
-        enableForm();
+        existingNames = [];
+        renderRecords([]);
+        successMsg.style.color = "red";
+        successMsg.textContent = "❌ 網路或後端錯誤";
       });
   }
 
-  function checkDuplicateRegistration(records) {
-    const name = nameInput.value.trim();
-    if (!name) {
-      enableForm();
-      successMsg.textContent = "";
+  function renderRecords(records) {
+    loadingRecords.style.display = "none";
+    if (records.length === 0) {
+      recordsTable.style.display = "none";
+      totalCount.textContent = "總報名人數：0";
       return;
     }
-
-    const found = records.some(row => row[0] === name);
-    if (found) {
-      successMsg.style.color = "orange";
-      successMsg.textContent = `⚠️ 姓名「${name}」已報過名，請勿重複報名。`;
-      disableForm();
-    } else {
-      successMsg.textContent = "";
-      enableForm();
-    }
-  }
-
-  function disableForm() {
-    submitBtn.disabled = true;
-    document.querySelectorAll('input[name="item"]').forEach(el => el.disabled = true);
-    otherInput.disabled = true;
-  }
-
-  function enableForm() {
-    submitBtn.disabled = false;
-    document.querySelectorAll('input[name="item"]').forEach(el => el.disabled = false);
-    otherInput.disabled = !chkOther.checked;
+    recordsTable.style.display = "table";
+    recordsBody.innerHTML = "";
+    records.forEach((row, index) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${index + 1}</td>
+        <td>${row[0]}</td>
+        <td>${row[1]}</td>
+      `;
+      recordsBody.appendChild(tr);
+    });
+    totalCount.textContent = `總報名人數：${records.length}`;
   }
 </script>
 
