@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>LINE 祭改報名系統</title>
+<title>彥彬 祭改報名系統</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   body {
@@ -116,7 +116,7 @@
 </head>
 <body>
 
-<h1>LINE 祭改報名系統</h1>
+<h1>祭改報名系統</h1>
 
 <form id="myForm">
   <label for="nameInput">姓名</label>
@@ -148,7 +148,6 @@
 <table id="recordsTable" style="display:none;">
   <thead>
     <tr>
-      <th>人數</th>
       <th>姓名</th>
       <th>項目</th>
     </tr>
@@ -298,10 +297,9 @@
 
     records.reverse(); // 倒序
 
-    records.forEach((row, idx) => {
+    records.forEach((row) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${idx + 1}</td>
         <td>${row[0]}</td>
         <td>${row[1]}</td>
       `;
