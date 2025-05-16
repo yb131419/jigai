@@ -1,116 +1,118 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LINE 祭改報名系統</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    body {
-      font-family: 'Helvetica Neue', sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #1f2937;
-      font-size: 16px;
-      color: #f9fafb;
-    }
-    h1, h2 {
-      text-align: center;
-      color: #f9fafb;
-    }
-    form {
-      background: #374151;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      max-width: 480px;
-      margin: 20px auto;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    input[type="text"], input[type="submit"], button {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #6b7280;
-      margin-top: 5px;
-      box-sizing: border-box;
-      font-size: 18px;
-      background-color: #111827;
-      color: #f9fafb;
-    }
-    input[type="text"]::placeholder {
-      color: #9ca3af;
-    }
-    button {
-      background-color: #06c755;
-      color: white;
-      border: none;
-      font-weight: bold;
-      margin-top: 20px;
-      cursor: pointer;
-    }
-    button:disabled {
-      background-color: #4b5563;
-      cursor: not-allowed;
-    }
-    .checkbox-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .checkbox-grid label {
-      display: block;
-      background-color: #4b5563;
-      border-radius: 8px;
-      padding: 10px;
-      font-weight: normal;
-      cursor: pointer;
-      color: #f9fafb;
-    }
-    .checkbox-grid input {
-      margin-right: 8px;
-      cursor: pointer;
-    }
-    .checkbox-grid input:disabled + span {
-      color: #9ca3af;
-      cursor: not-allowed;
-    }
-    #successMsg {
-      margin-top: 15px;
-      text-align: center;
-      min-height: 24px;
-    }
-    table {
-      width: 100%;
-      margin-top: 15px;
-      border-collapse: collapse;
-      background: #374151;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      color: #f9fafb;
-    }
-    th, td {
-      border: 1px solid #6b7280;
-      padding: 10px;
-      text-align: center;
-      font-size: 16px;
-    }
-    th {
-      background-color: #4b5563;
-      font-weight: bold;
-    }
-    td:nth-child(2) {
-      font-weight: bold;
-      font-size: 18px;
-      color: #facc15;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LINE 祭改報名系統</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+  body {
+    font-family: 'Helvetica Neue', sans-serif;
+    margin: 0; padding: 20px;
+    background-color: #1f2937;
+    color: #f9fafb;
+    font-size: 16px;
+  }
+  h1, h2 {
+    text-align: center;
+    color: #f9fafb;
+  }
+  form {
+    max-width: 480px;
+    margin: 20px auto;
+    background: #374151;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+  }
+  input[type="text"], button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 1px solid #6b7280;
+    background-color: #111827;
+    color: #f9fafb;
+    font-size: 18px;
+    box-sizing: border-box;
+  }
+  input[type="text"]::placeholder {
+    color: #9ca3af;
+  }
+  button {
+    background-color: #06c755;
+    border: none;
+    font-weight: bold;
+    margin-top: 20px;
+    cursor: pointer;
+  }
+  button:disabled {
+    background-color: #4b5563;
+    cursor: not-allowed;
+  }
+  .checkbox-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .checkbox-grid label {
+    background-color: #4b5563;
+    border-radius: 8px;
+    padding: 10px;
+    font-weight: normal;
+    cursor: pointer;
+    color: #f9fafb;
+    display: flex;
+    align-items: center;
+  }
+  .checkbox-grid input {
+    margin-right: 8px;
+    cursor: pointer;
+  }
+  #otherInput {
+    display: none;
+  }
+  #successMsg {
+    text-align: center;
+    margin-top: 15px;
+    min-height: 24px;
+  }
+  table {
+    width: 100%;
+    max-width: 480px;
+    margin: 15px auto 0;
+    border-collapse: collapse;
+    background: #374151;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    color: #f9fafb;
+  }
+  th, td {
+    border: 1px solid #6b7280;
+    padding: 10px;
+    text-align: center;
+    font-size: 16px;
+  }
+  th {
+    background-color: #4b5563;
+    font-weight: bold;
+  }
+  td:nth-child(2) {
+    font-weight: bold;
+    color: #facc15;
+  }
+  #loadingRecords {
+    text-align: center;
+    color: #f9fafb;
+  }
+</style>
 </head>
 <body>
 
@@ -122,17 +124,17 @@
 
   <label>祭改項目（可多選）</label>
   <div class="checkbox-grid">
-    <label><input type="checkbox" name="item" value="補財庫"><span>補財庫</span></label>
-    <label><input type="checkbox" name="item" value="冤親債主"><span>冤親債主</span></label>
-    <label><input type="checkbox" name="item" value="歷代祖先"><span>歷代祖先</span></label>
-    <label><input type="checkbox" name="item" value="病符"><span>病符</span></label>
-    <label><input type="checkbox" name="item" value="嬰靈"><span>嬰靈</span></label>
-    <label><input type="checkbox" name="item" value="陰纏"><span>陰纏</span></label>
-    <label><input type="checkbox" name="item" value="祭小人"><span>祭小人</span></label>
-    <label><input type="checkbox" name="item" value="車關"><span>車關</span></label>
-    <label><input type="checkbox" name="item" value="其他" id="chkOther"><span>其他</span></label>
+    <label><input type="checkbox" name="item" value="補財庫">補財庫</label>
+    <label><input type="checkbox" name="item" value="冤親債主">冤親債主</label>
+    <label><input type="checkbox" name="item" value="歷代祖先">歷代祖先</label>
+    <label><input type="checkbox" name="item" value="病符">病符</label>
+    <label><input type="checkbox" name="item" value="嬰靈">嬰靈</label>
+    <label><input type="checkbox" name="item" value="陰纏">陰纏</label>
+    <label><input type="checkbox" name="item" value="祭小人">祭小人</label>
+    <label><input type="checkbox" name="item" value="車關">車關</label>
+    <label><input type="checkbox" name="item" value="其他" id="chkOther">其他</label>
   </div>
-  <input type="text" id="otherInput" placeholder="請輸入其他項目" style="display:none;" />
+  <input type="text" id="otherInput" placeholder="請輸入其他項目" />
 
   <button type="submit" id="submitBtn">送出報名</button>
 </form>
@@ -155,8 +157,8 @@
 </table>
 
 <script>
-  const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec";
-  const LIFF_ID = "2007416974-JzvPy6DZ";
+  const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec";  // ←請換成你的 Google Apps Script URL
+  const LIFF_ID = "2007416974-JzvPy6DZ";            // ←請換成你的 LIFF ID
   let userId = "";
   let existingNames = [];
 
@@ -176,25 +178,28 @@
     if (!chkOther.checked) otherInput.value = "";
   });
 
-  window.onload = function () {
-    liff.init({ liffId: LIFF_ID }).then(() => {
-      if (liff.isLoggedIn()) {
-        liff.getProfile().then(profile => {
-          userId = profile.userId;
-          loadRecords();
-        });
-      } else {
-        liff.login();
-      }
-    }).catch(err => {
-      successMsg.textContent = "⚠️ LIFF 初始化失敗：" + err;
-      successMsg.style.color = "red";
-    });
+  window.onload = () => {
+    liff.init({ liffId: LIFF_ID })
+      .then(() => {
+        if (liff.isLoggedIn()) {
+          liff.getProfile().then(profile => {
+            userId = profile.userId;
+            loadRecords();
+          });
+        } else {
+          liff.login();
+        }
+      })
+      .catch(err => {
+        successMsg.style.color = "red";
+        successMsg.textContent = "⚠️ LIFF 初始化失敗：" + err;
+      });
   };
 
   form.addEventListener("submit", e => {
     e.preventDefault();
     successMsg.textContent = "";
+    successMsg.style.color = "#f9fafb";
 
     const name = nameInput.value.trim();
     if (!name) {
@@ -220,10 +225,9 @@
 
     const itemString = selectedItems.join("、");
 
-    // 如果該姓名已存在，跳出確認覆寫
+    // 覆寫確認
     if (existingNames.includes(name)) {
       if (!confirm(`姓名「${name}」已報名，是否要覆寫報名資料？`)) {
-        // 使用者取消覆寫，停止送出
         successMsg.style.color = "orange";
         successMsg.textContent = "已取消送出報名";
         return;
@@ -235,7 +239,7 @@
     formData.append("item", itemString);
     formData.append("userId", userId);
 
-    successMsg.style.color = "white";
+    successMsg.style.color = "#f9fafb";
     successMsg.textContent = "送出中...";
 
     fetch(scriptURL, {
@@ -248,11 +252,9 @@
     .then(data => {
       if (data.success) {
         successMsg.style.color = "lightgreen";
-        successMsg.innerHTML = `✅ ${submitBtn.textContent}成功！<br>🙋‍♂️ 姓名：<strong>${name}</strong>`;
-        alert(`成功報名：${name}`);
+        successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
         form.reset();
         otherInput.style.display = "none";
-        submitBtn.textContent = "送出報名";
         loadRecords();
       } else {
         successMsg.style.color = "red";
@@ -265,36 +267,22 @@
     });
   });
 
-  nameInput.addEventListener("input", () => {
-    // 使用者輸入姓名時不禁用表單，也不立即警告，只是更新 existingNames
-    // 方便送出時做覆寫判斷
-    loadRecords(false);
-  });
+  function loadRecords() {
+    loadingRecords.style.display = "block";
+    recordsTable.style.display = "none";
 
-  function loadRecords(showLoading = true) {
-    if (showLoading) {
-      loadingRecords.style.display = "block";
-      recordsTable.style.display = "none";
-    }
-    fetch(scriptURL + "?action=get")
-      .then(res => res.json())
+    fetch(scriptURL + "?mode=read")
+      .then(response => response.json())
       .then(data => {
-        if (data.success && data.records) {
+        if (data.records) {
           existingNames = data.records.map(r => r[0]);
           renderRecords(data.records);
-          successMsg.textContent = "";
         } else {
-          existingNames = [];
-          renderRecords([]);
-          successMsg.style.color = "red";
-          successMsg.textContent = "❌ 讀取資料失敗";
+          loadingRecords.textContent = "沒有資料";
         }
       })
       .catch(() => {
-        existingNames = [];
-        renderRecords([]);
-        successMsg.style.color = "red";
-        successMsg.textContent = "❌ 網路或後端錯誤";
+        loadingRecords.textContent = "❌ 無法載入資料";
       });
   }
 
@@ -307,10 +295,13 @@
     }
     recordsTable.style.display = "table";
     recordsBody.innerHTML = "";
-    records.forEach((row, index) => {
+
+    records.reverse(); // 倒序
+
+    records.forEach((row, idx) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${index + 1}</td>
+        <td>${idx + 1}</td>
         <td>${row[0]}</td>
         <td>${row[1]}</td>
       `;
