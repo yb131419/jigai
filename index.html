@@ -282,7 +282,7 @@
           for (let i = 1; i < records.length; i++) {
             const [name, item, uid] = records[i];
             if (uid === userId) {
-              nameInput.value = name;
+              // ✅ 不自動填姓名
               submitBtn.textContent = "修改報名";
 
               const itemList = item.split("、");
@@ -290,7 +290,6 @@
                 cb.checked = itemList.includes(cb.value);
               });
 
-              // 檢查是否有其他項目
               const knownItems = ["補財庫", "冤親債主", "歷代祖先", "病符", "嬰靈", "陰纏", "祭小人", "車關"];
               const otherItems = itemList.filter(i => !knownItems.includes(i));
               if (otherItems.length > 0) {
