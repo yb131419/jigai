@@ -171,7 +171,7 @@
         liff.getProfile().then(profile => {
           userId = profile.userId;
           loadRecords();
-          checkUserRegistration();
+          // 不呼叫 checkUserRegistration()，不鎖定姓名欄
         });
       } else {
         liff.login();
@@ -281,36 +281,9 @@
       });
   }
 
+  // 移除 checkUserRegistration 函式內容，不鎖定姓名欄
   function checkUserRegistration() {
-    fetch(scriptURL)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && Array.isArray(data.records)) {
-          const records = data.records;
-          for (let i = 1; i < records.length; i++) {
-            const [name, item, uid] = records[i];
-            if (uid === userId) {
-              nameInput.value = name;
-              nameInput.readOnly = true; // ✅ 鎖定姓名欄位
-              submitBtn.textContent = "修改報名";
-
-              const itemList = item.split("、");
-              document.querySelectorAll('input[name="item"]').forEach(cb => {
-                cb.checked = itemList.includes(cb.value);
-              });
-
-              const knownItems = ["補財庫", "冤親債主", "歷代祖先", "病符", "嬰靈", "陰纏", "祭小人", "車關"];
-              const otherItems = itemList.filter(i => !knownItems.includes(i));
-              if (otherItems.length > 0) {
-                chkOther.checked = true;
-                otherInput.style.display = "block";
-                otherInput.value = otherItems.join("、");
-              }
-              break;
-            }
-          }
-        }
-      });
+    // 不做任何動作，允許自由報名
   }
 </script>
 </body>
