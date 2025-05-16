@@ -53,6 +53,10 @@
       margin-top: 20px;
       cursor: pointer;
     }
+    button:disabled {
+      background-color: #4b5563;
+      cursor: not-allowed;
+    }
     .checkbox-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -70,10 +74,16 @@
     }
     .checkbox-grid input {
       margin-right: 8px;
+      cursor: pointer;
+    }
+    .checkbox-grid input:disabled + span {
+      color: #9ca3af;
+      cursor: not-allowed;
     }
     #successMsg {
       margin-top: 15px;
       text-align: center;
+      min-height: 24px;
     }
     table {
       width: 100%;
@@ -108,19 +118,19 @@
 
 <form id="myForm">
   <label for="nameInput">姓名</label>
-  <input type="text" id="nameInput" name="name" required />
+  <input type="text" id="nameInput" name="name" autocomplete="off" required />
 
   <label>祭改項目（可多選）</label>
   <div class="checkbox-grid">
-    <label><input type="checkbox" name="item" value="補財庫"> 補財庫</label>
-    <label><input type="checkbox" name="item" value="冤親債主"> 冤親債主</label>
-    <label><input type="checkbox" name="item" value="歷代祖先"> 歷代祖先</label>
-    <label><input type="checkbox" name="item" value="病符"> 病符</label>
-    <label><input type="checkbox" name="item" value="嬰靈"> 嬰靈</label>
-    <label><input type="checkbox" name="item" value="陰纏"> 陰纏</label>
-    <label><input type="checkbox" name="item" value="祭小人"> 祭小人</label>
-    <label><input type="checkbox" name="item" value="車關"> 車關</label>
-    <label><input type="checkbox" name="item" value="其他" id="chkOther"> 其他</label>
+    <label><input type="checkbox" name="item" value="補財庫"><span>補財庫</span></label>
+    <label><input type="checkbox" name="item" value="冤親債主"><span>冤親債主</span></label>
+    <label><input type="checkbox" name="item" value="歷代祖先"><span>歷代祖先</span></label>
+    <label><input type="checkbox" name="item" value="病符"><span>病符</span></label>
+    <label><input type="checkbox" name="item" value="嬰靈"><span>嬰靈</span></label>
+    <label><input type="checkbox" name="item" value="陰纏"><span>陰纏</span></label>
+    <label><input type="checkbox" name="item" value="祭小人"><span>祭小人</span></label>
+    <label><input type="checkbox" name="item" value="車關"><span>車關</span></label>
+    <label><input type="checkbox" name="item" value="其他" id="chkOther"><span>其他</span></label>
   </div>
   <input type="text" id="otherInput" placeholder="請輸入其他項目" style="display:none;" />
 
@@ -171,7 +181,7 @@
         liff.getProfile().then(profile => {
           userId = profile.userId;
           loadRecords();
-          // 不呼叫 checkUserRegistration()，不鎖定姓名欄
+          // 不鎖定姓名欄，不呼叫 checkUserRegistration()
         });
       } else {
         liff.login();
@@ -243,10 +253,28 @@
     });
   });
 
+  // 當姓名輸入時，重新檢查是否重複報名
+  nameInput.addEventListener("input", () => {
+    fetch(scriptURL)
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.records)) {
+          const records = data.records.slice(1).reverse();
+          checkDuplicateRegistration(records);
+        } else {
+          enableForm();
+        }
+      })
+      .catch(() => {
+        enableForm();
+      });
+  });
+
   function loadRecords() {
     loadingRecords.style.display = "block";
     recordsTable.style.display = "none";
     totalCount.textContent = "總報名人數：0";
+    successMsg.textContent = "";
 
     fetch(scriptURL)
       .then(res => res.json())
@@ -258,6 +286,7 @@
 
           if (records.length === 0) {
             loadingRecords.textContent = "目前無報名資料";
+            enableForm();
             return;
           }
 
@@ -274,17 +303,47 @@
 
           loadingRecords.style.display = "none";
           recordsTable.style.display = "table";
+
+          checkDuplicateRegistration(records);
         }
       })
       .catch(() => {
         loadingRecords.textContent = "❌ 資料載入失敗";
+        enableForm();
       });
   }
 
-  // 移除 checkUserRegistration 函式內容，不鎖定姓名欄
-  function checkUserRegistration() {
-    // 不做任何動作，允許自由報名
+  function checkDuplicateRegistration(records) {
+    const name = nameInput.value.trim();
+    if (!name) {
+      enableForm();
+      successMsg.textContent = "";
+      return;
+    }
+
+    const found = records.some(row => row[0] === name);
+    if (found) {
+      successMsg.style.color = "orange";
+      successMsg.textContent = `⚠️ 姓名「${name}」已報過名，請勿重複報名。`;
+      disableForm();
+    } else {
+      successMsg.textContent = "";
+      enableForm();
+    }
+  }
+
+  function disableForm() {
+    submitBtn.disabled = true;
+    document.querySelectorAll('input[name="item"]').forEach(el => el.disabled = true);
+    otherInput.disabled = true;
+  }
+
+  function enableForm() {
+    submitBtn.disabled = false;
+    document.querySelectorAll('input[name="item"]').forEach(el => el.disabled = false);
+    otherInput.disabled = !chkOther.checked;
   }
 </script>
+
 </body>
 </html>
