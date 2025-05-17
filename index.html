@@ -1,129 +1,128 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>彥彬 祭改報名系統</title>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<style>
-  body {
-    font-family: 'Helvetica Neue', sans-serif;
-    margin: 0; padding: 20px;
-    background-color: #1f2937;
-    color: #f9fafb;
-    font-size: 16px;
-  }
-  h1, h2 {
-    text-align: center;
-    color: #f9fafb;
-  }
-  form {
-    max-width: 480px;
-    margin: 20px auto;
-    background: #374151;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  }
-  label {
-    display: block;
-    margin-top: 15px;
-    font-weight: bold;
-  }
-  input[type="text"], button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 5px;
-    border-radius: 8px;
-    border: 1px solid #6b7280;
-    background-color: #111827;
-    color: #f9fafb;
-    font-size: 18px;
-    box-sizing: border-box;
-  }
-  input[type="text"]::placeholder {
-    color: #9ca3af;
-  }
-  button {
-    background-color: #06c755;
-    border: none;
-    font-weight: bold;
-    margin-top: 20px;
-    cursor: pointer;
-  }
-  button:disabled {
-    background-color: #4b5563;
-    cursor: not-allowed;
-  }
-  .checkbox-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 10px;
-  }
-  .checkbox-grid label {
-    background-color: #4b5563;
-    border-radius: 8px;
-    padding: 10px;
-    font-weight: normal;
-    cursor: pointer;
-    color: #f9fafb;
-    display: flex;
-    align-items: center;
-  }
-  .checkbox-grid input {
-    margin-right: 8px;
-    cursor: pointer;
-  }
-  #otherInput {
-    display: none;
-  }
-  #successMsg {
-    text-align: center;
-    margin-top: 15px;
-    min-height: 24px;
-  }
-  table {
-    width: 100%;
-    max-width: 480px;
-    margin: 15px auto 0;
-    border-collapse: collapse;
-    background: #374151;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    color: #f9fafb;
-  }
-  th, td {
-    border: 1px solid #6b7280;
-    padding: 10px;
-    text-align: center;
-    font-size: 16px;
-  }
-  th {
-    background-color: #4b5563;
-    font-weight: bold;
-  }
-  td:nth-child(2) {
-    font-weight: bold;
-    color: #facc15;
-  }
-  #loadingRecords {
-    text-align: center;
-    color: #f9fafb;
-  }
-
-  /* 新增：讓總報名人數置中且加強顯示 */
-  #totalCount {
-    text-align: center;
-    font-size: 20px;
-    font-weight: bold;
-    color: #60a5fa; /* 淡藍色 */
-    margin-top: 10px;
-    margin-bottom: 10px;
-    text-shadow: 0 0 5px #3b82f6;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>彥彬 祭改報名系統</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    /* === 样式同你原來的，略 === */
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      margin: 0; padding: 20px;
+      background-color: #1f2937;
+      color: #f9fafb;
+      font-size: 16px;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #f9fafb;
+    }
+    form {
+      max-width: 480px;
+      margin: 20px auto;
+      background: #374151;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input[type="text"], button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #6b7280;
+      background-color: #111827;
+      color: #f9fafb;
+      font-size: 18px;
+      box-sizing: border-box;
+    }
+    input[type="text"]::placeholder {
+      color: #9ca3af;
+    }
+    button {
+      background-color: #06c755;
+      border: none;
+      font-weight: bold;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #4b5563;
+      cursor: not-allowed;
+    }
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .checkbox-grid label {
+      background-color: #4b5563;
+      border-radius: 8px;
+      padding: 10px;
+      font-weight: normal;
+      cursor: pointer;
+      color: #f9fafb;
+      display: flex;
+      align-items: center;
+    }
+    .checkbox-grid input {
+      margin-right: 8px;
+      cursor: pointer;
+    }
+    #otherInput {
+      display: none;
+    }
+    #successMsg {
+      text-align: center;
+      margin-top: 15px;
+      min-height: 24px;
+    }
+    table {
+      width: 100%;
+      max-width: 480px;
+      margin: 15px auto 0;
+      border-collapse: collapse;
+      background: #374151;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      color: #f9fafb;
+    }
+    th, td {
+      border: 1px solid #6b7280;
+      padding: 10px;
+      text-align: center;
+      font-size: 16px;
+    }
+    th {
+      background-color: #4b5563;
+      font-weight: bold;
+    }
+    td:nth-child(2) {
+      font-weight: bold;
+      color: #facc15;
+    }
+    #loadingRecords {
+      text-align: center;
+      color: #f9fafb;
+    }
+    #totalCount {
+      text-align: center;
+      font-size: 20px;
+      font-weight: bold;
+      color: #60a5fa;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 5px #3b82f6;
+    }
+  </style>
 </head>
 <body>
 
@@ -143,6 +142,7 @@
     <label><input type="checkbox" name="item" value="陰纏">陰纏</label>
     <label><input type="checkbox" name="item" value="祭小人">祭小人</label>
     <label><input type="checkbox" name="item" value="車關">車關</label>
+    <label><input type="checkbox" name="item" value="倒房">倒房</label>
     <label><input type="checkbox" name="item" value="其他" id="chkOther">其他</label>
   </div>
   <input type="text" id="otherInput" placeholder="請輸入其他項目" />
@@ -167,8 +167,8 @@
 </table>
 
 <script>
-  const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec";  // ←請換成你的 Google Apps Script URL
-  const LIFF_ID = "2007416974-JzvPy6DZ";            // ←請換成你的 LIFF ID
+  const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec"; // ←換成你自己的
+  const LIFF_ID = "2007416974-JzvPy6DZ";
   let userId = "";
   let existingNames = [];
 
@@ -181,7 +181,6 @@
   const recordsBody = document.getElementById("recordsBody");
   const totalCount = document.getElementById("totalCount");
   const nameInput = document.getElementById("nameInput");
-  const submitBtn = document.getElementById("submitBtn");
 
   chkOther.addEventListener("change", () => {
     otherInput.style.display = chkOther.checked ? "block" : "none";
@@ -214,7 +213,6 @@
 
     const name = nameInput.value.trim();
     if (!name) {
-      alert("請輸入姓名");
       successMsg.style.color = "red";
       successMsg.textContent = "請輸入姓名";
       return;
@@ -230,7 +228,6 @@
     }
 
     if (selectedItems.length === 0) {
-      alert("請選擇至少一個項目");
       successMsg.style.color = "red";
       successMsg.textContent = "請選擇至少一個項目";
       return;
@@ -238,21 +235,15 @@
 
     const itemString = selectedItems.join("、");
 
-    // 修改：若姓名已報名，直接顯示錯誤，並停止送出，不覆寫
-    if (existingNames.includes(name)) {
-      alert("❌ 操作失敗：姓名已報名過，請勿重複報名");
-      successMsg.style.color = "red";
-      successMsg.textContent = "❌ 操作失敗：姓名已報名過，請勿重複報名";
-      return; // 不送出
-    }
-
     const formData = new URLSearchParams();
     formData.append("name", name);
     formData.append("item", itemString);
     formData.append("userId", userId);
 
     successMsg.style.color = "#f9fafb";
-    successMsg.textContent = "送出中...";
+    successMsg.textContent = existingNames.includes(name)
+      ? "更新中..."
+      : "送出中...";
 
     fetch(scriptURL, {
       method: "POST",
@@ -263,20 +254,17 @@
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert(`✅ 報名成功！姓名：${name}`);
         successMsg.style.color = "lightgreen";
-        successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
+        successMsg.innerHTML = `✅ ${existingNames.includes(name) ? '更新成功' : '報名成功'}！<br>姓名：<strong>${name}</strong>`;
         form.reset();
         otherInput.style.display = "none";
         loadRecords();
       } else {
-        alert("❌ 操作失敗：" + (data.message || "未知錯誤"));
         successMsg.style.color = "red";
         successMsg.textContent = "❌ 操作失敗：" + (data.message || "未知錯誤");
       }
     })
     .catch(() => {
-      alert("❌ 網路或後端錯誤");
       successMsg.style.color = "red";
       successMsg.textContent = "❌ 網路或後端錯誤";
     });
@@ -287,19 +275,19 @@
     recordsTable.style.display = "none";
 
     fetch(scriptURL + "?mode=read")
-      .then(response => response.json())
+      .then(res => res.json())
       .then(data => {
         if (data.records) {
           existingNames = data.records.map(r => r[0]);
           renderRecords(data.records);
         } else {
           loadingRecords.textContent = "沒有資料";
-          totalCount.textContent = "總報名人數：0"; // 無資料時也重設人數
+          totalCount.textContent = "總報名人數：0";
         }
       })
       .catch(() => {
         loadingRecords.textContent = "❌ 無法載入資料";
-        totalCount.textContent = "總報名人數：0"; // 載入失敗也重設人數
+        totalCount.textContent = "總報名人數：0";
       });
   }
 
@@ -310,19 +298,17 @@
       totalCount.textContent = "總報名人數：0";
       return;
     }
+
     recordsTable.style.display = "table";
     recordsBody.innerHTML = "";
+    records.reverse();
 
-    records.reverse(); // 倒序
-
-    records.forEach((row) => {
+    records.forEach(([name, item]) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${row[0]}</td>
-        <td>${row[1]}</td>
-      `;
+      tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
       recordsBody.appendChild(tr);
     });
+
     totalCount.textContent = `總報名人數：${records.length}`;
   }
 </script>
