@@ -112,6 +112,17 @@
     text-align: center;
     color: #f9fafb;
   }
+
+  /* 新增：讓總報名人數置中且加強顯示 */
+  #totalCount {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #60a5fa; /* 淡藍色 */
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-shadow: 0 0 5px #3b82f6;
+  }
 </style>
 </head>
 <body>
@@ -227,14 +238,12 @@
 
     const itemString = selectedItems.join("、");
 
-    // 覆寫確認
+    // 修改：若姓名已報名，直接顯示錯誤，並停止送出，不覆寫
     if (existingNames.includes(name)) {
-      if (!confirm(`姓名「${name}」已報名，是否要覆寫報名資料？`)) {
-        alert("已取消送出報名");
-        successMsg.style.color = "orange";
-        successMsg.textContent = "已取消送出報名";
-        return;
-      }
+      alert("❌ 操作失敗：姓名已報名過，請勿重複報名");
+      successMsg.style.color = "red";
+      successMsg.textContent = "❌ 操作失敗：姓名已報名過，請勿重複報名";
+      return; // 不送出
     }
 
     const formData = new URLSearchParams();
@@ -285,10 +294,12 @@
           renderRecords(data.records);
         } else {
           loadingRecords.textContent = "沒有資料";
+          totalCount.textContent = "總報名人數：0"; // 無資料時也重設人數
         }
       })
       .catch(() => {
         loadingRecords.textContent = "❌ 無法載入資料";
+        totalCount.textContent = "總報名人數：0"; // 載入失敗也重設人數
       });
   }
 
