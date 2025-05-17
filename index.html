@@ -190,6 +190,7 @@
         }
       })
       .catch(err => {
+        alert("⚠️ LIFF 初始化失敗：" + err);
         successMsg.style.color = "red";
         successMsg.textContent = "⚠️ LIFF 初始化失敗：" + err;
       });
@@ -202,6 +203,7 @@
 
     const name = nameInput.value.trim();
     if (!name) {
+      alert("請輸入姓名");
       successMsg.style.color = "red";
       successMsg.textContent = "請輸入姓名";
       return;
@@ -217,6 +219,7 @@
     }
 
     if (selectedItems.length === 0) {
+      alert("請選擇至少一個項目");
       successMsg.style.color = "red";
       successMsg.textContent = "請選擇至少一個項目";
       return;
@@ -227,6 +230,7 @@
     // 覆寫確認
     if (existingNames.includes(name)) {
       if (!confirm(`姓名「${name}」已報名，是否要覆寫報名資料？`)) {
+        alert("已取消送出報名");
         successMsg.style.color = "orange";
         successMsg.textContent = "已取消送出報名";
         return;
@@ -250,17 +254,20 @@
     .then(res => res.json())
     .then(data => {
       if (data.success) {
+        alert(`✅ 報名成功！姓名：${name}`);
         successMsg.style.color = "lightgreen";
         successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
         form.reset();
         otherInput.style.display = "none";
         loadRecords();
       } else {
+        alert("❌ 操作失敗：" + (data.message || "未知錯誤"));
         successMsg.style.color = "red";
         successMsg.textContent = "❌ 操作失敗：" + (data.message || "未知錯誤");
       }
     })
     .catch(() => {
+      alert("❌ 網路或後端錯誤");
       successMsg.style.color = "red";
       successMsg.textContent = "❌ 網路或後端錯誤";
     });
