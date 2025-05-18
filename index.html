@@ -1,317 +1,249 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>彥彬 祭改報名系統</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>祭改報名表</title>
   <style>
-    /* === 样式同你原來的，略 === */
     body {
-      font-family: 'Helvetica Neue', sans-serif;
-      margin: 0; padding: 20px;
-      background-color: #1f2937;
+      background-color: #111827;
       color: #f9fafb;
-      font-size: 16px;
+      font-family: "Microsoft JhengHei", sans-serif;
+      padding: 20px;
+      max-width: 480px;
+      margin: auto;
     }
     h1, h2 {
-      text-align: center;
-      color: #f9fafb;
-    }
-    form {
-      max-width: 480px;
-      margin: 20px auto;
-      background: #374151;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      color: #facc15;
     }
     label {
       display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    input[type="text"], button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 5px;
-      border-radius: 8px;
-      border: 1px solid #6b7280;
-      background-color: #111827;
-      color: #f9fafb;
-      font-size: 18px;
-      box-sizing: border-box;
-    }
-    input[type="text"]::placeholder {
-      color: #9ca3af;
-    }
-    button {
-      background-color: #06c755;
-      border: none;
-      font-weight: bold;
-      margin-top: 20px;
-      cursor: pointer;
-    }
-    button:disabled {
-      background-color: #4b5563;
-      cursor: not-allowed;
-    }
-    .checkbox-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
       margin-top: 10px;
     }
-    .checkbox-grid label {
-      background-color: #4b5563;
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
       border-radius: 8px;
-      padding: 10px;
-      font-weight: normal;
-      cursor: pointer;
-      color: #f9fafb;
-      display: flex;
-      align-items: center;
+      border: none;
+      margin-top: 5px;
+      margin-bottom: 10px;
     }
-    .checkbox-grid input {
-      margin-right: 8px;
+    .item-group {
+      margin-bottom: 15px;
+    }
+    button {
+      background-color: #2563eb;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #1d4ed8;
+    }
+    .success {
+      margin-top: 10px;
+      font-weight: bold;
     }
     #otherInput {
       display: none;
     }
-    #successMsg {
-      text-align: center;
-      margin-top: 15px;
-      min-height: 24px;
-    }
     table {
       width: 100%;
-      max-width: 480px;
-      margin: 15px auto 0;
+      margin-top: 15px;
       border-collapse: collapse;
-      background: #374151;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      color: #f9fafb;
     }
     th, td {
-      border: 1px solid #6b7280;
-      padding: 10px;
-      text-align: center;
-      font-size: 16px;
+      padding: 8px;
+      border: 1px solid #374151;
     }
     th {
-      background-color: #4b5563;
-      font-weight: bold;
-    }
-    td:nth-child(2) {
-      font-weight: bold;
-      color: #facc15;
-    }
-    #loadingRecords {
-      text-align: center;
-      color: #f9fafb;
-    }
-    #totalCount {
-      text-align: center;
-      font-size: 20px;
-      font-weight: bold;
-      color: #60a5fa;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      text-shadow: 0 0 5px #3b82f6;
+      background-color: #1f2937;
     }
   </style>
 </head>
 <body>
+  <h1>祭改報名表</h1>
+  <form id="myForm">
+    <label for="nameInput">姓名：</label>
+    <input type="text" id="nameInput" name="name" required/>
 
-<h1>祭改報名系統</h1>
+    <div class="item-group">
+      <label>選擇項目：</label>
+      <label><input type="checkbox" name="item" value="光明燈" /> 光明燈</label>
+      <label><input type="checkbox" name="item" value="安太歲" /> 安太歲</label>
+      <label><input type="checkbox" name="item" value="補財庫" /> 補財庫</label>
+      <label><input type="checkbox" name="item" value="點姻緣燈" /> 點姻緣燈</label>
+      <label><input type="checkbox" name="item" value="拜虎爺" /> 拜虎爺</label>
+      <label><input type="checkbox" id="chkOther" name="item" value="其他" /> 其他</label>
+      <input type="text" id="otherInput" placeholder="請輸入其他項目" />
+    </div>
 
-<form id="myForm">
-  <label for="nameInput">姓名</label>
-  <input type="text" id="nameInput" name="name" autocomplete="off" required />
+    <button type="submit">送出報名</button>
+    <div class="success" id="successMsg"></div>
+  </form>
 
-  <label>祭改項目（可多選）</label>
-  <div class="checkbox-grid">
-    <label><input type="checkbox" name="item" value="補財庫">補財庫</label>
-    <label><input type="checkbox" name="item" value="冤親債主">冤親債主</label>
-    <label><input type="checkbox" name="item" value="歷代祖先">歷代祖先</label>
-    <label><input type="checkbox" name="item" value="病符">病符</label>
-    <label><input type="checkbox" name="item" value="嬰靈">嬰靈</label>
-    <label><input type="checkbox" name="item" value="陰纏">陰纏</label>
-    <label><input type="checkbox" name="item" value="祭小人">祭小人</label>
-    <label><input type="checkbox" name="item" value="車關">車關</label>
-    <label><input type="checkbox" name="item" value="倒房">倒房</label>
-    <label><input type="checkbox" name="item" value="其他" id="chkOther">其他</label>
-  </div>
-  <input type="text" id="otherInput" placeholder="請輸入其他項目" />
+  <h2 id="totalCount">總報名人數：0</h2>
+  <div id="loadingRecords">讀取資料中...</div>
+  <table id="recordsTable" style="display:none;">
+    <thead>
+      <tr><th>姓名</th><th>項目</th></tr>
+    </thead>
+    <tbody id="recordsBody"></tbody>
+  </table>
 
-  <button type="submit" id="submitBtn">送出報名</button>
-</form>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec"; // 替換成你的
+    const LIFF_ID = "2007416974-JzvPy6DZ"; // 替換成你的 LIFF ID
+    let userId = "";
+    let existingNames = [];
 
-<div id="successMsg"></div>
+    const form = document.getElementById("myForm");
+    const successMsg = document.getElementById("successMsg");
+    const chkOther = document.getElementById("chkOther");
+    const otherInput = document.getElementById("otherInput");
+    const loadingRecords = document.getElementById("loadingRecords");
+    const recordsTable = document.getElementById("recordsTable");
+    const recordsBody = document.getElementById("recordsBody");
+    const totalCount = document.getElementById("totalCount");
+    const nameInput = document.getElementById("nameInput");
 
-<h2>祭改名單</h2>
-<p id="totalCount">總報名人數：0</p>
-<p id="loadingRecords">讀取中...</p>
-
-<table id="recordsTable" style="display:none;">
-  <thead>
-    <tr>
-      <th>姓名</th>
-      <th>項目</th>
-    </tr>
-  </thead>
-  <tbody id="recordsBody"></tbody>
-</table>
-
-<script>
-  const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec"; // ←換成你自己的
-  const LIFF_ID = "2007416974-JzvPy6DZ";
-  let userId = "";
-  let existingNames = [];
-
-  const form = document.getElementById("myForm");
-  const successMsg = document.getElementById("successMsg");
-  const chkOther = document.getElementById("chkOther");
-  const otherInput = document.getElementById("otherInput");
-  const loadingRecords = document.getElementById("loadingRecords");
-  const recordsTable = document.getElementById("recordsTable");
-  const recordsBody = document.getElementById("recordsBody");
-  const totalCount = document.getElementById("totalCount");
-  const nameInput = document.getElementById("nameInput");
-
-  chkOther.addEventListener("change", () => {
-    otherInput.style.display = chkOther.checked ? "block" : "none";
-    if (!chkOther.checked) otherInput.value = "";
-  });
-
-  window.onload = () => {
-    liff.init({ liffId: LIFF_ID })
-      .then(() => {
-        if (liff.isLoggedIn()) {
-          liff.getProfile().then(profile => {
-            userId = profile.userId;
-            loadRecords();
-          });
-        } else {
-          liff.login();
-        }
-      })
-      .catch(err => {
-        alert("⚠️ LIFF 初始化失敗：" + err);
-        successMsg.style.color = "red";
-        successMsg.textContent = "⚠️ LIFF 初始化失敗：" + err;
-      });
-  };
-
-  form.addEventListener("submit", e => {
-    e.preventDefault();
-    successMsg.textContent = "";
-    successMsg.style.color = "#f9fafb";
-
-    const name = nameInput.value.trim();
-    if (!name) {
-      successMsg.style.color = "red";
-      successMsg.textContent = "請輸入姓名";
-      return;
-    }
-
-    let selectedItems = Array.from(document.querySelectorAll('input[name="item"]:checked'))
-      .map(cb => cb.value)
-      .filter(v => v !== "其他");
-
-    if (chkOther.checked) {
-      const otherVal = otherInput.value.trim();
-      if (otherVal) selectedItems.push(otherVal);
-    }
-
-    if (selectedItems.length === 0) {
-      successMsg.style.color = "red";
-      successMsg.textContent = "請選擇至少一個項目";
-      return;
-    }
-
-    const itemString = selectedItems.join("、");
-
-    const formData = new URLSearchParams();
-    formData.append("name", name);
-    formData.append("item", itemString);
-    formData.append("userId", userId);
-
-    successMsg.style.color = "#f9fafb";
-    successMsg.textContent = existingNames.includes(name)
-      ? "更新中..."
-      : "送出中...";
-
-    fetch(scriptURL, {
-      method: "POST",
-      body: formData,
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      mode: "cors"
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        successMsg.style.color = "lightgreen";
-        successMsg.innerHTML = `✅ ${existingNames.includes(name) ? '更新成功' : '報名成功'}！<br>姓名：<strong>${name}</strong>`;
-        form.reset();
-        otherInput.style.display = "none";
-        loadRecords();
-      } else {
-        successMsg.style.color = "red";
-        successMsg.textContent = "❌ 操作失敗：" + (data.message || "未知錯誤");
-      }
-    })
-    .catch(() => {
-      successMsg.style.color = "red";
-      successMsg.textContent = "❌ 網路或後端錯誤";
+    chkOther.addEventListener("change", () => {
+      otherInput.style.display = chkOther.checked ? "block" : "none";
+      if (!chkOther.checked) otherInput.value = "";
     });
-  });
 
-  function loadRecords() {
-    loadingRecords.style.display = "block";
-    recordsTable.style.display = "none";
+    window.onload = () => {
+      liff.init({ liffId: LIFF_ID })
+        .then(() => {
+          if (liff.isLoggedIn()) {
+            liff.getProfile().then(profile => {
+              userId = profile.userId;
+              loadRecords();
+            });
+          } else {
+            liff.login();
+          }
+        })
+        .catch(err => {
+          alert("⚠️ LIFF 初始化失敗：" + err);
+          successMsg.style.color = "red";
+          successMsg.textContent = "⚠️ LIFF 初始化失敗：" + err;
+        });
+    };
 
-    fetch(scriptURL + "?mode=read")
+    form.addEventListener("submit", e => {
+      e.preventDefault();
+      successMsg.textContent = "";
+      successMsg.style.color = "#f9fafb";
+
+      const name = nameInput.value.trim();
+      if (!name) {
+        successMsg.style.color = "red";
+        successMsg.textContent = "請輸入姓名";
+        return;
+      }
+
+      if (existingNames.includes(name)) {
+        successMsg.style.color = "red";
+        successMsg.textContent = "❌ 操作失敗：姓名已報名過、請勿重複報名";
+        return;
+      }
+
+      let selectedItems = Array.from(document.querySelectorAll('input[name="item"]:checked'))
+        .map(cb => cb.value)
+        .filter(v => v !== "其他");
+
+      if (chkOther.checked) {
+        const otherVal = otherInput.value.trim();
+        if (otherVal) selectedItems.push(otherVal);
+      }
+
+      if (selectedItems.length === 0) {
+        successMsg.style.color = "red";
+        successMsg.textContent = "請選擇至少一個項目";
+        return;
+      }
+
+      const itemString = selectedItems.join("、");
+
+      const formData = new URLSearchParams();
+      formData.append("name", name);
+      formData.append("item", itemString);
+      formData.append("userId", userId);
+
+      successMsg.style.color = "#f9fafb";
+      successMsg.textContent = "送出中...";
+
+      fetch(scriptURL, {
+        method: "POST",
+        body: formData,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        mode: "cors"
+      })
       .then(res => res.json())
       .then(data => {
-        if (data.records) {
-          existingNames = data.records.map(r => r[0]);
-          renderRecords(data.records);
+        if (data.success) {
+          successMsg.style.color = "lightgreen";
+          successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
+          form.reset();
+          otherInput.style.display = "none";
+          loadRecords();
         } else {
-          loadingRecords.textContent = "沒有資料";
-          totalCount.textContent = "總報名人數：0";
+          successMsg.style.color = "red";
+          successMsg.textContent = "❌ 操作失敗：" + (data.message || "未知錯誤");
         }
       })
       .catch(() => {
-        loadingRecords.textContent = "❌ 無法載入資料";
-        totalCount.textContent = "總報名人數：0";
+        successMsg.style.color = "red";
+        successMsg.textContent = "❌ 網路或後端錯誤";
       });
-  }
-
-  function renderRecords(records) {
-    loadingRecords.style.display = "none";
-    if (records.length === 0) {
-      recordsTable.style.display = "none";
-      totalCount.textContent = "總報名人數：0";
-      return;
-    }
-
-    recordsTable.style.display = "table";
-    recordsBody.innerHTML = "";
-    records.reverse();
-
-    records.forEach(([name, item]) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
-      recordsBody.appendChild(tr);
     });
 
-    totalCount.textContent = `總報名人數：${records.length}`;
-  }
-</script>
+    function loadRecords() {
+      loadingRecords.style.display = "block";
+      recordsTable.style.display = "none";
 
+      fetch(scriptURL + "?mode=read")
+        .then(res => res.json())
+        .then(data => {
+          if (data.records) {
+            existingNames = data.records.map(r => r[0]);
+            renderRecords(data.records);
+          } else {
+            loadingRecords.textContent = "沒有資料";
+            totalCount.textContent = "總報名人數：0";
+          }
+        })
+        .catch(() => {
+          loadingRecords.textContent = "❌ 無法載入資料";
+          totalCount.textContent = "總報名人數：0";
+        });
+    }
+
+    function renderRecords(records) {
+      loadingRecords.style.display = "none";
+      if (records.length === 0) {
+        recordsTable.style.display = "none";
+        totalCount.textContent = "總報名人數：0";
+        return;
+      }
+
+      recordsTable.style.display = "table";
+      recordsBody.innerHTML = "";
+      records.reverse();
+
+      records.forEach(([name, item]) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
+        recordsBody.appendChild(tr);
+      });
+
+      totalCount.textContent = `總報名人數：${records.length}`;
+    }
+  </script>
 </body>
 </html>
