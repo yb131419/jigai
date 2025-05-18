@@ -9,58 +9,89 @@
       background-color: #111827;
       color: #f9fafb;
       font-family: "Microsoft JhengHei", sans-serif;
-      padding: 20px;
-      max-width: 480px;
+      padding: 24px 16px;
+      max-width: 500px;
       margin: auto;
     }
     h1, h2 {
       color: #facc15;
+      margin-bottom: 12px;
+    }
+    form {
+      background-color: #1f2937;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
     label {
       display: block;
-      margin-top: 10px;
+      margin-top: 12px;
+      font-weight: 600;
     }
     input[type="text"] {
       width: 100%;
-      padding: 8px;
+      padding: 10px;
       border-radius: 8px;
       border: none;
-      margin-top: 5px;
-      margin-bottom: 10px;
+      margin-top: 6px;
+      background-color: #374151;
+      color: #f9fafb;
     }
     .item-group {
-      margin-bottom: 15px;
+      margin-top: 12px;
+    }
+    .item-group label {
+      display: flex;
+      align-items: center;
+      margin-top: 8px;
+      font-weight: normal;
+    }
+    .item-group input[type="checkbox"] {
+      margin-right: 8px;
     }
     button {
-      background-color: #2563eb;
+      margin-top: 16px;
+      background-color: #3b82f6;
       color: white;
-      padding: 10px;
+      padding: 12px;
       border: none;
-      border-radius: 8px;
-      cursor: pointer;
+      border-radius: 10px;
+      font-size: 16px;
       width: 100%;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
     }
     button:hover {
-      background-color: #1d4ed8;
+      background-color: #2563eb;
     }
     .success {
-      margin-top: 10px;
+      margin-top: 12px;
       font-weight: bold;
+      line-height: 1.5;
     }
     #otherInput {
       display: none;
     }
     table {
       width: 100%;
-      margin-top: 15px;
+      margin-top: 16px;
       border-collapse: collapse;
+      background-color: #1f2937;
+      border-radius: 8px;
+      overflow: hidden;
     }
     th, td {
-      padding: 8px;
-      border: 1px solid #374151;
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #374151;
     }
     th {
-      background-color: #1f2937;
+      background-color: #374151;
+      color: #facc15;
+    }
+    #loadingRecords {
+      margin-top: 16px;
+      font-style: italic;
     }
   </style>
 </head>
@@ -71,15 +102,15 @@
     <input type="text" id="nameInput" name="name" required/>
 
     <div class="item-group">
-      <label>選擇項目：</label>
+      <label>選擇祭改項目『可多選』：</label>
       <label><input type="checkbox" name="item" value="補財庫" /> 補財庫</label>
       <label><input type="checkbox" name="item" value="冤親債主" /> 冤親債主</label>
       <label><input type="checkbox" name="item" value="歷代祖先" /> 歷代祖先</label>
       <label><input type="checkbox" name="item" value="嬰靈" /> 嬰靈</label>
       <label><input type="checkbox" name="item" value="陰纏" /> 陰纏</label>
-          <label><input type="checkbox" name="item" value="祭小人" /> 祭小人</label>
-              <label><input type="checkbox" name="item" value="車關" /> 車關</label>
-                  <label><input type="checkbox" name="item" value="倒房" />倒房</label>
+      <label><input type="checkbox" name="item" value="祭小人" /> 祭小人</label>
+      <label><input type="checkbox" name="item" value="車關" /> 車關</label>
+      <label><input type="checkbox" name="item" value="倒房" /> 倒房</label>
       <label><input type="checkbox" id="chkOther" name="item" value="其他" /> 其他</label>
       <input type="text" id="otherInput" placeholder="請輸入其他項目" />
     </div>
@@ -99,8 +130,8 @@
 
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec"; // 替換成你的
-    const LIFF_ID = "2007416974-JzvPy6DZ"; // 替換成你的 LIFF ID
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec";
+    const LIFF_ID = "2007416974-JzvPy6DZ";
     let userId = "";
     let existingNames = [];
 
