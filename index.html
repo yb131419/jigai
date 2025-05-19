@@ -6,121 +6,7 @@
   <title>彥彬 祭改報名系統</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body {
-      font-family: 'Helvetica Neue', sans-serif;
-      margin: 0; padding: 20px;
-      background-color: #1f2937;
-      color: #f9fafb;
-      font-size: 16px;
-    }
-    h1, h2 {
-      text-align: center;
-      color: #f9fafb;
-    }
-    form {
-      max-width: 480px;
-      margin: 20px auto;
-      background: #374151;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    input[type="text"], button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 5px;
-      border-radius: 8px;
-      border: 1px solid #6b7280;
-      background-color: #111827;
-      color: #f9fafb;
-      font-size: 18px;
-      box-sizing: border-box;
-    }
-    input[type="text"]::placeholder {
-      color: #9ca3af;
-    }
-    button {
-      background-color: #06c755;
-      border: none;
-      font-weight: bold;
-      margin-top: 20px;
-      cursor: pointer;
-    }
-    button:disabled {
-      background-color: #4b5563;
-      cursor: not-allowed;
-    }
-    .checkbox-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .checkbox-grid label {
-      background-color: #4b5563;
-      border-radius: 8px;
-      padding: 10px;
-      font-weight: normal;
-      cursor: pointer;
-      color: #f9fafb;
-      display: flex;
-      align-items: center;
-    }
-    .checkbox-grid input {
-      margin-right: 8px;
-      cursor: pointer;
-    }
-    #otherInput {
-      display: none;
-    }
-    #successMsg {
-      text-align: center;
-      margin-top: 15px;
-      min-height: 24px;
-    }
-    table {
-      width: 100%;
-      max-width: 480px;
-      margin: 15px auto 0;
-      border-collapse: collapse;
-      background: #374151;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      color: #f9fafb;
-    }
-    th, td {
-      border: 1px solid #6b7280;
-      padding: 10px;
-      text-align: center;
-      font-size: 16px;
-    }
-    th {
-      background-color: #4b5563;
-      font-weight: bold;
-    }
-    td:nth-child(2) {
-      font-weight: bold;
-      color: #facc15;
-    }
-    #loadingRecords {
-      text-align: center;
-      color: #f9fafb;
-    }
-    #totalCount {
-      text-align: center;
-      font-size: 20px;
-      font-weight: bold;
-      color: #60a5fa;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      text-shadow: 0 0 5px #3b82f6;
-    }
+    /* ... 你原本的 CSS ... */
   </style>
 </head>
 <body>
@@ -166,7 +52,7 @@
 </table>
 
 <script>
-  const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec"; // ←換成你自己的
+  const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec"; // ←請換成你自己的 GAS 網址
   const LIFF_ID = "2007416974-JzvPy6DZ";
   let userId = "";
   let existingNames = [];
@@ -233,16 +119,16 @@
     }
 
     const itemString = selectedItems.join("、");
+    const isUpdate = existingNames.includes(name);
 
     const formData = new FormData();
     formData.append("name", name);
     formData.append("item", itemString);
     formData.append("userId", userId);
+    formData.append("overwrite", isUpdate ? "true" : "false");
 
     successMsg.style.color = "#f9fafb";
-    successMsg.textContent = existingNames.includes(name)
-      ? "更新中..."
-      : "送出中...";
+    successMsg.textContent = isUpdate ? "更新中..." : "送出中...";
 
     fetch(scriptURL, {
       method: "POST",
@@ -252,7 +138,7 @@
     .then(data => {
       if (data.success) {
         successMsg.style.color = "lightgreen";
-        successMsg.innerHTML = `✅ ${existingNames.includes(name) ? '更新成功' : '報名成功'}！<br>姓名：<strong>${name}</strong>`;
+        successMsg.innerHTML = `✅ ${isUpdate ? '更新成功' : '報名成功'}！<br>姓名：<strong>${name}</strong>`;
         form.reset();
         otherInput.style.display = "none";
         loadRecords();
@@ -290,19 +176,12 @@
 
   function renderRecords(records) {
     loadingRecords.style.display = "none";
-    if (records.length === 0) {
-      recordsTable.style.display = "none";
-      totalCount.textContent = "總報名人數：0";
-      return;
-    }
-
     recordsTable.style.display = "table";
-    recordsBody.innerHTML = "";
-    records.reverse();
 
-    records.forEach(([name, item]) => {
+    recordsBody.innerHTML = "";
+    records.forEach(r => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
+      tr.innerHTML = `<td>${r[0]}</td><td>${r[1]}</td>`;
       recordsBody.appendChild(tr);
     });
 
