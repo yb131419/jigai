@@ -6,7 +6,6 @@
   <title>彥彬 祭改報名系統</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    /* === 样式同你原來的，略 === */
     body {
       font-family: 'Helvetica Neue', sans-serif;
       margin: 0; padding: 20px;
@@ -235,7 +234,7 @@
 
     const itemString = selectedItems.join("、");
 
-    const formData = new URLSearchParams();
+    const formData = new FormData();
     formData.append("name", name);
     formData.append("item", itemString);
     formData.append("userId", userId);
@@ -247,9 +246,7 @@
 
     fetch(scriptURL, {
       method: "POST",
-      body: formData,
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      mode: "cors"
+      body: formData
     })
     .then(res => res.json())
     .then(data => {
