@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>彥彬📿祭改系統</title>
+  <style>
+    :root {
+      --bg: #fffdf7;
+      --text: #333;
+      --subtext: #777;
+      --accent: #d4af37;
+      --shadow: rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+      margin: 0;
+      padding: 24px 16px;
+      font-family: 'Helvetica Neue', 'Segoe UI', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: white;
+      padding: 20px;
+      border-radius: 18px;
+      box-shadow: 0 8px 30px var(--shadow);
+    }
+
+    h1 {
+      font-size: 1.6em;
+      text-align: center;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+
+    p {
+      font-size: 1em;
+      text-align: center;
+      color: var(--subtext);
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    /* 直式 9:16 容器 + 視窗裁切技巧 */
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 9 / 16;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      margin-bottom: 24px;
+      background-color: #000;
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 177.78%; /* 強制讓橫式影片撐滿直式容器寬度 */
+      height: 100%;
+      transform: translate(-50%, -50%);
+      border: 0;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 0.85em;
+      color: #bbb;
+      margin-top: 30px;
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 1.4em; }
+      p { font-size: 0.95em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 『地藏庵』 祭改實況</h1>
+    <p>排隊等 伽藍菩薩(關聖帝君)辦事 </p>
+
+    <div class="video-wrapper">
+      <iframe 
+        src="https://player.vimeo.com/video/1086661916" 
+        frameborder="0" 
+        allow="autoplay; fullscreen; picture-in-picture" 
+        allowfullscreen>
+      </iframe>
+    </div>
+
+    <p>更多精彩內容即將推出，敬請期待！</p>
+
+    <div class="footer">© 2025 彥彬祭改系統 · 保留所有權利</div>
+  </div>
+</body>
+</html>
