@@ -167,7 +167,7 @@
 </table>
 
 <script>
-  const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec"; // ←換成你自己的
+  const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec";
   const LIFF_ID = "2007416974-JzvPy6DZ";
   let userId = "";
   let existingNames = [];
@@ -181,6 +181,7 @@
   const recordsBody = document.getElementById("recordsBody");
   const totalCount = document.getElementById("totalCount");
   const nameInput = document.getElementById("nameInput");
+  const submitBtn = document.getElementById("submitBtn");
 
   chkOther.addEventListener("change", () => {
     otherInput.style.display = chkOther.checked ? "block" : "none";
@@ -191,16 +192,23 @@
     liff.init({ liffId: LIFF_ID })
       .then(() => {
         if (liff.isLoggedIn()) {
-          liff.getProfile().then(profile => {
-            userId = profile.userId;
-            loadRecords();
-          });
+             liff.getProfile()
+             .then(profile => {
+             userId = profile.userId;
+              nameInput.value = profile.displayName || "";
+              nameInput.readOnly = true; // （選擇性）不讓使用者改名
+              loadRecords();
+            })
+
+            .catch(() => {
+              successMsg.style.color = "red";
+              successMsg.textContent = "❌ 無法取得使用者資料";
+            });
         } else {
           liff.login();
         }
       })
       .catch(err => {
-        alert("⚠️ LIFF 初始化失敗：" + err);
         successMsg.style.color = "red";
         successMsg.textContent = "⚠️ LIFF 初始化失敗：" + err;
       });
@@ -210,11 +218,11 @@
     e.preventDefault();
     successMsg.textContent = "";
     successMsg.style.color = "#f9fafb";
+    submitBtn.disabled = true;
 
     const name = nameInput.value.trim();
     if (!name) {
-      successMsg.style.color = "red";
-      successMsg.textContent = "請輸入姓名";
+      showError("請輸入姓名");
       return;
     }
 
@@ -228,22 +236,16 @@
     }
 
     if (selectedItems.length === 0) {
-      successMsg.style.color = "red";
-      successMsg.textContent = "請選擇至少一個項目";
+      showError("請選擇至少一個項目");
       return;
     }
 
     const itemString = selectedItems.join("、");
+    const formData = new URLSearchParams({ name, item: itemString, userId });
 
-    const formData = new URLSearchParams();
-    formData.append("name", name);
-    formData.append("item", itemString);
-    formData.append("userId", userId);
-
+    const isUpdate = existingNames.includes(name);
     successMsg.style.color = "#f9fafb";
-    successMsg.textContent = existingNames.includes(name)
-      ? "更新中..."
-      : "送出中...";
+    successMsg.textContent = isUpdate ? "更新中..." : "送出中...";
 
     fetch(scriptURL, {
       method: "POST",
@@ -255,20 +257,24 @@
     .then(data => {
       if (data.success) {
         successMsg.style.color = "lightgreen";
-        successMsg.innerHTML = `✅ ${existingNames.includes(name) ? '更新成功' : '報名成功'}！<br>姓名：<strong>${name}</strong>`;
+        successMsg.innerHTML = `✅ ${isUpdate ? '更新成功' : '報名成功'}！<br>姓名：<strong>${name}</strong>`;
         form.reset();
         otherInput.style.display = "none";
         loadRecords();
       } else {
-        successMsg.style.color = "red";
-        successMsg.textContent = "❌ 操作失敗：" + (data.message || "未知錯誤");
+        showError("❌ 操作失敗：" + (data.message || "未知錯誤"));
       }
     })
     .catch(() => {
-      successMsg.style.color = "red";
-      successMsg.textContent = "❌ 網路或後端錯誤";
+      showError("❌ 網路或後端錯誤");
     });
   });
+
+  function showError(message) {
+    successMsg.style.color = "red";
+    successMsg.textContent = message;
+    submitBtn.disabled = false;
+  }
 
   function loadRecords() {
     loadingRecords.style.display = "block";
@@ -292,26 +298,32 @@
   }
 
   function renderRecords(records) {
-    loadingRecords.style.display = "none";
-    if (records.length === 0) {
-      recordsTable.style.display = "none";
-      totalCount.textContent = "總報名人數：0";
-      return;
-    }
-
-    recordsTable.style.display = "table";
-    recordsBody.innerHTML = "";
-    records.reverse();
-
-    records.forEach(([name, item]) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
-      recordsBody.appendChild(tr);
-    });
-
-    totalCount.textContent = `總報名人數：${records.length}`;
+  loadingRecords.style.display = "none";
+  if (records.length === 0) {
+    recordsTable.style.display = "none";
+    totalCount.textContent = "總報名人數：0";
+    return;
   }
+
+  recordsTable.style.display = "table";
+  recordsBody.innerHTML = "";
+  records.reverse().forEach(([name, item]) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
+    recordsBody.appendChild(tr);
+  });
+
+  // ✅ 加一行空白列
+  const blankRow = document.createElement("tr");
+  blankRow.innerHTML = `<td colspan="2" style="height: 1.5em;"></td>`;
+  recordsBody.appendChild(blankRow);
+
+  totalCount.textContent = `總報名人數：${records.length}`;
+  submitBtn.disabled = false;
+}
+
 </script>
+
 
 </body>
 </html>
