@@ -6,7 +6,6 @@
   <title>彥彬 祭改報名系統</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    /* === 样式同你原來的，略 === */
     body {
       font-family: 'Helvetica Neue', sans-serif;
       margin: 0; padding: 20px;
@@ -192,14 +191,13 @@
     liff.init({ liffId: LIFF_ID })
       .then(() => {
         if (liff.isLoggedIn()) {
-             liff.getProfile()
-             .then(profile => {
-             userId = profile.userId;
+          liff.getProfile()
+            .then(profile => {
+              userId = profile.userId;
               nameInput.value = profile.displayName || "";
-              nameInput.readOnly = true; // （選擇性）不讓使用者改名
+              nameInput.readOnly = true;
               loadRecords();
             })
-
             .catch(() => {
               successMsg.style.color = "red";
               successMsg.textContent = "❌ 無法取得使用者資料";
@@ -298,32 +296,29 @@
   }
 
   function renderRecords(records) {
-  loadingRecords.style.display = "none";
-  if (records.length === 0) {
-    recordsTable.style.display = "none";
-    totalCount.textContent = "總報名人數：0";
-    return;
+    loadingRecords.style.display = "none";
+    if (records.length === 0) {
+      recordsTable.style.display = "none";
+      totalCount.textContent = "總報名人數：0";
+      return;
+    }
+
+    recordsTable.style.display = "table";
+    recordsBody.innerHTML = "";
+    records.reverse().forEach(([name, item]) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
+      recordsBody.appendChild(tr);
+    });
+
+    const blankRow = document.createElement("tr");
+    blankRow.innerHTML = `<td colspan="2" style="height: 1.5em;"></td>`;
+    recordsBody.appendChild(blankRow);
+
+    totalCount.textContent = `總報名人數：${records.length}`;
+    submitBtn.disabled = false;
   }
-
-  recordsTable.style.display = "table";
-  recordsBody.innerHTML = "";
-  records.reverse().forEach(([name, item]) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
-    recordsBody.appendChild(tr);
-  });
-
-  // ✅ 加一行空白列
-  const blankRow = document.createElement("tr");
-  blankRow.innerHTML = `<td colspan="2" style="height: 1.5em;"></td>`;
-  recordsBody.appendChild(blankRow);
-
-  totalCount.textContent = `總報名人數：${records.length}`;
-  submitBtn.disabled = false;
-}
-
 </script>
-
 
 </body>
 </html>
