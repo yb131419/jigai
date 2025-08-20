@@ -194,11 +194,11 @@
 </table>
 
 <script>
- const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec"; // ←換成你自己的
+const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec";
 const LIFF_ID = "2007416974-JzvPy6DZ";
 
 let userId = "";
-let displayName = "";  // 新增變數
+let displayName = "";
 let existingNames = [];
 
 const form = document.getElementById("myForm");
@@ -222,7 +222,7 @@ window.onload = () => {
       if (liff.isLoggedIn()) {
         liff.getProfile().then(profile => {
           userId = profile.userId;
-          displayName = profile.displayName;  // 取得 LINE 名稱
+          displayName = profile.displayName;
           loadRecords();
         });
       } else {
@@ -269,7 +269,7 @@ form.addEventListener("submit", e => {
   formData.append("name", name);
   formData.append("item", itemString);
   formData.append("userId", userId);
-  formData.append("displayName", displayName);  // 新增送出 LINE 名稱
+  formData.append("displayName", displayName);
 
   successMsg.style.color = "#f9fafb";
   successMsg.textContent = existingNames.includes(name)
@@ -308,7 +308,7 @@ function loadRecords() {
   fetch(scriptURL + "?mode=read")
     .then(res => res.json())
     .then(data => {
-      if (data.records) {
+      if (data.lastRow && data.lastRow > 1 && data.records) {
         existingNames = data.records.map(r => r[0]);
         renderRecords(data.records);
       } else {
@@ -324,7 +324,7 @@ function loadRecords() {
 
 function renderRecords(records) {
   loadingRecords.style.display = "none";
-  if (records.length === 0) {
+  if (!records || records.length === 0) {
     recordsTable.style.display = "none";
     totalCount.textContent = "總報名人數：0";
     return;
@@ -332,9 +332,7 @@ function renderRecords(records) {
 
   recordsTable.style.display = "table";
   recordsBody.innerHTML = "";
-  records.reverse();
-
-  records.forEach(([name, item]) => {
+  records.slice().reverse().forEach(([name, item]) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
     recordsBody.appendChild(tr);
@@ -342,28 +340,6 @@ function renderRecords(records) {
 
   totalCount.textContent = `總報名人數：${records.length}`;
 }
-
-
-  function renderRecords(records) {
-    loadingRecords.style.display = "none";
-    if (records.length === 0) {
-      recordsTable.style.display = "none";
-      totalCount.textContent = "總報名人數：0";
-      return;
-    }
-
-    recordsTable.style.display = "table";
-    recordsBody.innerHTML = "";
-    records.reverse();
-
-    records.forEach(([name, item]) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
-      recordsBody.appendChild(tr);
-    });
-
-    totalCount.textContent = `總報名人數：${records.length}`;
-  }
 </script>
 
 </body>
