@@ -310,9 +310,11 @@ function loadRecords() {
   fetch(scriptURL + "?mode=read")
     .then(res => res.json())
     .then(data => {
-      if (data.records && data.records.length > 0) {
-        existingNames = data.records.map(r => r[0]);
-        renderRecords(data.records);
+      // 安全判斷，避免空資料或格式錯誤
+      const records = Array.isArray(data.records) ? data.records : [];
+      if (records.length > 0) {
+        existingNames = records.map(r => r[0]);
+        renderRecords(records);
       } else {
         existingNames = [];
         loadingRecords.textContent = "沒有資料";
@@ -328,7 +330,7 @@ function loadRecords() {
 }
 
 function renderRecords(records) {
-  if (!records || records.length === 0) {
+  if (!Array.isArray(records) || records.length === 0) {
     recordsTable.style.display = "none";
     loadingRecords.textContent = "沒有資料";
     totalCount.textContent = "總報名人數：0";
@@ -347,6 +349,7 @@ function renderRecords(records) {
 
   totalCount.textContent = `總報名人數：${records.length}`;
 }
+
 </script>
 
 
