@@ -303,35 +303,42 @@ form.addEventListener("submit", e => {
 
 function loadRecords() {
   loadingRecords.style.display = "block";
+  loadingRecords.textContent = "讀取中...";
   recordsTable.style.display = "none";
+  recordsBody.innerHTML = "";
 
   fetch(scriptURL + "?mode=read")
     .then(res => res.json())
     .then(data => {
-      if (data.lastRow && data.lastRow > 1 && data.records) {
+      if (data.records && data.records.length > 0) {
         existingNames = data.records.map(r => r[0]);
         renderRecords(data.records);
       } else {
+        existingNames = [];
         loadingRecords.textContent = "沒有資料";
+        recordsTable.style.display = "none";
         totalCount.textContent = "總報名人數：0";
       }
     })
     .catch(() => {
       loadingRecords.textContent = "❌ 無法載入資料";
       totalCount.textContent = "總報名人數：0";
+      recordsTable.style.display = "none";
     });
 }
 
 function renderRecords(records) {
-  loadingRecords.style.display = "none";
   if (!records || records.length === 0) {
     recordsTable.style.display = "none";
+    loadingRecords.textContent = "沒有資料";
     totalCount.textContent = "總報名人數：0";
     return;
   }
 
+  loadingRecords.style.display = "none";
   recordsTable.style.display = "table";
   recordsBody.innerHTML = "";
+
   records.slice().reverse().forEach(([name, item]) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
@@ -341,6 +348,7 @@ function renderRecords(records) {
   totalCount.textContent = `總報名人數：${records.length}`;
 }
 </script>
+
 
 </body>
 </html>
