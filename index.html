@@ -4,150 +4,368 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>彥彬📿 祭改系統</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- 引入圖標庫增強視覺 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    /* === 高級質感樣式 === */
+    /* === 全局樣式重置與基礎設定 === */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #1f2937;
+      --bg-quaternary: #272e3b;
+      --border-primary: #2c313a;
+      --border-secondary: #374151;
+      --text-primary: #f9fafb;
+      --text-secondary: #e5e7eb;
+      --text-tertiary: #9ca3af;
+      --accent-green: #10b981;
+      --accent-green-gradient: linear-gradient(to right, #10b981, #06c755);
+      --accent-blue: #60a5fa;
+      --accent-yellow: #facc15;
+      --accent-red: #ef4444;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.4);
+      --radius-sm: 8px;
+      --radius-md: 10px;
+      --radius-lg: 16px;
+      --transition-fast: 0.2s ease;
+      --transition-normal: 0.3s ease;
+    }
+
     body {
       font-family: 'Inter', 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #0d1117;
-      color: #e5e7eb;
+      background-color: var(--bg-primary);
+      color: var(--text-secondary);
       font-size: 16px;
+      line-height: 1.5;
+      padding: 20px;
+      min-height: 100vh;
+      background-image: radial-gradient(circle at 10% 20%, rgba(30, 35, 45, 0.5) 0%, transparent 90%);
     }
+
+    /* === 標題樣式 === */
     h1, h2 {
       text-align: center;
-      color: #f9fafb;
-      font-weight: 600;
+      color: var(--text-primary);
+      font-weight: 700;
+      position: relative;
+      margin-bottom: 30px;
     }
+
+    h1 {
+      font-size: 2.2rem;
+      letter-spacing: 1px;
+    }
+
+    h1::after {
+      content: '';
+      display: block;
+      width: 80px;
+      height: 3px;
+      background: var(--accent-green-gradient);
+      margin: 12px auto 0;
+      border-radius: 2px;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      margin-top: 40px;
+    }
+
+    h2::after {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 2px;
+      background: var(--accent-blue);
+      margin: 8px auto 0;
+      border-radius: 2px;
+    }
+
+    /* === 表單樣式 === */
     form {
       max-width: 520px;
-      margin: 30px auto;
-      background: linear-gradient(145deg, #161b22, #1c1f26);
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), inset 0 0 0.5px rgba(255, 255, 255, 0.05);
-      border: 1px solid #2c313a;
+      margin: 0 auto 30px;
+      background: linear-gradient(145deg, var(--bg-secondary), var(--bg-quaternary));
+      padding: 30px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg), inset 0 0 1px rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-primary);
+      position: relative;
+      overflow: hidden;
     }
+
+    form::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent-green-gradient);
+    }
+
     label {
       display: block;
-      margin-top: 18px;
+      margin-top: 20px;
       font-weight: 600;
-      color: #f3f4f6;
+      color: var(--text-primary);
+      font-size: 1rem;
     }
-    input[type="text"], button {
+
+    input[type="text"] {
       width: 100%;
-      padding: 14px;
-      margin-top: 8px;
-      border-radius: 10px;
-      border: 1px solid #374151;
-      background-color: #111827;
-      color: #f9fafb;
+      padding: 15px 18px;
+      margin-top: 10px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-secondary);
+      background-color: var(--bg-tertiary);
+      color: var(--text-primary);
       font-size: 17px;
-      box-sizing: border-box;
-      transition: all 0.3s ease;
-    }
-    input[type="text"]:focus {
-      border-color: #60a5fa;
+      transition: var(--transition-normal);
       outline: none;
-      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
     }
+
+    input[type="text"]:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15), inset 0 0 0 1px var(--accent-blue);
+      background-color: var(--bg-quaternary);
+      transform: translateY(-1px);
+    }
+
     input[type="text"]::placeholder {
-      color: #9ca3af;
+      color: var(--text-tertiary);
+      font-weight: 400;
+      font-size: 15px;
     }
+
     button {
-      background: linear-gradient(to right, #10b981, #06c755);
+      width: 100%;
+      padding: 16px;
+      margin-top: 28px;
+      border-radius: var(--radius-md);
       border: none;
-      font-weight: bold;
-      margin-top: 24px;
+      background: var(--accent-green-gradient);
+      color: var(--text-primary);
+      font-weight: 700;
+      font-size: 18px;
       cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: var(--transition-fast);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      position: relative;
+      overflow: hidden;
     }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: 0.6s ease;
+    }
+
     button:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
     }
+
+    button:hover::before {
+      left: 100%;
+    }
+
     button:disabled {
-      background-color: #4b5563;
+      background: var(--border-secondary);
       cursor: not-allowed;
-      opacity: 0.6;
+      opacity: 0.7;
+      transform: none;
+      box-shadow: none;
     }
+
+    /* === 複選框網格 === */
     .checkbox-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 15px;
+      gap: 14px;
+      margin-top: 18px;
     }
+
     .checkbox-grid label {
-      background-color: #1f2937;
-      border: 1px solid #374151;
-      border-radius: 10px;
-      padding: 12px;
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border-secondary);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
       font-weight: 500;
       cursor: pointer;
-      color: #e5e7eb;
+      color: var(--text-secondary);
       display: flex;
       align-items: center;
+      transition: var(--transition-normal);
+      margin-top: 0;
     }
+
     .checkbox-grid label:hover {
-      background-color: #374151;
+      background-color: var(--bg-quaternary);
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+      color: var(--text-primary);
     }
+
     .checkbox-grid input {
-      margin-right: 8px;
+      width: 18px;
+      height: 18px;
+      margin-right: 10px;
       cursor: pointer;
+      accent-color: var(--accent-green);
     }
+
     #otherInput {
       display: none;
+      margin-top: 10px;
     }
+
+    /* === 提示訊息 === */
     #successMsg {
       text-align: center;
       margin-top: 20px;
-      min-height: 24px;
-      color: #22c55e;
-      font-weight: bold;
-      text-shadow: 0 0 6px rgba(34, 197, 94, 0.3);
+      min-height: 28px;
+      font-weight: 600;
+      text-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+      font-size: 1.05rem;
+      transition: var(--transition-normal);
     }
+
+    /* === 表格樣式 === */
     table {
       width: 100%;
       max-width: 520px;
-      margin: 25px auto 0;
+      margin: 0 auto;
       border-collapse: collapse;
-      background: #1f2937;
-      border-radius: 14px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius-lg);
       overflow: hidden;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
-      color: #f9fafb;
+      box-shadow: var(--shadow-md);
+      color: var(--text-primary);
+      border: 1px solid var(--border-primary);
     }
+
     th, td {
-      border: 1px solid #374151;
-      padding: 14px;
+      border-bottom: 1px solid var(--border-secondary);
+      padding: 16px;
       text-align: center;
       font-size: 16px;
     }
+
     th {
-      background-color: #111827;
-      font-weight: 600;
+      background: linear-gradient(180deg, var(--bg-secondary), var(--bg-tertiary));
+      font-weight: 700;
+      color: var(--accent-blue);
+      position: relative;
     }
+
+    th:last-child {
+      border-left: 1px solid var(--border-secondary);
+    }
+
+    td {
+      background-color: var(--bg-tertiary);
+      transition: var(--transition-fast);
+    }
+
     td:nth-child(2) {
-      font-weight: bold;
-      color: #facc15;
-      text-shadow: 0 0 4px #facc15aa;
+      font-weight: 600;
+      color: var(--accent-yellow);
+      text-shadow: 0 0 6px rgba(250, 204, 21, 0.3);
+      border-left: 1px solid var(--border-secondary);
     }
+
+    tr:hover td {
+      background-color: var(--bg-quaternary);
+      transform: scale(1.01);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* === 載入與統計 === */
     #loadingRecords {
       text-align: center;
-      color: #9ca3af;
+      color: var(--text-tertiary);
       font-style: italic;
       margin-top: 10px;
+      font-size: 1rem;
+      /* 載入動畫 */
+      position: relative;
     }
+
+    #loadingRecords::after {
+      content: '';
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--text-tertiary);
+      border-top: 2px solid var(--accent-green);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     #totalCount {
       text-align: center;
-      font-size: 22px;
-      font-weight: bold;
-      color: #60a5fa;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent-blue);
       margin-top: 15px;
       margin-bottom: 10px;
-      text-shadow: 0 0 6px #3b82f6;
+      text-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+      letter-spacing: 0.5px;
+    }
+
+    /* === 響應式調整 === */
+    @media (max-width: 480px) {
+      body {
+        padding: 15px;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      form {
+        padding: 24px;
+      }
+
+      .checkbox-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      button {
+        padding: 14px;
+        font-size: 17px;
+      }
     }
   </style>
 </head>
@@ -159,7 +377,7 @@
   <label for="nameInput">姓名</label>
   <input type="text" id="nameInput" name="name" autocomplete="off" required />
 
-  <label>📜 祭改項目（可多選）</label>
+  <label><i class="ri-book-line"></i> 📜 祭改項目（可多選）</label>
   <div class="checkbox-grid">
     <label><input type="checkbox" name="item" value="補財庫">補財庫</label>
     <label><input type="checkbox" name="item" value="冤親債主">冤親債主</label>
@@ -174,7 +392,9 @@
   </div>
   <input type="text" id="otherInput" placeholder="請輸入其他項目" />
 
-  <button type="submit" id="submitBtn">送出報名</button>
+  <button type="submit" id="submitBtn">
+    <i class="ri-send-plane-line"></i> 送出報名
+  </button>
 </form>
 
 <div id="successMsg"></div>
@@ -231,7 +451,7 @@ window.onload = () => {
     })
     .catch(err => {
       alert("⚠️ LIFF 初始化失敗：" + err);
-      successMsg.style.color = "red";
+      successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "⚠️ LIFF 初始化失敗：" + err;
     });
 };
@@ -239,11 +459,11 @@ window.onload = () => {
 form.addEventListener("submit", e => {
   e.preventDefault();
   successMsg.textContent = "";
-  successMsg.style.color = "#f9fafb";
+  successMsg.style.color = "var(--text-primary)";
 
   const name = nameInput.value.trim();
   if (!name) {
-    successMsg.style.color = "red";
+    successMsg.style.color = "var(--accent-red)";
     successMsg.textContent = "請輸入姓名";
     return;
   }
@@ -258,7 +478,7 @@ form.addEventListener("submit", e => {
   }
 
   if (selectedItems.length === 0) {
-    successMsg.style.color = "red";
+    successMsg.style.color = "var(--accent-red)";
     successMsg.textContent = "請選擇至少一個項目";
     return;
   }
@@ -271,7 +491,7 @@ form.addEventListener("submit", e => {
   formData.append("userId", userId);
   formData.append("displayName", displayName);
 
-  successMsg.style.color = "#f9fafb";
+  successMsg.style.color = "var(--text-primary)";
   successMsg.textContent = existingNames.includes(name)
     ? "更新中..."
     : "送出中...";
@@ -285,18 +505,18 @@ form.addEventListener("submit", e => {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      successMsg.style.color = "lightgreen";
+      successMsg.style.color = "var(--accent-green)";
       successMsg.innerHTML = `✅ ${existingNames.includes(name) ? '更新成功' : '報名成功'}！<br>姓名：<strong>${name}</strong>`;
       form.reset();
       otherInput.style.display = "none";
       loadRecords();
     } else {
-      successMsg.style.color = "red";
+      successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "❌ 操作失敗：" + (data.message || "未知錯誤");
     }
   })
   .catch(() => {
-    successMsg.style.color = "red";
+    successMsg.style.color = "var(--accent-red)";
     successMsg.textContent = "❌ 網路或後端錯誤";
   });
 });
@@ -318,12 +538,15 @@ function loadRecords() {
       } else {
         existingNames = [];
         loadingRecords.textContent = "沒有資料";
+        // 移除載入動畫
+        loadingRecords.style.animation = "none";
         recordsTable.style.display = "none";
         totalCount.textContent = "總報名人數：0";
       }
     })
     .catch(() => {
       loadingRecords.textContent = "❌ 無法載入資料";
+      loadingRecords.style.animation = "none";
       totalCount.textContent = "總報名人數：0";
       recordsTable.style.display = "none";
     });
@@ -333,6 +556,7 @@ function renderRecords(records) {
   if (!Array.isArray(records) || records.length === 0) {
     recordsTable.style.display = "none";
     loadingRecords.textContent = "沒有資料";
+    loadingRecords.style.animation = "none";
     totalCount.textContent = "總報名人數：0";
     return;
   }
@@ -343,15 +567,12 @@ function renderRecords(records) {
 
   records.slice().reverse().forEach(([name, item]) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
+    tr.innerHTML = `<td>${name || '未知姓名'}</td><td>${item || '未選擇項目'}</td>`;
     recordsBody.appendChild(tr);
   });
 
   totalCount.textContent = `總報名人數：${records.length}`;
 }
-
 </script>
-
-
 </body>
 </html>
