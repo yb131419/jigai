@@ -274,7 +274,7 @@
       position: relative;
     }
 
-    th:last-child {
+    th:last-child, th:nth-child(3) {
       border-left: 1px solid var(--border-secondary);
     }
 
@@ -283,7 +283,7 @@
       transition: var(--transition-fast);
     }
 
-    td:nth-child(2) {
+    td:nth-child(2), td:nth-child(3) {
       font-weight: 600;
       color: var(--accent-yellow);
       text-shadow: 0 0 6px rgba(250, 204, 21, 0.3);
@@ -408,6 +408,7 @@
     <tr>
       <th>姓名</th>
       <th>項目</th>
+      <th>提交時間</th> <!-- 新增：時間欄位表頭 -->
     </tr>
   </thead>
   <tbody id="recordsBody"></tbody>
@@ -485,11 +486,24 @@ form.addEventListener("submit", e => {
 
   const itemString = selectedItems.join("、");
 
+  // 新增：獲取當前時間（格式化為 年-月-日 時:分:秒，支援台灣本地時間）
+  const now = new Date();
+  const submitTime = now.toLocaleString('zh-TW', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false // 使用24小時制，若要12小時制改為 true
+  });
+
   const formData = new URLSearchParams();
   formData.append("name", name);
   formData.append("item", itemString);
   formData.append("userId", userId);
   formData.append("displayName", displayName);
+  formData.append("submitTime", submitTime); // 新增：第5個欄位「時間」，鍵名為 submitTime（可自定義，需與後端對齊）
 
   successMsg.style.color = "var(--text-primary)";
   successMsg.textContent = existingNames.includes(name)
@@ -565,9 +579,14 @@ function renderRecords(records) {
   recordsTable.style.display = "table";
   recordsBody.innerHTML = "";
 
-  records.slice().reverse().forEach(([name, item]) => {
+  // 修改：渲染時新增時間欄位（若後端返回時間，則顯示；否則顯示「未知時間」）
+  records.slice().reverse().forEach(record => {
+    const name = record[0] || '未知姓名';
+    const item = record[1] || '未選擇項目';
+    const submitTime = record[2] || '未知時間'; // 對應後端返回的時間數據
+
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${name || '未知姓名'}</td><td>${item || '未選擇項目'}</td>`;
+    tr.innerHTML = `<td>${name}</td><td>${item}</td><td>${submitTime}</td>`;
     recordsBody.appendChild(tr);
   });
 
