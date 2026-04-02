@@ -6,7 +6,7 @@
   <title>彥彬📿 祭改系統</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
-  <script src="https://static.line-scdn.net/liff/2/sdk.js"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     * {
       margin: 0;
@@ -25,7 +25,7 @@
       --text-secondary: #e5e7eb;
       --text-tertiary: #9ca3af;
       --accent-green: #10b981;
-      --accent-green-gradient: linear-gradient(to right, #10b981, #06c555);
+      --accent-green-gradient: linear-gradient(to right, #10b981, #06c755);
       --accent-blue: #60a5fa;
       --accent-yellow: #facc15;
       --accent-red: #ef4444;
@@ -615,29 +615,18 @@ let isAdminLoading = false;
 let fullRecords = [];
 let isSubmitting = false;
 
+// 分頁變數
 let page = 1;
 const pageSize = 5;
 
+// DOM 元素
 let switchBtn, switchContainer, userPage, adminPage;
 let adminContent, adminAccessDenied;
 let loadRecordsBtn, batchDeleteBtn, clearAllBtn;
 let form, nameInput, chkOther, otherInput, successMsg;
 let loadingRecords, recordsTable, recordsBody, totalCount;
-let submitBtn;
 
-function formatTime(isoStr) {
-  if (!isoStr) return "";
-  const date = new Date(isoStr);
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  let h = date.getHours();
-  const mi = String(date.getMinutes()).padStart(2, '0');
-  const period = h >= 12 ? 'PM' : 'AM';
-  h = h % 12 || 12;
-  return `${y}-${m}-${d} ${period} ${h}:${mi}`;
-}
-
+// 切換頁面
 function togglePage() {
   currentPage = currentPage === "user" ? "admin" : "user";
   userPage.style.display = currentPage === "user" ? "block" : "none";
@@ -650,6 +639,7 @@ function togglePage() {
   }
 }
 
+// 管理員 loading 狀態
 function setAdminLoading(loading, btn = null) {
   isAdminLoading = loading;
   if (btn) {
@@ -658,14 +648,23 @@ function setAdminLoading(loading, btn = null) {
   }
 }
 
+// 驗證管理員
 function checkAdminByBackend() {
   if(!userId) return;
-  isAdmin = true;
-  switchContainer.style.display = "block";
-  adminAccessDenied.style.display = "none";
-  adminContent.style.display = "block";
+  fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`, { mode: 'no-cors' })
+    .then(res => {
+      isAdmin = true;
+      switchContainer.style.display = "block";
+      adminAccessDenied.style.display = "none";
+      adminContent.style.display = "block";
+    })
+    .catch(() => {
+      isAdmin = false;
+      switchContainer.style.display = "none";
+    });
 }
 
+// 載入全部記錄
 function loadAllRecords() {
   if(!isAdmin || isAdminLoading) return;
   setAdminLoading(true, loadRecordsBtn);
@@ -690,6 +689,7 @@ function loadAllRecords() {
   });
 }
 
+// 渲染管理列表（含分頁）
 function renderRecordsList(list) {
   const keyword = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
   let filtered = list || [];
@@ -727,15 +727,19 @@ function renderRecordsList(list) {
           <input type="checkbox" class="reserve-check" value="${start + idx}" onchange="toggleSelect('${start + idx}')">
         </div>
         <div class="reserve-btns">
-          <button onclick='editRecord(${JSON.stringify(item)})'>修改</button>
-          <button class="batch-delete-btn" onclick="deleteRecord('${start + idx}')">刪除</button>
+          <button onclick='editRecord(${JSON.stringify(item)})'>
+            <span class="loader"></span>修改
+          </button>
+          <button class="batch-delete-btn" onclick="deleteRecord('${start + idx}')">
+            <span class="loader"></span>刪除
+          </button>
         </div>
       </div>
       <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px; line-height:1.6;">
         祭改者：${item[0] || ''}<br>
         祭改項目：${item[1] || ''}<br>
-        填表者：${item[2] || ''}<br>
-        報名時間：${formatTime(item[3]) || ''}
+        填表者：${item[3] || ''}<br>
+        報名時間：${item[4] || ''}
       </div>
     </div>
   `).join('');
@@ -747,12 +751,14 @@ function renderRecordsList(list) {
   `;
 }
 
+// 上一頁
 function prevPage() {
   if(page <= 1) return;
   page--;
   renderRecordsList(fullRecords);
 }
 
+// 下一頁
 function nextPage() {
   const total = fullRecords.length;
   const totalPages = Math.ceil(total / pageSize);
@@ -761,15 +767,51 @@ function nextPage() {
   renderRecordsList(fullRecords);
 }
 
+// 勾選選取
 function toggleSelect(id) {
   const i = selectedItems.indexOf(id);
   i > -1 ? selectedItems.splice(i, 1) : selectedItems.push(id);
 }
 
+// 修改記錄
 function editRecord(item) {
-  alert("修改功能已暫停");
+  if(!isAdmin || isAdminLoading) return;
+  
+  const newName = prompt("修改祭改者", item[0] || "");
+  const newItem = prompt("修改祭改項目", item[1] || "");
+  const newDate = prompt("修改報名時間", item[4] || '');
+  
+  if(!newName || !newItem){
+    alert("請填寫完整資訊");
+    return;
+  }
+  
+  if(!confirm("確認修改？")) return;
+  
+  setAdminLoading(true);
+  const params = new URLSearchParams();
+  params.append("mode", "adminUpdate");
+  params.append("id", item.id || "0");
+  params.append("name", newName);
+  params.append("item", newItem);
+  params.append("date", newDate);
+  params.append("lineId", userId);
+  
+  fetch(scriptURL, {
+    method: "POST",
+    mode: 'no-cors',
+    body: params,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+  })
+  .then(res => {
+    alert("修改成功");
+    loadAllRecords();
+    loadRecords();
+  })
+  .finally(() => setAdminLoading(false));
 }
 
+// 刪除單筆
 function deleteRecord(id) {
   if(!isAdmin || isAdminLoading || !confirm("確定刪除？")) return;
   
@@ -782,33 +824,73 @@ function deleteRecord(id) {
   fetch(scriptURL, {
     method: "POST",
     mode: 'no-cors',
-    body: params
-  }).then(() => {
+    body: params,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+  })
+  .then(res => {
     alert("刪除成功");
     loadAllRecords();
     loadRecords();
-  }).finally(() => setAdminLoading(false));
+  })
+  .finally(() => setAdminLoading(false));
 }
 
+// 批次刪除
 function batchDeleteRecords() {
-  if(!isAdmin || selectedItems.length === 0 || !confirm("確定刪除？")) return;
-  alert("批次刪除成功");
-  selectedItems = [];
-  loadAllRecords();
-  loadRecords();
+  if(!isAdmin || isAdminLoading || selectedItems.length === 0 || !confirm(`確定刪除 ${selectedItems.length} 筆？`)) return;
+  
+  setAdminLoading(true, batchDeleteBtn);
+  let success = 0;
+  let total = selectedItems.length;
+  
+  selectedItems.forEach(id => {
+    const params = new URLSearchParams();
+    params.append("mode", "adminDelete");
+    params.append("id", id);
+    params.append("lineId", userId);
+    
+    fetch(scriptURL, {
+      method: "POST",
+      mode: 'no-cors',
+      body: params,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }
+    })
+    .then(res => {
+      success++;
+    })
+    .finally(() => {
+      if(success === total){
+        alert(`成功刪除 ${success} 筆`);
+        selectedItems = [];
+        loadAllRecords();
+        loadRecords();
+        setAdminLoading(false, batchDeleteBtn);
+      }
+    });
+  });
 }
 
+// 工作表1 全部清除
 function clearAllSheet1() {
-  if(!confirm("確定清除全部？")) return;
+  if(!isAdmin || isAdminLoading || !confirm("確定清除工作表1所有資料？此操作無法復原！")) return;
+  setAdminLoading(true, clearAllBtn);
+  
+  const params = new URLSearchParams();
+  params.append("mode", "clearAll");
+  params.append("lineId", userId);
+  
   fetch(scriptURL, {
     method: "POST",
     mode: 'no-cors',
-    body: new URLSearchParams({mode:"clearAll",lineId:userId})
-  }).then(() => {
-    alert("清除成功");
+    body: params,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+  })
+  .then(() => {
+    alert("工作表1已全部清除");
     loadAllRecords();
     loadRecords();
   })
+  .finally(() => setAdminLoading(false, clearAllBtn));
 }
 
 window.onload = () => {
@@ -831,26 +913,30 @@ window.onload = () => {
   recordsTable = document.getElementById("recordsTable");
   recordsBody = document.getElementById("recordsBody");
   totalCount = document.getElementById("totalCount");
-  submitBtn = document.getElementById("submitBtn");
 
   switchBtn.onclick = togglePage;
   loadRecordsBtn.onclick = loadAllRecords;
   batchDeleteBtn.onclick = batchDeleteRecords;
   clearAllBtn.onclick = clearAllSheet1;
 
-  liff.init({ liffId: LIFF_ID }).then(async () => {
-    if (!liff.isLoggedIn()) liff.login();
-    try {
-      const p = await liff.getProfile();
-      userId = p.userId;
-      displayName = p.displayName;
-    }catch{}
-    checkAdminByBackend();
-    loadRecords();
-  }).catch(() => {
-    checkAdminByBackend();
-    loadRecords();
-  });
+  liff.init({ liffId: LIFF_ID })
+    .then(async () => {
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+      const profile = await liff.getProfile();
+      if(profile){
+        userId = profile.userId;
+        displayName = profile.displayName;
+        checkAdminByBackend();
+      }
+      loadRecords();
+    })
+    .catch(err => {
+      console.log("LIFF 初始化失敗：", err);
+      loadRecords();
+    });
 
   chkOther.addEventListener("change", () => {
     otherInput.style.display = chkOther.checked ? "block" : "none";
@@ -859,13 +945,16 @@ window.onload = () => {
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    
     if(isSubmitting) return;
     isSubmitting = true;
     submitBtn.disabled = true;
+    
     successMsg.textContent = "";
-
+    successMsg.style.color = "";
     const name = nameInput.value.trim();
-    if(!name){
+
+    if (!name) {
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "請輸入姓名";
       isSubmitting = false;
@@ -873,88 +962,116 @@ window.onload = () => {
       return;
     }
 
-    let items = Array.from(document.querySelectorAll('input[name="item"]:checked')).map(c=>c.value).filter(v=>v!="其他");
-    if(chkOther.checked && otherInput.value.trim()) items.push(otherInput.value.trim());
-    if(items.length===0){
+    let selectedItems = Array.from(document.querySelectorAll('input[name="item"]:checked'))
+      .map(cb => cb.value)
+      .filter(v => v !== "其他");
+
+    if (chkOther.checked) {
+      const otherVal = otherInput.value.trim();
+      if (otherVal) selectedItems.push(otherVal);
+    }
+
+    if (selectedItems.length === 0) {
       successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "請選擇項目";
+      successMsg.textContent = "請選擇至少一個項目";
       isSubmitting = false;
       submitBtn.disabled = false;
       return;
     }
 
     try {
-      const res = await fetch(scriptURL+"?mode=read");
-      const data = JSON.parse(await res.text());
-      const records = data.records||[];
-      if(records.some(r=>(r[0]||"").trim()===name.trim())){
+      const res = await fetch(scriptURL + "?mode=read&_="+Date.now());
+      const text = await res.text();
+      const data = JSON.parse(text);
+      const records = Array.isArray(data.records) ? data.records : [];
+      const exists = records.some(r => (r[0] || "").trim() === name.trim());
+      
+      if (exists) {
         successMsg.style.color = "var(--accent-red)";
-        successMsg.textContent = "已報名過";
+        successMsg.textContent = "❌ 此姓名已報名，不可重複";
         isSubmitting = false;
         submitBtn.disabled = false;
         return;
       }
 
-      await fetch(scriptURL, {
-        method:"POST",
-        mode:'no-cors',
-        body: new URLSearchParams({
-          mode:"submit",
-          name:name,
-          item:items.join("、"),
-          userId:userId,
-          displayName:displayName
-        })
-      });
+      const itemString = selectedItems.join("、");
+      const formData = new URLSearchParams();
+      formData.append("mode", "submit");
+      formData.append("name", name);
+      formData.append("item", itemString);
+      formData.append("userId", userId);
+      formData.append("displayName", displayName);
 
+      successMsg.textContent = "送出中...";
+
+      await fetch(scriptURL, {
+        method: "POST",
+        body: formData,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      });
+      
       successMsg.style.color = "var(--accent-green)";
-      successMsg.textContent = "✅ 報名成功";
+      successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
       form.reset();
       otherInput.style.display = "none";
       loadRecords();
-    }catch(e){
+      
+    } catch (err) {
       successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "報名失敗，請重試";
-    }finally{
+      successMsg.textContent = "❌ 網路錯誤，請稍後再試";
+      isSubmitting = false;
+      submitBtn.disabled = false;
+    } finally {
       isSubmitting = false;
       submitBtn.disabled = false;
     }
   });
 };
 
+// 載入記錄
 function loadRecords() {
   loadingRecords.style.display = "block";
   recordsTable.style.display = "none";
+  recordsBody.innerHTML = "";
 
-  fetch(scriptURL+"?mode=read&_="+Date.now())
-  .then(r=>r.text())
-  .then(t=>{
+  fetch(scriptURL + "?mode=read&_="+Date.now())
+  .then(res => res.text())
+  .then(text => {
     try {
-      const data = JSON.parse(t);
-      const list = data.records||[];
-      totalCount.textContent = "總報名人數："+list.length;
-      if(list.length>0){
-        renderRecords(list);
-      }else{
-        loadingRecords.textContent = "目前無資料";
+      const data = JSON.parse(text);
+      const records = Array.isArray(data.records) ? data.records : [];
+      totalCount.textContent = `總報名人數：${records.length}`;
+      
+      if (records.length > 0) {
+        renderRecords(records);
+      } else {
+        loadingRecords.textContent = "目前沒有報名資料";
       }
-    }catch(e){
-      loadingRecords.textContent = "目前無資料";
+    } catch (e) {
+      loadingRecords.textContent = "目前沒有報名資料";
+      totalCount.textContent = "總報名人數：0";
     }
-  }).catch(()=>{
-    loadingRecords.textContent = "目前無資料";
   })
+  .catch(() => {
+    loadingRecords.textContent = "目前沒有報名資料";
+    totalCount.textContent = "總報名人數：0";
+  });
 }
 
+// 渲染表格
 function renderRecords(records) {
   loadingRecords.style.display = "none";
   recordsTable.style.display = "table";
   recordsBody.innerHTML = "";
-  [...records].reverse().forEach(i=>{
+
+  [...records].reverse().forEach(item => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${i[0]||""}</td><td>${i[1]||""}</td>`;
+    tr.innerHTML = `
+      <td>${item[0] || ''}</td>
+      <td>${item[1] || ''}</td>
+    `;
     recordsBody.appendChild(tr);
-  })
+  });
 }
 </script>
 </body>
