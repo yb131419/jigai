@@ -738,8 +738,8 @@ function renderRecordsList(list) {
       <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px; line-height:1.6;">
         祭改者：${item[0] || ''}<br>
         祭改項目：${item[1] || ''}<br>
-        填表者：${item[2] || ''}<br>
-        報名時間：${item[3] || ''}
+        填表者：${item[3] || ''}<br>
+        報名時間：${item[4] || ''}
       </div>
     </div>
   `).join('');
@@ -779,7 +779,7 @@ function editRecord(item) {
   
   const newName = prompt("修改祭改者", item[0] || "");
   const newItem = prompt("修改祭改項目", item[1] || "");
-  const newDate = prompt("修改報名時間", item[3] || '');
+  const newDate = prompt("修改報名時間", item[4] || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
