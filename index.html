@@ -585,6 +585,7 @@ let currentPage = "user";
 let selectedItems = [];
 let isAdminLoading = false;
 let fullRecords = [];
+let isSubmitting = false;
 
 // DOM 元素
 let switchBtn, switchContainer, userPage, adminPage;
@@ -635,8 +636,11 @@ function loadAllRecords() {
   if(!isAdmin || isAdminLoading) return;
   setAdminLoading(true, loadRecordsBtn);
   
-  fetch(scriptURL + "?mode=read", { mode: 'no-cors' })
-    .then(res => res.json())
+  fetch(scriptURL + "?mode=read&_="+Date.now())
+    .then(res => {
+      if (!res.ok) throw new Error("網路異常");
+      return res.json();
+    })
     .then(data => {
       fullRecords = Array.isArray(data.records) ? data.records : [];
       renderRecordsList(fullRecords);
@@ -725,7 +729,6 @@ function editRecord(item) {
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -749,7 +752,6 @@ function deleteRecord(id) {
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -777,7 +779,6 @@ function batchDeleteRecords() {
     
     fetch(scriptURL, {
       method: "POST",
-      mode: 'no-cors',
       body: params,
       headers: { "Content-Type": "application/x-www-form-urlencoded" }
     })
@@ -807,7 +808,6 @@ function clearAllSheet1() {
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -875,18 +875,28 @@ window.onload = () => {
   });
 
   // 表單提交 + 名稱不可重複報名
-  form.addEventListener("submit", e => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    
+    // 防呆：重複點擊鎖定
+    if(isSubmitting) return;
+    isSubmitting = true;
+    submitBtn.disabled = true;
+    
     successMsg.textContent = "";
-    successMsg.style.color = "var(--text-primary)";
+    successMsg.style.color = "";
     const name = nameInput.value.trim();
 
+    // 防呆：姓名不能空白
     if (!name) {
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "請輸入姓名";
+      isSubmitting = false;
+      submitBtn.disabled = false;
       return;
     }
 
+    // 取得選擇項目
     let selectedItems = Array.from(document.querySelectorAll('input[name="item"]:checked'))
       .map(cb => cb.value)
       .filter(v => v !== "其他");
@@ -896,90 +906,105 @@ window.onload = () => {
       if (otherVal) selectedItems.push(otherVal);
     }
 
+    // 防呆：至少選一個項目
     if (selectedItems.length === 0) {
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "請選擇至少一個項目";
+      isSubmitting = false;
+      submitBtn.disabled = false;
       return;
     }
 
-    // 檢查姓名重複
-    fetch(scriptURL + "?mode=read", { mode: 'no-cors' })
-      .then(res => res.json())
-      .then(data => {
-        const exists = data.records?.some(r => r.name === name);
-        if (exists) {
-          successMsg.style.color = "var(--accent-red)";
-          successMsg.textContent = "❌ 此姓名已報名，不可重複";
-          return;
-        }
+    try {
+      // 檢查姓名重複
+      const res = await fetch(scriptURL + "?mode=read&_="+Date.now());
+      const data = await res.json();
+      const exists = data.records?.some(r => r.name.trim() === name.trim());
+      
+      if (exists) {
+        successMsg.style.color = "var(--accent-red)";
+        successMsg.textContent = "❌ 此姓名已報名，不可重複";
+        isSubmitting = false;
+        submitBtn.disabled = false;
+        return;
+      }
 
-        // 送出報名
-        const itemString = selectedItems.join("、");
-        const formData = new URLSearchParams();
-        formData.append("name", name);
-        formData.append("item", itemString);
-        formData.append("userId", userId);
-        formData.append("displayName", displayName);
-        formData.append("submitTime", new Date().toLocaleString());
+      // 送出報名
+      const itemString = selectedItems.join("、");
+      const formData = new URLSearchParams();
+      formData.append("name", name);
+      formData.append("item", itemString);
+      formData.append("userId", userId);
+      formData.append("displayName", displayName);
+      formData.append("submitTime", new Date().toLocaleString());
 
-        successMsg.textContent = "送出中...";
+      successMsg.textContent = "送出中...";
 
-        fetch(scriptURL, {
-          method: "POST",
-          mode: 'no-cors',
-          body: formData,
-          headers: { "Content-Type": "application/x-www-form-urlencoded" }
-        })
-        .then(() => {
-          successMsg.style.color = "var(--accent-green)";
-          successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
-          form.reset();
-          otherInput.style.display = "none";
-          loadRecords();
-        })
-        .catch(() => {
-          successMsg.style.color = "var(--accent-red)";
-          successMsg.textContent = "❌ 網路錯誤";
-        });
+      await fetch(scriptURL, {
+        method: "POST",
+        body: formData,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
       });
+      
+      successMsg.style.color = "var(--accent-green)";
+      successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
+      form.reset();
+      otherInput.style.display = "none";
+      loadRecords();
+      
+    } catch (err) {
+      successMsg.style.color = "var(--accent-red)";
+      successMsg.textContent = "❌ 網路錯誤，請稍後再試";
+    } finally {
+      isSubmitting = false;
+      submitBtn.disabled = false;
+    }
   });
 };
 
+// 載入記錄（修正版）
 function loadRecords() {
   loadingRecords.style.display = "block";
   recordsTable.style.display = "none";
   recordsBody.innerHTML = "";
 
-  fetch(scriptURL + "?mode=read", { mode: 'no-cors' })
-    .then(res => res.json())
+  fetch(scriptURL + "?mode=read&_="+Date.now())
+    .then(res => {
+      if (!res.ok) throw new Error("網路異常");
+      return res.json();
+    })
     .then(data => {
       const records = Array.isArray(data.records) ? data.records : [];
+      totalCount.textContent = `總報名人數：${records.length}`;
+      
       if (records.length > 0) {
         renderRecords(records);
       } else {
-        loadingRecords.textContent = "沒有資料";
-        totalCount.textContent = "總報名人數：0";
+        loadingRecords.textContent = "目前沒有報名資料";
       }
     })
     .catch(() => {
-      loadingRecords.textContent = "❌ 無法載入資料";
+      loadingRecords.textContent = "❌ 無法載入資料，請重新整理";
       totalCount.textContent = "總報名人數：0";
     });
 }
 
+// 渲染表格（修正版）
 function renderRecords(records) {
   loadingRecords.style.display = "none";
   recordsTable.style.display = "table";
   recordsBody.innerHTML = "";
 
-  records.slice().reverse().forEach(([name, item]) => {
+  // 倒序顯示（最新的在上面）
+  [...records].reverse().forEach(item => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${name || '未知姓名'}</td><td>${item || '未選擇項目'}</td>`;
+    tr.innerHTML = `
+      <td>${item.name || '未知姓名'}</td>
+      <td>${item.item || '未選擇項目'}</td>
+    `;
     recordsBody.appendChild(tr);
   });
-
-  totalCount.textContent = `總報名人數：${records.length}`;
 }
 </script>
 </body>
-</html> 
+</html>
