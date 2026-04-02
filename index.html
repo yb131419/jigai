@@ -339,11 +339,11 @@
       button { padding: 14px; font-size: 17px; }
     }
 
-    /* 管理員樣式 */
+    /* 管理員樣式 - 修正為右下角浮窗 */
     .top-bar {
       position: fixed;
-      top: 12px;
-      right: 15px;
+      bottom: 20px;
+      right: 20px;
       z-index: 999;
       display: flex;
       align-items: center;
@@ -353,15 +353,15 @@
       display: none;
     }
     .switch-btn {
-      padding: 10px 18px;
+      padding: 12px 22px;
       border-radius: 50px;
       background: #161b22;
       border: 1px solid #374151;
       color: #60a5fa;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
       transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .switch-btn:hover {
@@ -479,6 +479,7 @@
     }
     button.loading .loader {
       display: block;
+      margin: 0 auto;
     }
     @keyframes rotation {
       0% { transform: rotate(0deg); }
@@ -997,14 +998,20 @@ function loadRecords() {
         renderRecords(records);
       } else {
         loadingRecords.textContent = "目前沒有報名資料";
+        loadingRecords.style.display = "block";
+        recordsTable.style.display = "none";
       }
     } catch (e) {
       loadingRecords.textContent = "目前沒有報名資料";
+      loadingRecords.style.display = "block";
+      recordsTable.style.display = "none";
       totalCount.textContent = "總報名人數：0";
     }
   })
   .catch(() => {
     loadingRecords.textContent = "目前沒有報名資料";
+    loadingRecords.style.display = "block";
+    recordsTable.style.display = "none";
     totalCount.textContent = "總報名人數：0";
   });
 }
