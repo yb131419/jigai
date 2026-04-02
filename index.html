@@ -615,12 +615,12 @@ let isAdminLoading = false;
 let fullRecords = [];
 let isSubmitting = false;
 
-// 分頁變數
-let page = 1;
+// 分頁變數獨立
+let adminPage = 1;
 const pageSize = 5;
 
 // DOM 元素
-let switchBtn, switchContainer, userPage, adminPage;
+let switchBtn, switchContainer, userPage, adminPageEl;
 let adminContent, adminAccessDenied;
 let loadRecordsBtn, batchDeleteBtn, clearAllBtn;
 let form, nameInput, chkOther, otherInput, successMsg;
@@ -651,11 +651,11 @@ function formatTWTime(isoString) {
 function togglePage() {
   currentPage = currentPage === "user" ? "admin" : "user";
   userPage.style.display = currentPage === "user" ? "block" : "none";
-  adminPage.style.display = currentPage === "admin" ? "block" : "none";
+  adminPageEl.style.display = currentPage === "admin" ? "block" : "none";
   switchBtn.textContent = currentPage === "admin" ? "返回報名頁面" : "切換管理介面";
   
   if(currentPage === "admin"){
-    page = 1;
+    adminPage = 1;
     loadAllRecords();
   }
 }
@@ -669,13 +669,26 @@ function setAdminLoading(loading, btn = null) {
   }
 }
 
-// 驗證管理員
-function checkAdminByBackend() {
+// 驗證管理員（修正：呼叫後端接口）
+async function checkAdminByBackend() {
   if(!userId) return;
-  isAdmin = true;
-  switchContainer.style.display = "block";
-  adminAccessDenied.style.display = "none";
-  adminContent.style.display = "block";
+  try {
+    const res = await fetch(scriptURL + "?action=checkAdmin&lineId=" + userId);
+    const data = await res.json();
+    isAdmin = data.isAdmin === true;
+  } catch (e) {
+    isAdmin = false;
+  }
+
+  if(isAdmin){
+    switchContainer.style.display = "block";
+    adminAccessDenied.style.display = "none";
+    adminContent.style.display = "block";
+  } else {
+    switchContainer.style.display = "none";
+    adminAccessDenied.style.display = "block";
+    adminContent.style.display = "none";
+  }
 }
 
 // 載入全部記錄
@@ -710,17 +723,17 @@ function renderRecordsList(list) {
   
   if(keyword){
     filtered = filtered.filter(item => 
-      (item.name?.toLowerCase().includes(keyword) || "") || 
-      (item.item?.toLowerCase().includes(keyword) || "")
+      (item[0]?.toLowerCase().includes(keyword) || "") || 
+      (item[1]?.toLowerCase().includes(keyword) || "")
     );
   }
   
   const total = filtered.length;
   const totalPages = Math.ceil(total / pageSize);
-  if(page < 1) page = 1;
-  if(page > totalPages && totalPages > 0) page = totalPages;
+  if(adminPage < 1) adminPage = 1;
+  if(adminPage > totalPages && totalPages > 0) adminPage = totalPages;
   
-  const start = (page - 1) * pageSize;
+  const start = (adminPage - 1) * pageSize;
   const end = start + pageSize;
   const paginatedData = filtered.slice(start, end);
   
@@ -738,37 +751,37 @@ function renderRecordsList(list) {
       <div class="reserve-header">
         <div class="reserve-left">
           <span class="reserve-num">${start + idx + 1}</span>
-          <input type="checkbox" class="reserve-check" value="${item.id}" onchange="toggleSelect('${item.id}')">
+          <input type="checkbox" class="reserve-check" value="${start + idx}" onchange="toggleSelect('${start + idx}')">
         </div>
         <div class="reserve-btns">
           <button onclick='editRecord(${JSON.stringify(item)})'>
             <span class="loader"></span>修改
           </button>
-          <button class="batch-delete-btn" onclick="deleteRecord('${item.id}')">
+          <button class="batch-delete-btn" onclick="deleteRecord('${start + idx}')">
             <span class="loader"></span>刪除
           </button>
         </div>
       </div>
       <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px; line-height:1.6;">
-        祭改者：${item.name || ''}<br>
-        祭改項目：${item.item || ''}<br>
-        填表者：${item.displayName || ''}<br>
-        報名時間：${formatTWTime(item.date) || ''}
+        祭改者：${item[0] || ''}<br>
+        祭改項目：${item[1] || ''}<br>
+        填表者：${item[3] || ''}<br>
+        報名時間：${formatTWTime(item[4]) || ''}
       </div>
     </div>
   `).join('');
   
   pagination.innerHTML = `
-    <button class="page-btn" onclick="prevPage()" ${page === 1 ? 'disabled' : ''}>上一頁</button>
-    <span>${page} / ${totalPages}</span>
-    <button class="page-btn" onclick="nextPage()" ${page === totalPages ? 'disabled' : ''}>下一頁</button>
+    <button class="page-btn" onclick="prevPage()" ${adminPage === 1 ? 'disabled' : ''}>上一頁</button>
+    <span>${adminPage} / ${totalPages}</span>
+    <button class="page-btn" onclick="nextPage()" ${adminPage === totalPages ? 'disabled' : ''}>下一頁</button>
   `;
 }
 
 // 上一頁
 function prevPage() {
-  if(page <= 1) return;
-  page--;
+  if(adminPage <= 1) return;
+  adminPage--;
   renderRecordsList(fullRecords);
 }
 
@@ -776,8 +789,8 @@ function prevPage() {
 function nextPage() {
   const total = fullRecords.length;
   const totalPages = Math.ceil(total / pageSize);
-  if(page >= totalPages) return;
-  page++;
+  if(adminPage >= totalPages) return;
+  adminPage++;
   renderRecordsList(fullRecords);
 }
 
@@ -791,9 +804,9 @@ function toggleSelect(id) {
 function editRecord(item) {
   if(!isAdmin || isAdminLoading) return;
   
-  const newName = prompt("修改祭改者", item.name || "");
-  const newItem = prompt("修改祭改項目", item.item || "");
-  const newDate = prompt("修改報名時間", item.date || '');
+  const newName = prompt("修改祭改者", item[0] || "");
+  const newItem = prompt("修改祭改項目", item[1] || "");
+  const newDate = prompt("修改報名時間", item[4] || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
@@ -907,7 +920,7 @@ window.onload = () => {
   switchBtn = document.getElementById('switchBtn');
   switchContainer = document.getElementById('switchContainer');
   userPage = document.getElementById('userPage');
-  adminPage = document.getElementById('adminPage');
+  adminPageEl = document.getElementById('adminPage');
   adminContent = document.getElementById('adminContent');
   adminAccessDenied = document.getElementById('adminAccessDenied');
   loadRecordsBtn = document.getElementById('loadRecordsBtn');
@@ -940,7 +953,7 @@ window.onload = () => {
       if(profile){
         userId = profile.userId;
         displayName = profile.displayName;
-        checkAdminByBackend();
+        await checkAdminByBackend();
       }
       loadRecords();
     })
@@ -998,7 +1011,7 @@ window.onload = () => {
       const records = Array.isArray(data.records) ? data.records : [];
       
       // 強化重複判斷
-      const exists = records.some(r => (r.name || "").trim().toLowerCase() === name.trim().toLowerCase());
+      const exists = records.some(r => (r[0] || "").trim().toLowerCase() === name.trim().toLowerCase());
       
       if (exists) {
         successMsg.style.color = "var(--accent-red)";
@@ -1010,6 +1023,7 @@ window.onload = () => {
 
       const itemString = selectedItems.join("、");
       const formData = new URLSearchParams();
+      formData.append("mode", "submit");
       formData.append("name", name);
       formData.append("item", itemString);
       formData.append("userId", userId);
@@ -1039,7 +1053,7 @@ window.onload = () => {
     } catch (err) {
       console.error(err);
       successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "❌ 網路異常，請檢查網路後重試";
+      successMsg.textContent = "❌ 網路錯誤，請稍後再試";
     } finally {
       isSubmitting = false;
       submitBtn.disabled = false;
@@ -1086,8 +1100,8 @@ function renderRecords(records) {
   [...records].reverse().forEach(item => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${item.name || ''}</td>
-      <td>${item.item || ''}</td>
+      <td>${item[0] || ''}</td>
+      <td>${item[1] || ''}</td>
     `;
     recordsBody.appendChild(tr);
   });
