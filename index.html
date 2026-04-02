@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>彥彬📿 祭改系統</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400,500,600,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://static.line-scdn.net/liff/2/sdk.js"></script>
   <style>
     * {
       margin: 0;
@@ -626,6 +626,20 @@ let loadRecordsBtn, batchDeleteBtn, clearAllBtn;
 let form, nameInput, chkOther, otherInput, successMsg;
 let loadingRecords, recordsTable, recordsBody, totalCount;
 
+// 時間格式化函式 (2026-04-02 PM 15:17)
+function formatTime(isoStr) {
+  if (!isoStr) return "";
+  const date = new Date(isoStr);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  let h = date.getHours();
+  const mi = String(date.getMinutes()).padStart(2, '0');
+  const period = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${y}-${m}-${d} ${period} ${h}:${mi}`;
+}
+
 // 切換頁面
 function togglePage() {
   currentPage = currentPage === "user" ? "admin" : "user";
@@ -738,8 +752,8 @@ function renderRecordsList(list) {
       <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px; line-height:1.6;">
         祭改者：${item[0] || ''}<br>
         祭改項目：${item[1] || ''}<br>
-        填表者：${item[3] || ''}<br>
-        報名時間：${item[4] || ''}
+        填表者：${item[2] || ''}<br>
+        報名時間：${formatTime(item[3]) || ''}
       </div>
     </div>
   `).join('');
@@ -779,7 +793,7 @@ function editRecord(item) {
   
   const newName = prompt("修改祭改者", item[0] || "");
   const newItem = prompt("修改祭改項目", item[1] || "");
-  const newDate = prompt("修改報名時間", item[4] || '');
+  const newDate = prompt("修改報名時間", item[3] || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
@@ -1006,6 +1020,7 @@ window.onload = () => {
 
       await fetch(scriptURL, {
         method: "POST",
+        mode: 'no-cors',
         body: formData,
         headers: { "Content-Type": "application/x-www-form-urlencoded" }
       });
