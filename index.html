@@ -582,7 +582,7 @@
 </div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec";
+const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypT/exec";
 const LIFF_ID = "2007416974-JzvPy6DZ";
 let userId = "", displayName = "";
 let isAdmin = false;
@@ -637,15 +637,24 @@ function setAdminLoading(loading, btn = null) {
 function checkAdminByBackend() {
   if(!userId) return;
   fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`)
-    .then(res => {
-      isAdmin = true;
-      switchContainer.style.display = "block";
-      adminAccessDenied.style.display = "none";
-      adminContent.style.display = "block";
+    .then(res => res.json())
+    .then(data => {
+      isAdmin = data.isAdmin || false;
+      if (isAdmin) {
+        switchContainer.style.display = "block";
+        adminAccessDenied.style.display = "none";
+        adminContent.style.display = "block";
+      } else {
+        switchContainer.style.display = "none";
+        adminAccessDenied.style.display = "block";
+        adminContent.style.display = "none";
+      }
     })
     .catch(() => {
       isAdmin = false;
       switchContainer.style.display = "none";
+      adminAccessDenied.style.display = "block";
+      adminContent.style.display = "none";
     });
 }
 
@@ -676,8 +685,8 @@ function renderRecordsList(list) {
   
   if(keyword){
     filtered = filtered.filter(item => 
-      item.name.toLowerCase().includes(keyword) || 
-      item.item.toLowerCase().includes(keyword)
+      (item.name || "").toLowerCase().includes(keyword) || 
+      (item.item || "").toLowerCase().includes(keyword)
     );
   }
   
@@ -704,9 +713,9 @@ function renderRecordsList(list) {
         </div>
       </div>
       <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px;">
-        姓名：${item.name}<br>
-        項目：${item.item}<br>
-        日期：${item.date || ''}
+        姓名：${item.name || '未填寫'}<br>
+        項目：${item.item || '未選擇'}<br>
+        日期：${item.date || '未設定'}
       </div>
     </div>
   `).join('');
@@ -722,8 +731,8 @@ function toggleSelect(id) {
 function editRecord(item) {
   if(!isAdmin || isAdminLoading) return;
   
-  const newName = prompt("修改姓名", item.name);
-  const newItem = prompt("修改項目", item.item);
+  const newName = prompt("修改姓名", item.name || "");
+  const newItem = prompt("修改項目", item.item || "");
   const newDate = prompt("修改日期(格式：yyyy/MM/dd aa hh:mm:ss)", item.date || '');
   
   if(!newName || !newItem){
