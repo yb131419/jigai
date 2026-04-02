@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>彥彬📿 祭改系統</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500,600,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
@@ -627,6 +627,26 @@ let form, nameInput, chkOther, otherInput, successMsg;
 let loadingRecords, recordsTable, recordsBody, totalCount;
 let submitBtn;
 
+// 時間格式化（台灣時間）
+function formatTWTime(isoString) {
+  if (!isoString) return "";
+  try {
+    const date = new Date(isoString);
+    return date.toLocaleString("zh-TW", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+      timeZone: "Asia/Taipei"
+    });
+  } catch (e) {
+    return isoString;
+  }
+}
+
 // 切換頁面
 function togglePage() {
   currentPage = currentPage === "user" ? "admin" : "user";
@@ -683,7 +703,7 @@ function loadAllRecords() {
   });
 }
 
-// 渲染管理列表（含分頁）
+// 渲染管理列表（含分頁 + 時間格式化）
 function renderRecordsList(list) {
   const keyword = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
   let filtered = list || [];
@@ -733,7 +753,7 @@ function renderRecordsList(list) {
         祭改者：${item[0] || ''}<br>
         祭改項目：${item[1] || ''}<br>
         填表者：${item[3] || ''}<br>
-        報名時間：${item[4] || ''}
+        報名時間：${formatTWTime(item[4]) || ''}
       </div>
     </div>
   `).join('');
@@ -793,7 +813,6 @@ function editRecord(item) {
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -817,7 +836,6 @@ function deleteRecord(id) {
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -845,7 +863,6 @@ function batchDeleteRecords() {
     
     fetch(scriptURL, {
       method: "POST",
-      mode: 'no-cors',
       body: params,
       headers: { "Content-Type": "application/x-www-form-urlencoded" }
     })
@@ -875,7 +892,6 @@ function clearAllSheet1() {
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -938,6 +954,7 @@ window.onload = () => {
     if (!chkOther.checked) otherInput.value = "";
   });
 
+  // 修復報名提交（正常寫入試算表）
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     
@@ -1001,22 +1018,29 @@ window.onload = () => {
 
       successMsg.textContent = "送出中...";
 
-      // 關閉 no-cors，讓資料正確寫入試算表
-      await fetch(scriptURL, {
+      const response = await fetch(scriptURL, {
         method: "POST",
-        body: formData
+        body: formData,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
       });
       
-      successMsg.style.color = "var(--accent-green)";
-      successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
-      form.reset();
-      otherInput.style.display = "none";
-      loadRecords();
+      const result = await response.json();
+      
+      if (result.success) {
+        successMsg.style.color = "var(--accent-green)";
+        successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
+        form.reset();
+        otherInput.style.display = "none";
+        loadRecords();
+      } else {
+        successMsg.style.color = "var(--accent-red)";
+        successMsg.textContent = "❌ 報名失敗，請稍後再試";
+      }
       
     } catch (err) {
-      // 失敗提示
+      console.error(err);
       successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "❌ 報名失敗，請稍後再試";
+      successMsg.textContent = "❌ 網路錯誤，請稍後再試";
     } finally {
       isSubmitting = false;
       submitBtn.disabled = false;
