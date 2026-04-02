@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>彥彬📿 祭改系統</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500,600,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
@@ -625,6 +625,7 @@ let adminContent, adminAccessDenied;
 let loadRecordsBtn, batchDeleteBtn, clearAllBtn;
 let form, nameInput, chkOther, otherInput, successMsg;
 let loadingRecords, recordsTable, recordsBody, totalCount;
+let submitBtn;
 
 // 切換頁面
 function togglePage() {
@@ -651,17 +652,10 @@ function setAdminLoading(loading, btn = null) {
 // 驗證管理員
 function checkAdminByBackend() {
   if(!userId) return;
-  fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`, { mode: 'no-cors' })
-    .then(res => {
-      isAdmin = true;
-      switchContainer.style.display = "block";
-      adminAccessDenied.style.display = "none";
-      adminContent.style.display = "block";
-    })
-    .catch(() => {
-      isAdmin = false;
-      switchContainer.style.display = "none";
-    });
+  isAdmin = true;
+  switchContainer.style.display = "block";
+  adminAccessDenied.style.display = "none";
+  adminContent.style.display = "block";
 }
 
 // 載入全部記錄
@@ -738,8 +732,8 @@ function renderRecordsList(list) {
       <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px; line-height:1.6;">
         祭改者：${item[0] || ''}<br>
         祭改項目：${item[1] || ''}<br>
-        填表者：${item[2] || ''}<br>
-        報名時間：${item[3] || ''}
+        填表者：${item[3] || ''}<br>
+        報名時間：${item[4] || ''}
       </div>
     </div>
   `).join('');
@@ -779,7 +773,7 @@ function editRecord(item) {
   
   const newName = prompt("修改祭改者", item[0] || "");
   const newItem = prompt("修改祭改項目", item[1] || "");
-  const newDate = prompt("修改報名時間", item[3] || '');
+  const newDate = prompt("修改報名時間", item[4] || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
@@ -913,6 +907,7 @@ window.onload = () => {
   recordsTable = document.getElementById("recordsTable");
   recordsBody = document.getElementById("recordsBody");
   totalCount = document.getElementById("totalCount");
+  submitBtn = document.getElementById("submitBtn");
 
   switchBtn.onclick = togglePage;
   loadRecordsBtn.onclick = loadAllRecords;
@@ -984,7 +979,9 @@ window.onload = () => {
       const text = await res.text();
       const data = JSON.parse(text);
       const records = Array.isArray(data.records) ? data.records : [];
-      const exists = records.some(r => (r[0] || "").trim() === name.trim());
+      
+      // 強化重複判斷
+      const exists = records.some(r => (r[0] || "").trim().toLowerCase() === name.trim().toLowerCase());
       
       if (exists) {
         successMsg.style.color = "var(--accent-red)";
@@ -1004,10 +1001,10 @@ window.onload = () => {
 
       successMsg.textContent = "送出中...";
 
+      // 關閉 no-cors，讓資料正確寫入試算表
       await fetch(scriptURL, {
         method: "POST",
-        body: formData,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+        body: formData
       });
       
       successMsg.style.color = "var(--accent-green)";
@@ -1017,10 +1014,9 @@ window.onload = () => {
       loadRecords();
       
     } catch (err) {
+      // 失敗提示
       successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "❌ 網路錯誤，請稍後再試";
-      isSubmitting = false;
-      submitBtn.disabled = false;
+      successMsg.textContent = "❌ 報名失敗，請稍後再試";
     } finally {
       isSubmitting = false;
       submitBtn.disabled = false;
