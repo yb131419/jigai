@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>彥彬📿 祭改系統</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
@@ -610,17 +610,19 @@ function setAdminLoading(loading, btn = null) {
 
 // 驗證管理員
 function checkAdminByBackend() {
-  const s = document.createElement('script');
-  s.src = `${scriptURL}?action=checkAdmin&lineId=${userId}&callback=onAdminCheck&_=${Date.now()}`;
-  document.body.appendChild(s);
+  fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`)
+    .then(res => res.json())
+    .then(res => {
+      isAdmin = res?.isAdmin === true;
+      switchContainer.style.display = isAdmin ? "block" : "none";
+      adminAccessDenied.style.display = isAdmin ? "none" : "block";
+      adminContent.style.display = isAdmin ? "block" : "none";
+    })
+    .catch(() => {
+      isAdmin = false;
+      switchContainer.style.display = "none";
+    });
 }
-
-window.onAdminCheck = function(res) {
-  isAdmin = res?.isAdmin === true;
-  switchContainer.style.display = isAdmin ? "block" : "none";
-  adminAccessDenied.style.display = isAdmin ? "none" : "block";
-  adminContent.style.display = isAdmin ? "block" : "none";
-};
 
 // 載入全部記錄
 function loadAllRecords() {
@@ -797,10 +799,6 @@ function batchDeleteRecords() {
 }
 
 // ==================== 原本功能 ====================
-chkOther.addEventListener("change", () => {
-  otherInput.style.display = chkOther.checked ? "block" : "none";
-  !chkOther.checked && (otherInput.value = "");
-});
 
 window.onload = () => {
   // 初始化 DOM
@@ -831,81 +829,92 @@ window.onload = () => {
   liff.init({ liffId: LIFF_ID })
     .then(() => {
       if (liff.isLoggedIn()) {
-        liff.getProfile().then(profile => {
-          userId = profile.userId;
-          displayName = profile.displayName;
-          checkAdminByBackend();
-          loadRecords();
-        });
+        return liff.getProfile();
       } else {
         liff.login();
       }
     })
+    .then(profile => {
+      if(profile){
+        userId = profile.userId;
+        displayName = profile.displayName;
+        checkAdminByBackend();
+        loadRecords();
+      }
+    })
     .catch(err => {
-      alert("⚠️ LIFF 初始化失敗：" + err);
-    });
-};
-
-form.addEventListener("submit", e => {
-  e.preventDefault();
-  successMsg.textContent = "";
-  successMsg.style.color = "var(--text-primary)";
-  const name = nameInput.value.trim();
-
-  if (!name) {
-    successMsg.style.color = "var(--accent-red)";
-    successMsg.textContent = "請輸入姓名";
-    return;
-  }
-
-  let selectedItems = Array.from(document.querySelectorAll('input[name="item"]:checked'))
-    .map(cb => cb.value)
-    .filter(v => v !== "其他");
-
-  if (chkOther.checked) {
-    const otherVal = otherInput.value.trim();
-    otherVal && selectedItems.push(otherVal);
-  }
-
-  if (selectedItems.length === 0) {
-    successMsg.style.color = "var(--accent-red)";
-    successMsg.textContent = "請選擇至少一個項目";
-    return;
-  }
-
-  const itemString = selectedItems.join("、");
-  const formData = new URLSearchParams();
-  formData.append("name", name);
-  formData.append("item", itemString);
-  formData.append("userId", userId);
-  formData.append("displayName", displayName);
-
-  successMsg.textContent = "送出中...";
-
-  fetch(scriptURL, {
-    method: "POST",
-    body: formData,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    mode: "cors"
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      successMsg.style.color = "var(--accent-green)";
-      successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
-      form.reset();
-      otherInput.style.display = "none";
+      console.log("LIFF 初始化失敗：", err);
       loadRecords();
-    } else {
-      successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "❌ 操作失敗";
-    }
-  })
-  .catch(() => {
-    successMsg.style.color = "var(--accent-red)";
-    successMsg.textContent = "❌ 網路錯誤";
+    });
+
+  // 其他項目切換
+  chkOther.addEventListener("change", () => {
+    otherInput.style.display = chkOther.checked ? "block" : "none";
+    if (!chkOther.checked) otherInput.value = "";
   });
-});
+
+  // 表單提交
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    successMsg.textContent = "";
+    successMsg.style.color = "var(--text-primary)";
+    const name = nameInput.value.trim();
+
+    if (!name) {
+      successMsg.style.color = "var(--accent-red)";
+      successMsg.textContent = "請輸入姓名";
+      return;
+    }
+
+    let selectedItems = Array.from(document.querySelectorAll('input[name="item"]:checked'))
+      .map(cb => cb.value)
+      .filter(v => v !== "其他");
+
+    if (chkOther.checked) {
+      const otherVal = otherInput.value.trim();
+      if (otherVal) selectedItems.push(otherVal);
+    }
+
+    if (selectedItems.length === 0) {
+      successMsg.style.color = "var(--accent-red)";
+      successMsg.textContent = "請選擇至少一個項目";
+      return;
+    }
+
+    const itemString = selectedItems.join("、");
+    const formData = new URLSearchParams();
+    formData.append("name", name);
+    formData.append("item", itemString);
+    formData.append("userId", userId);
+    formData.append("displayName", displayName);
+    formData.append("submitTime", new Date().toLocaleString());
+
+    successMsg.textContent = "送出中...";
+
+    fetch(scriptURL, {
+      method: "POST",
+      body: formData,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        successMsg.style.color = "var(--accent-green)";
+        successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
+        form.reset();
+        otherInput.style.display = "none";
+        loadRecords();
+      } else {
+        successMsg.style.color = "var(--accent-red)";
+        successMsg.textContent = "❌ 操作失敗：" + (data.message || "");
+      }
+    })
+    .catch(() => {
+      successMsg.style.color = "var(--accent-red)";
+      successMsg.textContent = "❌ 網路錯誤";
+    });
+  });
+};
 
 function loadRecords() {
   loadingRecords.style.display = "block";
