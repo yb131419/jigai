@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>彥彬📿 祭改系統</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500,600,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
@@ -1001,12 +1001,10 @@ window.onload = () => {
 
       successMsg.textContent = "送出中...";
 
-      // 修正：加入 no-cors 解決網路錯誤
+      // 關閉 no-cors，讓資料正確寫入試算表
       await fetch(scriptURL, {
         method: "POST",
-        mode: "no-cors",
-        body: formData,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+        body: formData
       });
       
       successMsg.style.color = "var(--accent-green)";
@@ -1016,12 +1014,9 @@ window.onload = () => {
       loadRecords();
       
     } catch (err) {
-      // 因為 no-cors 會正常回傳，不會觸發錯誤
-      successMsg.style.color = "var(--accent-green)";
-      successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
-      form.reset();
-      otherInput.style.display = "none";
-      loadRecords();
+      // 失敗提示
+      successMsg.style.color = "var(--accent-red)";
+      successMsg.textContent = "❌ 報名失敗，請稍後再試";
     } finally {
       isSubmitting = false;
       submitBtn.disabled = false;
