@@ -598,15 +598,18 @@ let loadRecordsBtn, batchDeleteBtn, clearAllBtn, addSheet2Btn;
 let form, nameInput, chkOther, otherInput, successMsg;
 let loadingRecords, recordsTable, recordsBody, totalCount;
 
-// 統一標準日期格式 yyyy-MM-dd HH:mm:ss
+// 日期格式化函式 yyyy/MM/dd aa hh:mm:ss
 function formatDateTime(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
-  const hh = String(date.getHours()).padStart(2, '0');
+  let hh = date.getHours();
   const mm = String(date.getMinutes()).padStart(2, '0');
   const ss = String(date.getSeconds()).padStart(2, '0');
-  return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+  const aa = hh >= 12 ? '下午' : '上午';
+  hh = hh % 12 || 12;
+  hh = String(hh).padStart(2, '0');
+  return `${y}/${m}/${d} ${aa} ${hh}:${mm}:${ss}`;
 }
 
 // 切換頁面
@@ -646,7 +649,6 @@ function checkAdminByBackend() {
     });
 }
 
-// 載入全部記錄
 function loadAllRecords() {
   if(!isAdmin || isAdminLoading) return;
   setAdminLoading(true, loadRecordsBtn);
@@ -654,7 +656,7 @@ function loadAllRecords() {
   fetch(scriptURL + "?mode=read")
     .then(res => res.json())
     .then(data => {
-      fullRecords = Array.isArray(data) ? data : (data.records || []);
+      fullRecords = data?.records || []; 
       renderRecordsList(fullRecords);
     })
     .catch(() => {
@@ -665,7 +667,6 @@ function loadAllRecords() {
       setAdminLoading(false, loadRecordsBtn);
     });
 }
-
 // 渲染管理列表
 function renderRecordsList(list) {
   const keyword = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
@@ -673,8 +674,8 @@ function renderRecordsList(list) {
   
   if(keyword){
     filtered = filtered.filter(item => 
-      (item.name || '').toLowerCase().includes(keyword) || 
-      (item.item || '').toLowerCase().includes(keyword)
+      item.name.toLowerCase().includes(keyword) || 
+      item.item.toLowerCase().includes(keyword)
     );
   }
   
@@ -701,8 +702,8 @@ function renderRecordsList(list) {
         </div>
       </div>
       <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px;">
-        姓名：${item.name || ''}<br>
-        項目：${item.item || ''}<br>
+        姓名：${item.name}<br>
+        項目：${item.item}<br>
         日期：${item.date || ''}
       </div>
     </div>
@@ -721,7 +722,7 @@ function editRecord(item) {
   
   const newName = prompt("修改姓名", item.name);
   const newItem = prompt("修改項目", item.item);
-  const newDate = prompt("修改日期(格式：yyyy-MM-dd HH:mm:ss)", item.date || '');
+  const newDate = prompt("修改日期(格式：yyyy/MM/dd aa hh:mm:ss)", item.date || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
@@ -848,7 +849,7 @@ function addSheet2Record() {
   params.append("mode", "addSheet2");
   params.append("name", name);
   params.append("item", item);
-  params.append("date", "2026-04-29");
+  params.append("date", "2026/04/29");
   params.append("lineId", userId);
 
   fetch(scriptURL, {
@@ -952,8 +953,7 @@ window.onload = () => {
     fetch(scriptURL + "?mode=read")
       .then(res => res.json())
       .then(data => {
-        const records = Array.isArray(data) ? data : (data.records || []);
-        const exists = records.some(r => (r.name || '') === name);
+        const exists = data.records?.some(r => r.name === name);
         if (exists) {
           successMsg.style.color = "var(--accent-red)";
           successMsg.textContent = "❌ 此姓名已報名，不可重複";
@@ -999,7 +999,7 @@ function loadRecords() {
   fetch(scriptURL + "?mode=read")
     .then(res => res.json())
     .then(data => {
-      const records = Array.isArray(data) ? data : (data.records || []);
+      const records = Array.isArray(data.records) ? data.records : [];
       if (records.length > 0) {
         renderRecords(records);
       } else {
@@ -1020,7 +1020,7 @@ function renderRecords(records) {
 
   records.slice().reverse().forEach(item => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${item.name}</td><td>${item.item}</td>`;
+    tr.innerHTML = `<td>${item.name || '未知姓名'}</td><td>${item.item || '未選擇項目'}</td>`;
     recordsBody.appendChild(tr);
   });
 
