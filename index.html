@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>彥彬📿 祭改系統</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
@@ -339,6 +339,7 @@
       button { padding: 14px; font-size: 17px; }
     }
 
+    /* 管理員樣式 */
     .top-bar {
       position: fixed;
       top: 12px;
@@ -475,7 +476,6 @@
       border-radius: 50%;
       animation: rotation 1s linear infinite;
       display: none;
-      margin: auto;
     }
     button.loading .loader {
       display: block;
@@ -485,6 +485,7 @@
       100% { transform: rotate(360deg); }
     }
 
+    /* 分頁樣式 */
     .pagination {
       display: flex;
       justify-content: center;
@@ -521,6 +522,7 @@
   </div>
 </div>
 
+<!-- 一般使用者頁面 -->
 <div id="userPage">
   <h1>📝 祭改報名</h1>
 
@@ -565,6 +567,7 @@
   </table>
 </div>
 
+<!-- 管理員頁面 -->
 <div id="adminPage" class="admin-section">
   <h2>🔐 祭改管理後台</h2>
   <div id="adminAccessDenied" class="access-denied">
@@ -612,16 +615,18 @@ let isAdminLoading = false;
 let fullRecords = [];
 let isSubmitting = false;
 
+// 分頁變數
 let page = 1;
 const pageSize = 5;
 
+// DOM 元素
 let switchBtn, switchContainer, userPage, adminPage;
 let adminContent, adminAccessDenied;
 let loadRecordsBtn, batchDeleteBtn, clearAllBtn;
 let form, nameInput, chkOther, otherInput, successMsg;
 let loadingRecords, recordsTable, recordsBody, totalCount;
-let submitBtn;
 
+// 切換頁面
 function togglePage() {
   currentPage = currentPage === "user" ? "admin" : "user";
   userPage.style.display = currentPage === "user" ? "block" : "none";
@@ -634,6 +639,7 @@ function togglePage() {
   }
 }
 
+// 管理員 loading 狀態
 function setAdminLoading(loading, btn = null) {
   isAdminLoading = loading;
   if (btn) {
@@ -642,27 +648,23 @@ function setAdminLoading(loading, btn = null) {
   }
 }
 
-async function checkAdminByBackend() {
+// 驗證管理員
+function checkAdminByBackend() {
   if(!userId) return;
-  try {
-    const res = await fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`);
-    const data = await res.json();
-    isAdmin = data.isAdmin || false;
-  } catch (e) {
-    isAdmin = false;
-  }
-
-  if(isAdmin){
-    switchContainer.style.display = "block";
-    adminAccessDenied.style.display = "none";
-    adminContent.style.display = "block";
-  } else {
-    switchContainer.style.display = "none";
-    adminAccessDenied.style.display = "block";
-    adminContent.style.display = "none";
-  }
+  fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`, { mode: 'no-cors' })
+    .then(res => {
+      isAdmin = true;
+      switchContainer.style.display = "block";
+      adminAccessDenied.style.display = "none";
+      adminContent.style.display = "block";
+    })
+    .catch(() => {
+      isAdmin = false;
+      switchContainer.style.display = "none";
+    });
 }
 
+// 載入全部記錄
 function loadAllRecords() {
   if(!isAdmin || isAdminLoading) return;
   setAdminLoading(true, loadRecordsBtn);
@@ -687,6 +689,7 @@ function loadAllRecords() {
   });
 }
 
+// 渲染管理列表（含分頁）
 function renderRecordsList(list) {
   const keyword = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
   let filtered = list || [];
@@ -724,7 +727,7 @@ function renderRecordsList(list) {
           <input type="checkbox" class="reserve-check" value="${start + idx}" onchange="toggleSelect('${start + idx}')">
         </div>
         <div class="reserve-btns">
-          <button onclick='editRecord(${start + idx}, ${JSON.stringify(item)})'>
+          <button onclick='editRecord(${JSON.stringify(item)})'>
             <span class="loader"></span>修改
           </button>
           <button class="batch-delete-btn" onclick="deleteRecord('${start + idx}')">
@@ -735,8 +738,8 @@ function renderRecordsList(list) {
       <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px; line-height:1.6;">
         祭改者：${item[0] || ''}<br>
         祭改項目：${item[1] || ''}<br>
-        填表者：${item[3] || ''}<br>
-        報名時間：${item[4] || ''}
+        填表者：${item[2] || ''}<br>
+        報名時間：${item[3] || ''}
       </div>
     </div>
   `).join('');
@@ -748,12 +751,14 @@ function renderRecordsList(list) {
   `;
 }
 
+// 上一頁
 function prevPage() {
   if(page <= 1) return;
   page--;
   renderRecordsList(fullRecords);
 }
 
+// 下一頁
 function nextPage() {
   const total = fullRecords.length;
   const totalPages = Math.ceil(total / pageSize);
@@ -762,17 +767,19 @@ function nextPage() {
   renderRecordsList(fullRecords);
 }
 
+// 勾選選取
 function toggleSelect(id) {
   const i = selectedItems.indexOf(id);
   i > -1 ? selectedItems.splice(i, 1) : selectedItems.push(id);
 }
 
-async function editRecord(id, item) {
+// 修改記錄
+function editRecord(item) {
   if(!isAdmin || isAdminLoading) return;
   
   const newName = prompt("修改祭改者", item[0] || "");
   const newItem = prompt("修改祭改項目", item[1] || "");
-  const newDate = prompt("修改報名時間", item[4] || '');
+  const newDate = prompt("修改報名時間", item[3] || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
@@ -784,25 +791,28 @@ async function editRecord(id, item) {
   setAdminLoading(true);
   const params = new URLSearchParams();
   params.append("mode", "adminUpdate");
-  params.append("id", id);
+  params.append("id", item.id || "0");
   params.append("name", newName);
   params.append("item", newItem);
   params.append("date", newDate);
   params.append("lineId", userId);
   
-  try {
-    await fetch(scriptURL, { method: "POST", body: params });
+  fetch(scriptURL, {
+    method: "POST",
+    mode: 'no-cors',
+    body: params,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+  })
+  .then(res => {
     alert("修改成功");
     loadAllRecords();
     loadRecords();
-  } catch (e) {
-    alert("修改失敗");
-  } finally {
-    setAdminLoading(false);
-  }
+  })
+  .finally(() => setAdminLoading(false));
 }
 
-async function deleteRecord(id) {
+// 刪除單筆
+function deleteRecord(id) {
   if(!isAdmin || isAdminLoading || !confirm("確定刪除？")) return;
   
   setAdminLoading(true);
@@ -811,44 +821,57 @@ async function deleteRecord(id) {
   params.append("id", id);
   params.append("lineId", userId);
   
-  try {
-    await fetch(scriptURL, { method: "POST", body: params });
+  fetch(scriptURL, {
+    method: "POST",
+    mode: 'no-cors',
+    body: params,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+  })
+  .then(res => {
     alert("刪除成功");
     loadAllRecords();
     loadRecords();
-  } catch (e) {
-    alert("刪除失敗");
-  } finally {
-    setAdminLoading(false);
-  }
+  })
+  .finally(() => setAdminLoading(false));
 }
 
-async function batchDeleteRecords() {
+// 批次刪除
+function batchDeleteRecords() {
   if(!isAdmin || isAdminLoading || selectedItems.length === 0 || !confirm(`確定刪除 ${selectedItems.length} 筆？`)) return;
   
   setAdminLoading(true, batchDeleteBtn);
   let success = 0;
   let total = selectedItems.length;
-
-  for (let id of selectedItems) {
-    try {
-      const params = new URLSearchParams();
-      params.append("mode", "adminDelete");
-      params.append("id", id);
-      params.append("lineId", userId);
-      await fetch(scriptURL, { method: "POST", body: params });
-      success++;
-    } catch (e) {}
-  }
   
-  alert(`成功刪除 ${success} 筆`);
-  selectedItems = [];
-  loadAllRecords();
-  loadRecords();
-  setAdminLoading(false, batchDeleteBtn);
+  selectedItems.forEach(id => {
+    const params = new URLSearchParams();
+    params.append("mode", "adminDelete");
+    params.append("id", id);
+    params.append("lineId", userId);
+    
+    fetch(scriptURL, {
+      method: "POST",
+      mode: 'no-cors',
+      body: params,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }
+    })
+    .then(res => {
+      success++;
+    })
+    .finally(() => {
+      if(success === total){
+        alert(`成功刪除 ${success} 筆`);
+        selectedItems = [];
+        loadAllRecords();
+        loadRecords();
+        setAdminLoading(false, batchDeleteBtn);
+      }
+    });
+  });
 }
 
-async function clearAllSheet1() {
+// 工作表1 全部清除
+function clearAllSheet1() {
   if(!isAdmin || isAdminLoading || !confirm("確定清除工作表1所有資料？此操作無法復原！")) return;
   setAdminLoading(true, clearAllBtn);
   
@@ -856,16 +879,18 @@ async function clearAllSheet1() {
   params.append("mode", "clearAll");
   params.append("lineId", userId);
   
-  try {
-    await fetch(scriptURL, { method: "POST", body: params });
+  fetch(scriptURL, {
+    method: "POST",
+    mode: 'no-cors',
+    body: params,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+  })
+  .then(() => {
     alert("工作表1已全部清除");
     loadAllRecords();
     loadRecords();
-  } catch (e) {
-    alert("清除失敗");
-  } finally {
-    setAdminLoading(false, clearAllBtn);
-  }
+  })
+  .finally(() => setAdminLoading(false, clearAllBtn));
 }
 
 window.onload = () => {
@@ -888,7 +913,6 @@ window.onload = () => {
   recordsTable = document.getElementById("recordsTable");
   recordsBody = document.getElementById("recordsBody");
   totalCount = document.getElementById("totalCount");
-  submitBtn = document.getElementById("submitBtn");
 
   switchBtn.onclick = togglePage;
   loadRecordsBtn.onclick = loadAllRecords;
@@ -905,7 +929,7 @@ window.onload = () => {
       if(profile){
         userId = profile.userId;
         displayName = profile.displayName;
-        await checkAdminByBackend();
+        checkAdminByBackend();
       }
       loadRecords();
     })
@@ -960,8 +984,7 @@ window.onload = () => {
       const text = await res.text();
       const data = JSON.parse(text);
       const records = Array.isArray(data.records) ? data.records : [];
-      
-      const exists = records.some(r => (r[0] || "").trim().toLowerCase() === name.trim().toLowerCase());
+      const exists = records.some(r => (r[0] || "").trim() === name.trim());
       
       if (exists) {
         successMsg.style.color = "var(--accent-red)";
@@ -973,6 +996,7 @@ window.onload = () => {
 
       const itemString = selectedItems.join("、");
       const formData = new URLSearchParams();
+      formData.append("mode", "submit");
       formData.append("name", name);
       formData.append("item", itemString);
       formData.append("userId", userId);
@@ -980,30 +1004,23 @@ window.onload = () => {
 
       successMsg.textContent = "送出中...";
 
-      const response = await fetch(scriptURL, {
+      await fetch(scriptURL, {
         method: "POST",
-        body: formData
+        body: formData,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
       });
       
-      const result = await response.json();
-      
-      if (result.success) {
-        successMsg.style.color = "var(--accent-green)";
-        successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
-        form.reset();
-        otherInput.style.display = "none";
-        loadRecords();
-      } else {
-        successMsg.style.color = "var(--accent-red)";
-        successMsg.textContent = "❌ " + (result.message || "報名失敗");
-      }
-      
-    } catch (err) {
-      successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "✅ 報名成功！（後端同步中）";
+      successMsg.style.color = "var(--accent-green)";
+      successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
       form.reset();
       otherInput.style.display = "none";
       loadRecords();
+      
+    } catch (err) {
+      successMsg.style.color = "var(--accent-red)";
+      successMsg.textContent = "❌ 網路錯誤，請稍後再試";
+      isSubmitting = false;
+      submitBtn.disabled = false;
     } finally {
       isSubmitting = false;
       submitBtn.disabled = false;
@@ -1011,6 +1028,7 @@ window.onload = () => {
   });
 };
 
+// 載入記錄
 function loadRecords() {
   loadingRecords.style.display = "block";
   recordsTable.style.display = "none";
@@ -1040,6 +1058,7 @@ function loadRecords() {
   });
 }
 
+// 渲染表格
 function renderRecords(records) {
   loadingRecords.style.display = "none";
   recordsTable.style.display = "table";
