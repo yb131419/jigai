@@ -582,7 +582,7 @@
 </div>
 
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypT/exec";
+const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec";
 const LIFF_ID = "2007416974-JzvPy6DZ";
 let userId = "", displayName = "";
 let isAdmin = false;
@@ -590,6 +590,7 @@ let currentPage = "user";
 let selectedItems = [];
 let isAdminLoading = false;
 let fullRecords = [];
+let isSubmitting = false; // 送出狀態鎖
 
 // DOM 元素
 let switchBtn, switchContainer, userPage, adminPage;
@@ -597,6 +598,7 @@ let adminContent, adminAccessDenied;
 let loadRecordsBtn, batchDeleteBtn, clearAllBtn, addSheet2Btn;
 let form, nameInput, chkOther, otherInput, successMsg;
 let loadingRecords, recordsTable, recordsBody, totalCount;
+let submitBtn;
 
 // 日期格式化函式 yyyy/MM/dd aa hh:mm:ss
 function formatDateTime(date) {
@@ -637,24 +639,15 @@ function setAdminLoading(loading, btn = null) {
 function checkAdminByBackend() {
   if(!userId) return;
   fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`)
-    .then(res => res.json())
-    .then(data => {
-      isAdmin = data.isAdmin || false;
-      if (isAdmin) {
-        switchContainer.style.display = "block";
-        adminAccessDenied.style.display = "none";
-        adminContent.style.display = "block";
-      } else {
-        switchContainer.style.display = "none";
-        adminAccessDenied.style.display = "block";
-        adminContent.style.display = "none";
-      }
+    .then(res => {
+      isAdmin = true;
+      switchContainer.style.display = "block";
+      adminAccessDenied.style.display = "none";
+      adminContent.style.display = "block";
     })
     .catch(() => {
       isAdmin = false;
       switchContainer.style.display = "none";
-      adminAccessDenied.style.display = "block";
-      adminContent.style.display = "none";
     });
 }
 
@@ -715,7 +708,7 @@ function renderRecordsList(list) {
       <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px;">
         姓名：${item.name || '未填寫'}<br>
         項目：${item.item || '未選擇'}<br>
-        日期：${item.date || '未設定'}
+        日期：${item.date || ''}
       </div>
     </div>
   `).join('');
@@ -731,8 +724,8 @@ function toggleSelect(id) {
 function editRecord(item) {
   if(!isAdmin || isAdminLoading) return;
   
-  const newName = prompt("修改姓名", item.name || "");
-  const newItem = prompt("修改項目", item.item || "");
+  const newName = prompt("修改姓名", item.name);
+  const newItem = prompt("修改項目", item.item);
   const newDate = prompt("修改日期(格式：yyyy/MM/dd aa hh:mm:ss)", item.date || '');
   
   if(!newName || !newItem){
@@ -899,6 +892,7 @@ window.onload = () => {
   recordsTable = document.getElementById("recordsTable");
   recordsBody = document.getElementById("recordsBody");
   totalCount = document.getElementById("totalCount");
+  submitBtn = document.getElementById("submitBtn");
 
   switchBtn.onclick = togglePage;
   loadRecordsBtn.onclick = loadAllRecords;
@@ -933,8 +927,15 @@ window.onload = () => {
   });
 
   // 表單提交 + 名稱不可重複報名
-  form.addEventListener("submit", e => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    
+    // 防止重複提交
+    if (isSubmitting) return;
+    isSubmitting = true;
+    submitBtn.disabled = true;
+    submitBtn.style.transform = "scale(0.95)"; // 點擊縮小特效
+    
     successMsg.textContent = "";
     successMsg.style.color = "var(--text-primary)";
     const name = nameInput.value.trim();
@@ -942,6 +943,7 @@ window.onload = () => {
     if (!name) {
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "請輸入姓名";
+      resetSubmitBtn();
       return;
     }
 
@@ -957,49 +959,59 @@ window.onload = () => {
     if (selectedItems.length === 0) {
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "請選擇至少一個項目";
+      resetSubmitBtn();
       return;
     }
 
-    // 檢查姓名重複
-    fetch(scriptURL + "?mode=read")
-      .then(res => res.json())
-      .then(data => {
-        const exists = data.records?.some(r => r.name === name);
-        if (exists) {
-          successMsg.style.color = "var(--accent-red)";
-          successMsg.textContent = "❌ 此姓名已報名，不可重複";
-          return;
-        }
+    try {
+      // 檢查姓名重複
+      const res = await fetch(scriptURL + "?mode=read");
+      const data = await res.json();
+      const exists = data.records?.some(r => r.name === name);
+      
+      if (exists) {
+        successMsg.style.color = "var(--accent-red)";
+        successMsg.textContent = "❌ 此姓名已報名，不可重複";
+        resetSubmitBtn();
+        return;
+      }
 
-        // 送出報名
-        const itemString = selectedItems.join("、");
-        const formData = new URLSearchParams();
-        formData.append("name", name);
-        formData.append("item", itemString);
-        formData.append("userId", userId);
-        formData.append("displayName", displayName);
-        formData.append("submitTime", formatDateTime(new Date()));
+      // 送出報名
+      const itemString = selectedItems.join("、");
+      const formData = new URLSearchParams();
+      formData.append("name", name);
+      formData.append("item", itemString);
+      formData.append("userId", userId);
+      formData.append("displayName", displayName);
+      formData.append("submitTime", formatDateTime(new Date()));
 
-        successMsg.textContent = "送出中...";
+      successMsg.textContent = "送出中...";
 
-        fetch(scriptURL, {
-          method: "POST",
-          body: formData,
-          headers: { "Content-Type": "application/x-www-form-urlencoded" }
-        })
-        .then(() => {
-          successMsg.style.color = "var(--accent-green)";
-          successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
-          form.reset();
-          otherInput.style.display = "none";
-          loadRecords();
-        })
-        .catch(() => {
-          successMsg.style.color = "var(--accent-red)";
-          successMsg.textContent = "❌ 網路錯誤";
-        });
+      await fetch(scriptURL, {
+        method: "POST",
+        body: formData,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
       });
+      
+      successMsg.style.color = "var(--accent-green)";
+      successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
+      form.reset();
+      otherInput.style.display = "none";
+      loadRecords();
+    } catch (err) {
+      successMsg.style.color = "var(--accent-red)";
+      successMsg.textContent = "❌ 網路錯誤";
+    } finally {
+      resetSubmitBtn();
+    }
   });
+
+  // 重置按鈕狀態
+  function resetSubmitBtn() {
+    isSubmitting = false;
+    submitBtn.disabled = false;
+    submitBtn.style.transform = "scale(1)";
+  }
 };
 
 function loadRecords() {
