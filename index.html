@@ -4,8 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>彥彬📿 祭改系統</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remix.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     * {
@@ -339,19 +339,21 @@
       button { padding: 14px; font-size: 17px; }
     }
 
+    /* 管理員樣式 */
     .top-bar {
       position: fixed;
-      top: 10px;
-      left: 10px;
-      z-index: 99999;
+      top: 12px;
+      right: 15px;
+      z-index: 999;
       display: flex;
       align-items: center;
+      gap: 10px;
     }
     .page-switch {
       display: none;
     }
     .switch-btn {
-      padding: 9px 16px;
+      padding: 10px 18px;
       border-radius: 50px;
       background: #161b22;
       border: 1px solid #374151;
@@ -360,21 +362,17 @@
       font-weight: 600;
       cursor: pointer;
       box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      transition: all 0.3s ease;
-      white-space: nowrap;
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
     .switch-btn:hover {
-      transform: translateY(-1px);
+      transform: translateY(-2px);
       background: #1f2937;
       border-color: #60a5fa;
     }
-
     .admin-section {
       display: none;
       max-width: 520px;
-      width: 100%;
       margin: 0 auto 30px;
-      padding: 0 4px;
     }
     .access-denied {
       text-align: center;
@@ -391,19 +389,17 @@
     .admin-card {
       background: #161b22;
       border-radius: 16px;
-      padding: 20px;
-      width: 100%;
+      padding: 24px;
       box-shadow: 0 6px 22px rgba(0,0,0,0.3);
       border: 1px solid #2c313a;
     }
     .reservation-item {
-      padding: 14px;
+      padding: 16px;
       border-radius: 12px;
       background: #1f2937;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       border: 1px solid #374151;
       transition: all 0.3s ease;
-      width: 100%;
     }
     .reservation-item:hover {
       background: #272e3b;
@@ -413,39 +409,38 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 8px;
-      gap: 8px;
-      flex-wrap: wrap;
+      margin-bottom: 10px;
+      gap: 10px;
     }
     .reserve-left {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .reserve-num {
       font-size: 0.9rem;
       color: #60a5fa;
       font-weight: 900;
-      min-width: 26px;
+      min-width: 28px;
       text-align: center;
     }
     .reserve-check {
-      transform: scale(1.4);
+      transform: scale(1.5);
       width: auto;
       height: auto;
       margin: 0;
     }
     .reserve-btns {
       display: flex;
-      gap: 6px;
+      gap: 8px;
     }
     .reserve-btns button {
-      height: 34px;
-      min-width: 56px;
+      height: 36px;
+      min-width: 60px;
       font-size: 0.85rem;
       border-radius: 8px;
       margin-top: 0;
-      padding: 0 10px;
+      padding: 0 12px;
     }
     .batch-delete-btn {
       background: #ef4444 !important;
@@ -453,13 +448,13 @@
     }
     .search-box {
       width: 100%;
-      height: 46px;
-      padding: 0 14px;
+      height: 48px;
+      padding: 0 16px;
       border-radius: 12px;
       border: 1px solid #374151;
       background: #1f2937;
       color: #f9fafb;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
       font-size: 1rem;
     }
     .search-box:focus {
@@ -469,7 +464,7 @@
     }
     .empty-state {
       text-align: center;
-      padding: 26px 10px;
+      padding: 30px 10px;
       color: #9ca3af;
       font-size: 0.95rem;
     }
@@ -489,39 +484,6 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-
-    .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      margin-top: 14px;
-      color: var(--text-primary);
-      font-size: 14px;
-    }
-    .page-btn {
-      padding: 7px 12px;
-      border-radius: 8px;
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border-secondary);
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: var(--transition-fast);
-    }
-    .page-btn:hover:not(:disabled) {
-      background: var(--accent-blue);
-      border-color: var(--accent-blue);
-    }
-    .page-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    @media (max-width:480px){
-      .admin-card { padding:16px; }
-      .reservation-item { padding:12px; }
-      .reserve-btns button { height:32px; min-width:50px; padding:0 8px; font-size:0.8rem; }
-    }
   </style>
 </head>
 <body>
@@ -532,6 +494,7 @@
   </div>
 </div>
 
+<!-- 一般使用者頁面 -->
 <div id="userPage">
   <h1>📝 祭改報名</h1>
 
@@ -576,6 +539,7 @@
   </table>
 </div>
 
+<!-- 管理員頁面 -->
 <div id="adminPage" class="admin-section">
   <h2>🔐 祭改管理後台</h2>
   <div id="adminAccessDenied" class="access-denied">
@@ -588,7 +552,7 @@
         type="text" 
         id="searchInput" 
         class="search-box" 
-        placeholder="🔍 搜尋：祭改者 / 祭改項目"
+        placeholder="🔍 搜尋：姓名 / 項目"
         oninput="renderRecordsList(window.fullRecords || [])"
       >
 
@@ -597,13 +561,13 @@
         <span>重新載入名單</span>
       </button>
       
+      <!-- 新增：工作表1 全部清除 -->
       <button class="admin-btn" id="clearAllBtn" style="margin-top:10px; background:var(--accent-red);">
         <span class="loader"></span>
         <span>工作表1 全部清除</span>
       </button>
 
       <div id="recordsList" style="margin:15px 0;"></div>
-      <div id="pagination" class="pagination"></div>
       <button class="batch-delete-btn" id="batchDeleteBtn">
         <span class="loader"></span>
         <span>刪除選取資料</span>
@@ -623,47 +587,26 @@ let isAdminLoading = false;
 let fullRecords = [];
 let isSubmitting = false;
 
-let adminPage = 1;
-const pageSize = 5;
-
-let switchBtn, switchContainer, userPage, adminPageEl;
+// DOM 元素
+let switchBtn, switchContainer, userPage, adminPage;
 let adminContent, adminAccessDenied;
 let loadRecordsBtn, batchDeleteBtn, clearAllBtn;
 let form, nameInput, chkOther, otherInput, successMsg;
 let loadingRecords, recordsTable, recordsBody, totalCount;
-let submitBtn;
 
-function formatTWTime(dateStr) {
-  if (!dateStr) return "";
-  try {
-    const date = new Date(dateStr);
-    return new Intl.DateTimeFormat('zh-TW', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: true,
-      timeZone: 'Asia/Taipei'
-    }).format(date);
-  } catch (e) {
-    return dateStr;
-  }
-}
-
+// 切換頁面
 function togglePage() {
   currentPage = currentPage === "user" ? "admin" : "user";
   userPage.style.display = currentPage === "user" ? "block" : "none";
-  adminPageEl.style.display = currentPage === "admin" ? "block" : "none";
+  adminPage.style.display = currentPage === "admin" ? "block" : "none";
   switchBtn.textContent = currentPage === "admin" ? "返回報名頁面" : "切換管理介面";
   
   if(currentPage === "admin"){
-    adminPage = 1;
     loadAllRecords();
   }
 }
 
+// 管理員 loading 狀態
 function setAdminLoading(loading, btn = null) {
   isAdminLoading = loading;
   if (btn) {
@@ -672,32 +615,28 @@ function setAdminLoading(loading, btn = null) {
   }
 }
 
-async function checkAdminByBackend() {
+// 驗證管理員
+function checkAdminByBackend() {
   if(!userId) return;
-  try {
-    const res = await fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}`);
-    const data = await res.json();
-    isAdmin = data.isAdmin === true;
-  } catch (e) {
-    isAdmin = false;
-  }
-
-  if(isAdmin){
-    switchContainer.style.display = "block";
-    adminAccessDenied.style.display = "none";
-    adminContent.style.display = "block";
-  } else {
-    switchContainer.style.display = "none";
-    adminAccessDenied.style.display = "block";
-    adminContent.style.display = "none";
-  }
+  fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`, { mode: 'no-cors' })
+    .then(res => {
+      isAdmin = true;
+      switchContainer.style.display = "block";
+      adminAccessDenied.style.display = "none";
+      adminContent.style.display = "block";
+    })
+    .catch(() => {
+      isAdmin = false;
+      switchContainer.style.display = "none";
+    });
 }
 
+// 載入全部記錄
 function loadAllRecords() {
   if(!isAdmin || isAdminLoading) return;
   setAdminLoading(true, loadRecordsBtn);
   
-  fetch(`${scriptURL}?mode=read&_=${Date.now()}`)
+  fetch(scriptURL + "?mode=read&_="+Date.now())
   .then(res => res.text())
   .then(text => {
     try {
@@ -717,88 +656,62 @@ function loadAllRecords() {
   });
 }
 
+// 渲染管理列表
 function renderRecordsList(list) {
   const keyword = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
   let filtered = list || [];
   
   if(keyword){
     filtered = filtered.filter(item => 
-      (item.name?.toLowerCase().includes(keyword) || "") || 
-      (item.item?.toLowerCase().includes(keyword) || "")
+      (item[0]?.toLowerCase().includes(keyword) || "") || 
+      (item[1]?.toLowerCase().includes(keyword) || "")
     );
   }
   
-  const total = filtered.length;
-  const totalPages = Math.ceil(total / pageSize);
-  if(adminPage < 1) adminPage = 1;
-  if(adminPage > totalPages && totalPages > 0) adminPage = totalPages;
-  
-  const start = (adminPage - 1) * pageSize;
-  const end = start + pageSize;
-  const paginatedData = filtered.slice(start, end);
-  
   const container = document.getElementById('recordsList');
-  const pagination = document.getElementById('pagination');
-  
-  if(!paginatedData.length){
+  if(!filtered.length){
     container.innerHTML = '<div class="empty-state">無資料</div>';
-    pagination.innerHTML = '';
     return;
   }
   
-  container.innerHTML = paginatedData.map((item, idx) => `
+  container.innerHTML = filtered.map((item, idx) => `
     <div class="reservation-item">
       <div class="reserve-header">
         <div class="reserve-left">
-          <span class="reserve-num">${start + idx + 1}</span>
-          <input type="checkbox" class="reserve-check" value="${item.id}" onchange="toggleSelect('${item.id}')">
+          <span class="reserve-num">${idx+1}</span>
+          <input type="checkbox" class="reserve-check" value="${idx}" onchange="toggleSelect('${idx}')">
         </div>
         <div class="reserve-btns">
-          <button onclick='editRecord(${JSON.stringify(item)})'>修改</button>
-          <button class="batch-delete-btn" onclick="deleteRecord('${item.id}')">刪除</button>
+          <button onclick='editRecord(${JSON.stringify(item)})'>
+            <span class="loader"></span>修改
+          </button>
+          <button class="batch-delete-btn" onclick="deleteRecord('${idx}')">
+            <span class="loader"></span>刪除
+          </button>
         </div>
       </div>
-      <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px; line-height:1.6;">
-        祭改者：${item.name || ''}<br>
-        祭改項目：${item.item || ''}<br>
-        填表者：${item.displayName || ''}<br>
-        報名時間：${formatTWTime(item.date) || ''}
+      <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px;">
+        姓名：${item[0] || ''}<br>
+        項目：${item[1] || ''}<br>
+        日期：${item[3] || ''}
       </div>
     </div>
   `).join('');
-  
-  pagination.innerHTML = `
-    <button class="page-btn" onclick="prevPage()" ${adminPage === 1 ? 'disabled' : ''}>上一頁</button>
-    <span>${adminPage} / ${totalPages}</span>
-    <button class="page-btn" onclick="nextPage()" ${adminPage === totalPages ? 'disabled' : ''}>下一頁</button>
-  `;
 }
 
-function prevPage() {
-  if(adminPage <= 1) return;
-  adminPage--;
-  renderRecordsList(fullRecords);
-}
-
-function nextPage() {
-  const total = fullRecords.length;
-  const totalPages = Math.ceil(total / pageSize);
-  if(adminPage >= totalPages) return;
-  adminPage++;
-  renderRecordsList(fullRecords);
-}
-
+// 勾選選取
 function toggleSelect(id) {
   const i = selectedItems.indexOf(id);
   i > -1 ? selectedItems.splice(i, 1) : selectedItems.push(id);
 }
 
+// 修改記錄
 function editRecord(item) {
   if(!isAdmin || isAdminLoading) return;
   
-  const newName = prompt("修改祭改者", item.name || "");
-  const newItem = prompt("修改祭改項目", item.item || "");
-  const newDate = prompt("修改報名時間", item.date || '');
+  const newName = prompt("修改姓名", item[0] || "");
+  const newItem = prompt("修改項目", item[1] || "");
+  const newDate = prompt("修改日期", item[3] || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
@@ -810,7 +723,7 @@ function editRecord(item) {
   setAdminLoading(true);
   const params = new URLSearchParams();
   params.append("mode", "adminUpdate");
-  params.append("id", item.id);
+  params.append("id", item.id || "0");
   params.append("name", newName);
   params.append("item", newItem);
   params.append("date", newDate);
@@ -818,21 +731,19 @@ function editRecord(item) {
   
   fetch(scriptURL, {
     method: "POST",
-    body: params
+    mode: 'no-cors',
+    body: params,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
-  .then(res => res.json())
-  .then(data => {
-    if(data.success){
-      alert("修改成功");
-      loadAllRecords();
-      loadRecords();
-    }else{
-      alert("修改失敗：" + (data.message || ""));
-    }
+  .then(res => {
+    alert("修改成功");
+    loadAllRecords();
+    loadRecords();
   })
   .finally(() => setAdminLoading(false));
 }
 
+// 刪除單筆
 function deleteRecord(id) {
   if(!isAdmin || isAdminLoading || !confirm("確定刪除？")) return;
   
@@ -844,53 +755,54 @@ function deleteRecord(id) {
   
   fetch(scriptURL, {
     method: "POST",
-    body: params
+    mode: 'no-cors',
+    body: params,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
-  .then(res => res.json())
-  .then(data => {
-    if(data.success){
-      alert("刪除成功");
-      loadAllRecords();
-      loadRecords();
-    }else{
-      alert("刪除失敗：" + (data.message || ""));
-    }
+  .then(res => {
+    alert("刪除成功");
+    loadAllRecords();
+    loadRecords();
   })
   .finally(() => setAdminLoading(false));
 }
 
-async function batchDeleteRecords() {
+// 批次刪除
+function batchDeleteRecords() {
   if(!isAdmin || isAdminLoading || selectedItems.length === 0 || !confirm(`確定刪除 ${selectedItems.length} 筆？`)) return;
   
   setAdminLoading(true, batchDeleteBtn);
-  let successCount = 0;
-
-  for (const id of selectedItems) {
-    try {
-      const params = new URLSearchParams();
-      params.append("mode", "adminDelete");
-      params.append("id", id);
-      params.append("lineId", userId);
-      
-      const res = await fetch(scriptURL, {
-        method: "POST",
-        body: params
-      });
-      
-      const data = await res.json();
-      if (data.success) successCount++;
-    } catch (e) {
-      console.error("刪除失敗", e);
-    }
-  }
-
-  alert(`成功刪除 ${successCount} 筆`);
-  selectedItems = [];
-  loadAllRecords();
-  loadRecords();
-  setAdminLoading(false, batchDeleteBtn);
+  let success = 0;
+  let total = selectedItems.length;
+  
+  selectedItems.forEach(id => {
+    const params = new URLSearchParams();
+    params.append("mode", "adminDelete");
+    params.append("id", id);
+    params.append("lineId", userId);
+    
+    fetch(scriptURL, {
+      method: "POST",
+      mode: 'no-cors',
+      body: params,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }
+    })
+    .then(res => {
+      success++;
+    })
+    .finally(() => {
+      if(success === total){
+        alert(`成功刪除 ${success} 筆`);
+        selectedItems = [];
+        loadAllRecords();
+        loadRecords();
+        setAdminLoading(false, batchDeleteBtn);
+      }
+    });
+  });
 }
 
+// 工作表1 全部清除
 function clearAllSheet1() {
   if(!isAdmin || isAdminLoading || !confirm("確定清除工作表1所有資料？此操作無法復原！")) return;
   setAdminLoading(true, clearAllBtn);
@@ -901,26 +813,26 @@ function clearAllSheet1() {
   
   fetch(scriptURL, {
     method: "POST",
-    body: params
+    mode: 'no-cors',
+    body: params,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
-  .then(res => res.json())
-  .then(data => {
-    if(data.success){
-      alert("工作表1已全部清除");
-      loadAllRecords();
-      loadRecords();
-    }else{
-      alert("清除失敗：" + (data.message || ""));
-    }
+  .then(() => {
+    alert("工作表1已全部清除");
+    loadAllRecords();
+    loadRecords();
   })
   .finally(() => setAdminLoading(false, clearAllBtn));
 }
 
+// ==================== 原本功能 ====================
+
 window.onload = () => {
+  // 初始化 DOM
   switchBtn = document.getElementById('switchBtn');
   switchContainer = document.getElementById('switchContainer');
   userPage = document.getElementById('userPage');
-  adminPageEl = document.getElementById('adminPage');
+  adminPage = document.getElementById('adminPage');
   adminContent = document.getElementById('adminContent');
   adminAccessDenied = document.getElementById('adminAccessDenied');
   loadRecordsBtn = document.getElementById('loadRecordsBtn');
@@ -936,13 +848,13 @@ window.onload = () => {
   recordsTable = document.getElementById("recordsTable");
   recordsBody = document.getElementById("recordsBody");
   totalCount = document.getElementById("totalCount");
-  submitBtn = document.getElementById("submitBtn");
 
   switchBtn.onclick = togglePage;
   loadRecordsBtn.onclick = loadAllRecords;
   batchDeleteBtn.onclick = batchDeleteRecords;
   clearAllBtn.onclick = clearAllSheet1;
 
+  // LIFF 初始化
   liff.init({ liffId: LIFF_ID })
     .then(async () => {
       if (!liff.isLoggedIn()) {
@@ -953,7 +865,7 @@ window.onload = () => {
       if(profile){
         userId = profile.userId;
         displayName = profile.displayName;
-        await checkAdminByBackend();
+        checkAdminByBackend();
       }
       loadRecords();
     })
@@ -962,11 +874,13 @@ window.onload = () => {
       loadRecords();
     });
 
+  // 其他項目切換
   chkOther.addEventListener("change", () => {
     otherInput.style.display = chkOther.checked ? "block" : "none";
     if (!chkOther.checked) otherInput.value = "";
   });
 
+  // 表單提交 + 名稱不可重複報名
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     
@@ -981,23 +895,6 @@ window.onload = () => {
     if (!name) {
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "請輸入姓名";
-      isSubmitting = false;
-      submitBtn.disabled = false;
-      return;
-    }
-
-    let exists = false;
-    try {
-      const res = await fetch(`${scriptURL}?mode=read&_=${Date.now()}`);
-      const text = await res.text();
-      const data = JSON.parse(text);
-      const records = Array.isArray(data.records) ? data.records : [];
-      exists = records.some(item => item.name?.trim() === name);
-    } catch (e) {}
-
-    if (exists) {
-      successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "❌ 此姓名已報名，不可重複";
       isSubmitting = false;
       submitBtn.disabled = false;
       return;
@@ -1021,8 +918,23 @@ window.onload = () => {
     }
 
     try {
+      const res = await fetch(scriptURL + "?mode=read&_="+Date.now());
+      const text = await res.text();
+      const data = JSON.parse(text);
+      const records = Array.isArray(data.records) ? data.records : [];
+      const exists = records.some(r => (r[0] || "").trim() === name.trim());
+      
+      if (exists) {
+        successMsg.style.color = "var(--accent-red)";
+        successMsg.textContent = "❌ 此姓名已報名，不可重複";
+        isSubmitting = false;
+        submitBtn.disabled = false;
+        return;
+      }
+
       const itemString = selectedItems.join("、");
       const formData = new URLSearchParams();
+      formData.append("mode", "submit");
       formData.append("name", name);
       formData.append("item", itemString);
       formData.append("userId", userId);
@@ -1030,28 +942,23 @@ window.onload = () => {
 
       successMsg.textContent = "送出中...";
 
-      const response = await fetch(scriptURL, {
+      await fetch(scriptURL, {
         method: "POST",
-        body: formData
+        body: formData,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
       });
       
-      const result = await response.json();
-      
-      if (result.success) {
-        successMsg.style.color = "var(--accent-green)";
-        successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
-        form.reset();
-        otherInput.style.display = "none";
-        loadRecords();
-      } else {
-        successMsg.style.color = "var(--accent-red)";
-        successMsg.textContent = "❌ " + (result.message || "報名失敗，請稍後再試");
-      }
+      successMsg.style.color = "var(--accent-green)";
+      successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
+      form.reset();
+      otherInput.style.display = "none";
+      loadRecords();
       
     } catch (err) {
-      console.error(err);
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "❌ 網路錯誤，請稍後再試";
+      isSubmitting = false;
+      submitBtn.disabled = false;
     } finally {
       isSubmitting = false;
       submitBtn.disabled = false;
@@ -1059,12 +966,13 @@ window.onload = () => {
   });
 };
 
+// 載入記錄
 function loadRecords() {
   loadingRecords.style.display = "block";
   recordsTable.style.display = "none";
   recordsBody.innerHTML = "";
 
-  fetch(`${scriptURL}?mode=read&_=${Date.now()}`)
+  fetch(scriptURL + "?mode=read&_="+Date.now())
   .then(res => res.text())
   .then(text => {
     try {
@@ -1088,6 +996,7 @@ function loadRecords() {
   });
 }
 
+// 渲染表格
 function renderRecords(records) {
   loadingRecords.style.display = "none";
   recordsTable.style.display = "table";
@@ -1096,8 +1005,8 @@ function renderRecords(records) {
   [...records].reverse().forEach(item => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${item.name || ''}</td>
-      <td>${item.item || ''}</td>
+      <td>${item[0] || ''}</td>
+      <td>${item[1] || ''}</td>
     `;
     recordsBody.appendChild(tr);
   });
