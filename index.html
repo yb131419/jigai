@@ -484,34 +484,6 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-
-    /* 分頁樣式 */
-    .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      margin-top: 16px;
-      color: var(--text-primary);
-      font-size: 15px;
-    }
-    .page-btn {
-      padding: 8px 14px;
-      border-radius: 8px;
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border-secondary);
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: var(--transition-fast);
-    }
-    .page-btn:hover:not(:disabled) {
-      background: var(--accent-blue);
-      border-color: var(--accent-blue);
-    }
-    .page-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
   </style>
 </head>
 <body>
@@ -580,7 +552,7 @@
         type="text" 
         id="searchInput" 
         class="search-box" 
-        placeholder="🔍 搜尋：祭改者 / 祭改項目"
+        placeholder="🔍 搜尋：姓名 / 項目"
         oninput="renderRecordsList(window.fullRecords || [])"
       >
 
@@ -589,13 +561,13 @@
         <span>重新載入名單</span>
       </button>
       
+      <!-- 新增：工作表1 全部清除 -->
       <button class="admin-btn" id="clearAllBtn" style="margin-top:10px; background:var(--accent-red);">
         <span class="loader"></span>
         <span>工作表1 全部清除</span>
       </button>
 
       <div id="recordsList" style="margin:15px 0;"></div>
-      <div id="pagination" class="pagination"></div>
       <button class="batch-delete-btn" id="batchDeleteBtn">
         <span class="loader"></span>
         <span>刪除選取資料</span>
@@ -615,10 +587,6 @@ let isAdminLoading = false;
 let fullRecords = [];
 let isSubmitting = false;
 
-// 分頁變數
-let page = 1;
-const pageSize = 5;
-
 // DOM 元素
 let switchBtn, switchContainer, userPage, adminPage;
 let adminContent, adminAccessDenied;
@@ -634,7 +602,6 @@ function togglePage() {
   switchBtn.textContent = currentPage === "admin" ? "返回報名頁面" : "切換管理介面";
   
   if(currentPage === "admin"){
-    page = 1;
     loadAllRecords();
   }
 }
@@ -689,7 +656,7 @@ function loadAllRecords() {
   });
 }
 
-// 渲染管理列表（含分頁）
+// 渲染管理列表
 function renderRecordsList(list) {
   const keyword = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
   let filtered = list || [];
@@ -701,70 +668,35 @@ function renderRecordsList(list) {
     );
   }
   
-  const total = filtered.length;
-  const totalPages = Math.ceil(total / pageSize);
-  if(page < 1) page = 1;
-  if(page > totalPages && totalPages > 0) page = totalPages;
-  
-  const start = (page - 1) * pageSize;
-  const end = start + pageSize;
-  const paginatedData = filtered.slice(start, end);
-  
   const container = document.getElementById('recordsList');
-  const pagination = document.getElementById('pagination');
-  
-  if(!paginatedData.length){
+  if(!filtered.length){
     container.innerHTML = '<div class="empty-state">無資料</div>';
-    pagination.innerHTML = '';
     return;
   }
   
-  container.innerHTML = paginatedData.map((item, idx) => `
+  container.innerHTML = filtered.map((item, idx) => `
     <div class="reservation-item">
       <div class="reserve-header">
         <div class="reserve-left">
-          <span class="reserve-num">${start + idx + 1}</span>
-          <input type="checkbox" class="reserve-check" value="${start + idx}" onchange="toggleSelect('${start + idx}')">
+          <span class="reserve-num">${idx+1}</span>
+          <input type="checkbox" class="reserve-check" value="${idx}" onchange="toggleSelect('${idx}')">
         </div>
         <div class="reserve-btns">
           <button onclick='editRecord(${JSON.stringify(item)})'>
             <span class="loader"></span>修改
           </button>
-          <button class="batch-delete-btn" onclick="deleteRecord('${start + idx}')">
+          <button class="batch-delete-btn" onclick="deleteRecord('${idx}')">
             <span class="loader"></span>刪除
           </button>
         </div>
       </div>
-      <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px; line-height:1.6;">
-        祭改者：${item[0] || ''}<br>
-        祭改項目：${item[1] || ''}<br>
-        填表者：${item[2] || ''}<br>
-        報名時間：${item[3] || ''}
+      <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px;">
+        姓名：${item[0] || ''}<br>
+        項目：${item[1] || ''}<br>
+        日期：${item[3] || ''}
       </div>
     </div>
   `).join('');
-  
-  pagination.innerHTML = `
-    <button class="page-btn" onclick="prevPage()" ${page === 1 ? 'disabled' : ''}>上一頁</button>
-    <span>${page} / ${totalPages}</span>
-    <button class="page-btn" onclick="nextPage()" ${page === totalPages ? 'disabled' : ''}>下一頁</button>
-  `;
-}
-
-// 上一頁
-function prevPage() {
-  if(page <= 1) return;
-  page--;
-  renderRecordsList(fullRecords);
-}
-
-// 下一頁
-function nextPage() {
-  const total = fullRecords.length;
-  const totalPages = Math.ceil(total / pageSize);
-  if(page >= totalPages) return;
-  page++;
-  renderRecordsList(fullRecords);
 }
 
 // 勾選選取
@@ -777,9 +709,9 @@ function toggleSelect(id) {
 function editRecord(item) {
   if(!isAdmin || isAdminLoading) return;
   
-  const newName = prompt("修改祭改者", item[0] || "");
-  const newItem = prompt("修改祭改項目", item[1] || "");
-  const newDate = prompt("修改報名時間", item[3] || '');
+  const newName = prompt("修改姓名", item[0] || "");
+  const newItem = prompt("修改項目", item[1] || "");
+  const newDate = prompt("修改日期", item[3] || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
@@ -893,7 +825,10 @@ function clearAllSheet1() {
   .finally(() => setAdminLoading(false, clearAllBtn));
 }
 
+// ==================== 原本功能 ====================
+
 window.onload = () => {
+  // 初始化 DOM
   switchBtn = document.getElementById('switchBtn');
   switchContainer = document.getElementById('switchContainer');
   userPage = document.getElementById('userPage');
@@ -919,6 +854,7 @@ window.onload = () => {
   batchDeleteBtn.onclick = batchDeleteRecords;
   clearAllBtn.onclick = clearAllSheet1;
 
+  // LIFF 初始化
   liff.init({ liffId: LIFF_ID })
     .then(async () => {
       if (!liff.isLoggedIn()) {
@@ -938,11 +874,13 @@ window.onload = () => {
       loadRecords();
     });
 
+  // 其他項目切換
   chkOther.addEventListener("change", () => {
     otherInput.style.display = chkOther.checked ? "block" : "none";
     if (!chkOther.checked) otherInput.value = "";
   });
 
+  // 表單提交 + 名稱不可重複報名
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     
