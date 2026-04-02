@@ -711,7 +711,7 @@ function editRecord(item) {
   
   const newName = prompt("修改姓名", item[0] || "");
   const newItem = prompt("修改項目", item[1] || "");
-  const newDate = prompt("修改日期", item[3] || '');
+  const newDate = prompt("修改日期", item[5] || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
