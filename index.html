@@ -693,7 +693,7 @@ function renderRecordsList(list) {
       <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px;">
         姓名：${item[0] || ''}<br>
         項目：${item[1] || ''}<br>
-        日期：${item[2] || ''}
+        日期：${item[3] || ''}
       </div>
     </div>
   `).join('');
@@ -711,7 +711,7 @@ function editRecord(item) {
   
   const newName = prompt("修改姓名", item[0] || "");
   const newItem = prompt("修改項目", item[1] || "");
-  const newDate = prompt("修改日期", item[2] || '');
+  const newDate = prompt("修改日期", item[3] || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
@@ -918,7 +918,7 @@ window.onload = () => {
     }
 
     try {
-      const res = await fetch(scriptURL + "?mode=read&_="+Date.now(), { mode: 'no-cors' });
+      const res = await fetch(scriptURL + "?mode=read&_="+Date.now());
       const text = await res.text();
       const data = JSON.parse(text);
       const records = Array.isArray(data.records) ? data.records : [];
@@ -934,17 +934,16 @@ window.onload = () => {
 
       const itemString = selectedItems.join("、");
       const formData = new URLSearchParams();
+      formData.append("mode", "submit");
       formData.append("name", name);
       formData.append("item", itemString);
       formData.append("userId", userId);
       formData.append("displayName", displayName);
-      formData.append("submitTime", new Date().toLocaleString());
 
       successMsg.textContent = "送出中...";
 
       await fetch(scriptURL, {
         method: "POST",
-        mode: 'no-cors',
         body: formData,
         headers: { "Content-Type": "application/x-www-form-urlencoded" }
       });
@@ -956,11 +955,10 @@ window.onload = () => {
       loadRecords();
       
     } catch (err) {
-      successMsg.style.color = "var(--accent-green)";
-      successMsg.textContent = "✅ 報名成功！";
-      form.reset();
-      otherInput.style.display = "none";
-      loadRecords();
+      successMsg.style.color = "var(--accent-red)";
+      successMsg.textContent = "❌ 網路錯誤，請稍後再試";
+      isSubmitting = false;
+      submitBtn.disabled = false;
     } finally {
       isSubmitting = false;
       submitBtn.disabled = false;
@@ -974,7 +972,7 @@ function loadRecords() {
   recordsTable.style.display = "none";
   recordsBody.innerHTML = "";
 
-  fetch(scriptURL + "?mode=read&_="+Date.now(), { mode: 'no-cors' })
+  fetch(scriptURL + "?mode=read&_="+Date.now())
   .then(res => res.text())
   .then(text => {
     try {
