@@ -24,8 +24,8 @@
       --text-primary: #f9fafb;
       --text-secondary: #e5e7eb;
       --text-tertiary: #9ca3af;
-      --accent-green: #10b981;
-      --accent-green-gradient: linear-gradient(to right, #10b981, #06c755);
+      --accent-green: #10b910;
+      --accent-green-gradient: linear-gradient(to right, #10b910, #06c755);
       --accent-blue: #60a5fa;
       --accent-yellow: #facc15;
       --accent-red: #ef4444;
@@ -561,10 +561,15 @@
         <span>重新載入名單</span>
       </button>
       
-      <!-- 新增：工作表1 全部清除 -->
       <button class="admin-btn" id="clearAllBtn" style="margin-top:10px; background:var(--accent-red);">
         <span class="loader"></span>
         <span>工作表1 全部清除</span>
+      </button>
+
+      <div style="margin-top:12px;"></div>
+      <button class="admin-btn" id="addSheet2Btn" style="background:var(--accent-blue); margin-top:8px;">
+        <span class="loader"></span>
+        <span>新增 2026/4/29 至工作表2</span>
       </button>
 
       <div id="recordsList" style="margin:15px 0;"></div>
@@ -589,9 +594,23 @@ let fullRecords = [];
 // DOM 元素
 let switchBtn, switchContainer, userPage, adminPage;
 let adminContent, adminAccessDenied;
-let loadRecordsBtn, batchDeleteBtn, clearAllBtn;
+let loadRecordsBtn, batchDeleteBtn, clearAllBtn, addSheet2Btn;
 let form, nameInput, chkOther, otherInput, successMsg;
 let loadingRecords, recordsTable, recordsBody, totalCount;
+
+// 日期格式化函式 yyyy/MM/dd aa hh:mm:ss
+function formatDateTime(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  let hh = date.getHours();
+  const mm = String(date.getMinutes()).padStart(2, '0');
+  const ss = String(date.getSeconds()).padStart(2, '0');
+  const aa = hh >= 12 ? '下午' : '上午';
+  hh = hh % 12 || 12;
+  hh = String(hh).padStart(2, '0');
+  return `${y}/${m}/${d} ${aa} ${hh}:${mm}:${ss}`;
+}
 
 // 切換頁面
 function togglePage() {
@@ -617,7 +636,7 @@ function setAdminLoading(loading, btn = null) {
 // 驗證管理員
 function checkAdminByBackend() {
   if(!userId) return;
-  fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`, { mode: 'no-cors' })
+  fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`)
     .then(res => {
       isAdmin = true;
       switchContainer.style.display = "block";
@@ -635,7 +654,7 @@ function loadAllRecords() {
   if(!isAdmin || isAdminLoading) return;
   setAdminLoading(true, loadRecordsBtn);
   
-  fetch(scriptURL + "?mode=read", { mode: 'no-cors' })
+  fetch(scriptURL + "?mode=read")
     .then(res => res.json())
     .then(data => {
       fullRecords = Array.isArray(data.records) ? data.records : [];
@@ -705,7 +724,7 @@ function editRecord(item) {
   
   const newName = prompt("修改姓名", item.name);
   const newItem = prompt("修改項目", item.item);
-  const newDate = prompt("修改日期", item.date || '');
+  const newDate = prompt("修改日期(格式：yyyy/MM/dd aa hh:mm:ss)", item.date || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
@@ -725,7 +744,6 @@ function editRecord(item) {
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -749,7 +767,6 @@ function deleteRecord(id) {
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -777,7 +794,6 @@ function batchDeleteRecords() {
     
     fetch(scriptURL, {
       method: "POST",
-      mode: 'no-cors',
       body: params,
       headers: { "Content-Type": "application/x-www-form-urlencoded" }
     })
@@ -807,7 +823,6 @@ function clearAllSheet1() {
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -817,6 +832,38 @@ function clearAllSheet1() {
     loadRecords();
   })
   .finally(() => setAdminLoading(false, clearAllBtn));
+}
+
+// 新增：工作表2 新增 2026/4/29
+function addSheet2Record() {
+  if(!isAdmin || isAdminLoading) return;
+  setAdminLoading(true, addSheet2Btn);
+
+  const name = prompt("請輸入姓名");
+  const item = prompt("請輸入項目");
+  if (!name || !item) {
+    alert("請填寫完整姓名與項目");
+    setAdminLoading(false, addSheet2Btn);
+    return;
+  }
+
+  const params = new URLSearchParams();
+  params.append("mode", "addSheet2");
+  params.append("name", name);
+  params.append("item", item);
+  params.append("date", "2026/04/29");
+  params.append("lineId", userId);
+
+  fetch(scriptURL, {
+    method: "POST",
+    body: params,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" }
+  })
+  .then(() => {
+    alert("已新增至工作表2！");
+    loadAllRecords();
+  })
+  .finally(() => setAdminLoading(false, addSheet2Btn));
 }
 
 // ==================== 原本功能 ====================
@@ -832,6 +879,7 @@ window.onload = () => {
   loadRecordsBtn = document.getElementById('loadRecordsBtn');
   batchDeleteBtn = document.getElementById('batchDeleteBtn');
   clearAllBtn = document.getElementById('clearAllBtn');
+  addSheet2Btn = document.getElementById('addSheet2Btn');
   
   form = document.getElementById("myForm");
   nameInput = document.getElementById("nameInput");
@@ -847,6 +895,7 @@ window.onload = () => {
   loadRecordsBtn.onclick = loadAllRecords;
   batchDeleteBtn.onclick = batchDeleteRecords;
   clearAllBtn.onclick = clearAllSheet1;
+  addSheet2Btn.onclick = addSheet2Record;
 
   // LIFF 初始化
   liff.init({ liffId: LIFF_ID })
@@ -903,7 +952,7 @@ window.onload = () => {
     }
 
     // 檢查姓名重複
-    fetch(scriptURL + "?mode=read", { mode: 'no-cors' })
+    fetch(scriptURL + "?mode=read")
       .then(res => res.json())
       .then(data => {
         const exists = data.records?.some(r => r.name === name);
@@ -920,13 +969,12 @@ window.onload = () => {
         formData.append("item", itemString);
         formData.append("userId", userId);
         formData.append("displayName", displayName);
-        formData.append("submitTime", new Date().toLocaleString());
+        formData.append("submitTime", formatDateTime(new Date()));
 
         successMsg.textContent = "送出中...";
 
         fetch(scriptURL, {
           method: "POST",
-          mode: 'no-cors',
           body: formData,
           headers: { "Content-Type": "application/x-www-form-urlencoded" }
         })
@@ -950,7 +998,7 @@ function loadRecords() {
   recordsTable.style.display = "none";
   recordsBody.innerHTML = "";
 
-  fetch(scriptURL + "?mode=read", { mode: 'no-cors' })
+  fetch(scriptURL + "?mode=read")
     .then(res => res.json())
     .then(data => {
       const records = Array.isArray(data.records) ? data.records : [];
@@ -972,9 +1020,9 @@ function renderRecords(records) {
   recordsTable.style.display = "table";
   recordsBody.innerHTML = "";
 
-  records.slice().reverse().forEach(([name, item]) => {
+  records.slice().reverse().forEach(item => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${name || '未知姓名'}</td><td>${item || '未選擇項目'}</td>`;
+    tr.innerHTML = `<td>${item.name || '未知姓名'}</td><td>${item.item || '未選擇項目'}</td>`;
     recordsBody.appendChild(tr);
   });
 
