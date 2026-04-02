@@ -339,9 +339,6 @@
       button { padding: 14px; font-size: 17px; }
     }
 
-    /* ====================== */
-    /* ✅ 僅修改這區：管理介面響應式 */
-    /* ====================== */
     .top-bar {
       position: fixed;
       top: 10px;
@@ -520,7 +517,6 @@
       cursor: not-allowed;
     }
 
-    /* 手機優化 */
     @media (max-width:480px){
       .admin-card { padding:16px; }
       .reservation-item { padding:12px; }
@@ -985,6 +981,23 @@ window.onload = () => {
     if (!name) {
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "請輸入姓名";
+      isSubmitting = false;
+      submitBtn.disabled = false;
+      return;
+    }
+
+    let exists = false;
+    try {
+      const res = await fetch(`${scriptURL}?mode=read&_=${Date.now()}`);
+      const text = await res.text();
+      const data = JSON.parse(text);
+      const records = Array.isArray(data.records) ? data.records : [];
+      exists = records.some(item => item.name?.trim() === name);
+    } catch (e) {}
+
+    if (exists) {
+      successMsg.style.color = "var(--accent-red)";
+      successMsg.textContent = "❌ 此姓名已報名，不可重複";
       isSubmitting = false;
       submitBtn.disabled = false;
       return;
