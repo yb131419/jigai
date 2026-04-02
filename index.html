@@ -610,6 +610,7 @@ function setAdminLoading(loading, btn = null) {
 
 // 驗證管理員
 function checkAdminByBackend() {
+  if(!userId) return;
   fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`)
     .then(res => res.json())
     .then(res => {
@@ -827,20 +828,18 @@ window.onload = () => {
 
   // LIFF 初始化
   liff.init({ liffId: LIFF_ID })
-    .then(() => {
-      if (liff.isLoggedIn()) {
-        return liff.getProfile();
-      } else {
+    .then(async () => {
+      if (!liff.isLoggedIn()) {
         liff.login();
+        return;
       }
-    })
-    .then(profile => {
+      const profile = await liff.getProfile();
       if(profile){
         userId = profile.userId;
         displayName = profile.displayName;
         checkAdminByBackend();
-        loadRecords();
       }
+      loadRecords();
     })
     .catch(err => {
       console.log("LIFF 初始化失敗：", err);
@@ -893,21 +892,16 @@ window.onload = () => {
 
     fetch(scriptURL, {
       method: "POST",
+      mode: 'no-cors',
       body: formData,
       headers: { "Content-Type": "application/x-www-form-urlencoded" }
     })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        successMsg.style.color = "var(--accent-green)";
-        successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
-        form.reset();
-        otherInput.style.display = "none";
-        loadRecords();
-      } else {
-        successMsg.style.color = "var(--accent-red)";
-        successMsg.textContent = "❌ 操作失敗：" + (data.message || "");
-      }
+    .then(() => {
+      successMsg.style.color = "var(--accent-green)";
+      successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
+      form.reset();
+      otherInput.style.display = "none";
+      loadRecords();
     })
     .catch(() => {
       successMsg.style.color = "var(--accent-red)";
