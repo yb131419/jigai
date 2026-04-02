@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>彥彬📿 祭改系統</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
@@ -168,7 +168,7 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 250, 0.1), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
       transition: 0.6s ease;
     }
 
@@ -560,12 +560,6 @@
         <span class="loader"></span>
         <span>重新載入名單</span>
       </button>
-      
-      <!-- 新增：工作表1 全部清除 -->
-      <button class="admin-btn" id="clearAllBtn" style="margin-top:10px; background:var(--accent-red);">
-        <span class="loader"></span>
-        <span>工作表1 全部清除</span>
-      </button>
 
       <div id="recordsList" style="margin:15px 0;"></div>
       <button class="batch-delete-btn" id="batchDeleteBtn">
@@ -585,15 +579,13 @@ let currentPage = "user";
 let selectedItems = [];
 let isAdminLoading = false;
 let fullRecords = [];
-let isSubmitting = false;
 
 // DOM 元素
 let switchBtn, switchContainer, userPage, adminPage;
 let adminContent, adminAccessDenied;
-let loadRecordsBtn, batchDeleteBtn, clearAllBtn;
+let loadRecordsBtn, batchDeleteBtn;
 let form, nameInput, chkOther, otherInput, successMsg;
 let loadingRecords, recordsTable, recordsBody, totalCount;
-let submitBtn;
 
 // 切換頁面
 function togglePage() {
@@ -618,13 +610,13 @@ function setAdminLoading(loading, btn = null) {
 
 // 驗證管理員
 function checkAdminByBackend() {
-  if(!userId) return;
-  fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`, { mode: 'no-cors' })
+  fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`)
+    .then(res => res.json())
     .then(res => {
-      isAdmin = true;
-      switchContainer.style.display = "block";
-      adminAccessDenied.style.display = "none";
-      adminContent.style.display = "block";
+      isAdmin = res?.isAdmin === true;
+      switchContainer.style.display = isAdmin ? "block" : "none";
+      adminAccessDenied.style.display = isAdmin ? "none" : "block";
+      adminContent.style.display = isAdmin ? "block" : "none";
     })
     .catch(() => {
       isAdmin = false;
@@ -637,24 +629,22 @@ function loadAllRecords() {
   if(!isAdmin || isAdminLoading) return;
   setAdminLoading(true, loadRecordsBtn);
   
-  fetch(scriptURL + "?mode=read&_="+Date.now())
-  .then(res => res.text())
-  .then(text => {
-    try {
-      const data = JSON.parse(text);
-      fullRecords = Array.isArray(data.records) ? data.records : [];
-    } catch (e) {
-      fullRecords = [];
-    }
-    renderRecordsList(fullRecords);
-  })
-  .catch(() => {
-    fullRecords = [];
-    renderRecordsList(fullRecords);
-  })
-  .finally(() => {
-    setAdminLoading(false, loadRecordsBtn);
-  });
+  fetch(scriptURL + "?mode=read")
+    .then(res => res.json())
+    .then(data => {
+      fullRecords = (Array.isArray(data.records) ? data.records : []).map((item, index) => ({
+        id: index,
+        name: item[0] || "",
+        item: item[1] || ""
+      }));
+      renderRecordsList(fullRecords);
+    })
+    .catch(() => {
+      document.getElementById('recordsList').innerHTML = '<div class="empty-state">載入失敗</div>';
+    })
+    .finally(() => {
+      setAdminLoading(false, loadRecordsBtn);
+    });
 }
 
 // 渲染管理列表
@@ -664,14 +654,14 @@ function renderRecordsList(list) {
   
   if(keyword){
     filtered = filtered.filter(item => 
-      (item[0]?.toLowerCase().includes(keyword) || "") || 
-      (item[1]?.toLowerCase().includes(keyword) || "")
+      item.name.toLowerCase().includes(keyword) || 
+      item.item.toLowerCase().includes(keyword)
     );
   }
   
   const container = document.getElementById('recordsList');
   if(!filtered.length){
-    container.innerHTML = '<div class="empty-state">無資料</div>';
+    container.innerHTML = '<div class="empty-state">暫無資料</div>';
     return;
   }
   
@@ -680,21 +670,20 @@ function renderRecordsList(list) {
       <div class="reserve-header">
         <div class="reserve-left">
           <span class="reserve-num">${idx+1}</span>
-          <input type="checkbox" class="reserve-check" value="${idx}" onchange="toggleSelect('${idx}')">
+          <input type="checkbox" class="reserve-check" value="${item.id}" onchange="toggleSelect('${item.id}')">
         </div>
         <div class="reserve-btns">
           <button onclick='editRecord(${JSON.stringify(item)})'>
             <span class="loader"></span>修改
           </button>
-          <button class="batch-delete-btn" onclick="deleteRecord('${idx}')">
+          <button class="batch-delete-btn" onclick="deleteRecord('${item.id}')">
             <span class="loader"></span>刪除
           </button>
         </div>
       </div>
       <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px;">
-        姓名：${item[0] || ''}<br>
-        項目：${item[1] || ''}<br>
-        日期：${item[3] || ''}
+        姓名：${item.name}<br>
+        項目：${item.item}
       </div>
     </div>
   `).join('');
@@ -710,9 +699,8 @@ function toggleSelect(id) {
 function editRecord(item) {
   if(!isAdmin || isAdminLoading) return;
   
-  const newName = prompt("修改姓名", item[0] || "");
-  const newItem = prompt("修改項目", item[1] || "");
-  const newDate = prompt("修改日期", item[3] || '');
+  const newName = prompt("修改姓名", item.name);
+  const newItem = prompt("修改項目", item.item);
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
@@ -724,22 +712,25 @@ function editRecord(item) {
   setAdminLoading(true);
   const params = new URLSearchParams();
   params.append("mode", "adminUpdate");
-  params.append("id", item.id || "0");
+  params.append("id", item.id);
   params.append("name", newName);
   params.append("item", newItem);
-  params.append("date", newDate);
   params.append("lineId", userId);
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
-  .then(res => {
-    alert("修改成功");
-    loadAllRecords();
-    loadRecords();
+  .then(res => res.json())
+  .then(data => {
+    if(data.success){
+      alert("修改成功");
+      loadAllRecords();
+      loadRecords();
+    }else{
+      alert("修改失敗");
+    }
   })
   .finally(() => setAdminLoading(false));
 }
@@ -756,14 +747,18 @@ function deleteRecord(id) {
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
-  .then(res => {
-    alert("刪除成功");
-    loadAllRecords();
-    loadRecords();
+  .then(res => res.json())
+  .then(data => {
+    if(data.success){
+      alert("刪除成功");
+      loadAllRecords();
+      loadRecords();
+    }else{
+      alert("刪除失敗");
+    }
   })
   .finally(() => setAdminLoading(false));
 }
@@ -784,12 +779,12 @@ function batchDeleteRecords() {
     
     fetch(scriptURL, {
       method: "POST",
-      mode: 'no-cors',
       body: params,
       headers: { "Content-Type": "application/x-www-form-urlencoded" }
     })
-    .then(res => {
-      success++;
+    .then(res => res.json())
+    .then(data => {
+      if(data.success) success++;
     })
     .finally(() => {
       if(success === total){
@@ -801,29 +796,6 @@ function batchDeleteRecords() {
       }
     });
   });
-}
-
-// 工作表1 全部清除
-function clearAllSheet1() {
-  if(!isAdmin || isAdminLoading || !confirm("確定清除工作表1所有資料？此操作無法復原！")) return;
-  setAdminLoading(true, clearAllBtn);
-  
-  const params = new URLSearchParams();
-  params.append("mode", "clearAll");
-  params.append("lineId", userId);
-  
-  fetch(scriptURL, {
-    method: "POST",
-    mode: 'no-cors',
-    body: params,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" }
-  })
-  .then(() => {
-    alert("工作表1已全部清除");
-    loadAllRecords();
-    loadRecords();
-  })
-  .finally(() => setAdminLoading(false, clearAllBtn));
 }
 
 // ==================== 原本功能 ====================
@@ -838,7 +810,6 @@ window.onload = () => {
   adminAccessDenied = document.getElementById('adminAccessDenied');
   loadRecordsBtn = document.getElementById('loadRecordsBtn');
   batchDeleteBtn = document.getElementById('batchDeleteBtn');
-  clearAllBtn = document.getElementById('clearAllBtn');
   
   form = document.getElementById("myForm");
   nameInput = document.getElementById("nameInput");
@@ -849,27 +820,27 @@ window.onload = () => {
   recordsTable = document.getElementById("recordsTable");
   recordsBody = document.getElementById("recordsBody");
   totalCount = document.getElementById("totalCount");
-  submitBtn = document.getElementById("submitBtn");
 
   switchBtn.onclick = togglePage;
   loadRecordsBtn.onclick = loadAllRecords;
   batchDeleteBtn.onclick = batchDeleteRecords;
-  clearAllBtn.onclick = clearAllSheet1;
 
   // LIFF 初始化
   liff.init({ liffId: LIFF_ID })
-    .then(async () => {
-      if (!liff.isLoggedIn()) {
+    .then(() => {
+      if (liff.isLoggedIn()) {
+        return liff.getProfile();
+      } else {
         liff.login();
-        return;
       }
-      const profile = await liff.getProfile();
+    })
+    .then(profile => {
       if(profile){
         userId = profile.userId;
         displayName = profile.displayName;
         checkAdminByBackend();
+        loadRecords();
       }
-      loadRecords();
     })
     .catch(err => {
       console.log("LIFF 初始化失敗：", err);
@@ -882,23 +853,16 @@ window.onload = () => {
     if (!chkOther.checked) otherInput.value = "";
   });
 
-  // 表單提交 + 名稱不可重複報名
-  form.addEventListener("submit", async (e) => {
+  // 表單提交
+  form.addEventListener("submit", e => {
     e.preventDefault();
-    
-    if(isSubmitting) return;
-    isSubmitting = true;
-    submitBtn.disabled = true;
-    
     successMsg.textContent = "";
-    successMsg.style.color = "";
+    successMsg.style.color = "var(--text-primary)";
     const name = nameInput.value.trim();
 
     if (!name) {
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "請輸入姓名";
-      isSubmitting = false;
-      submitBtn.disabled = false;
       return;
     }
 
@@ -914,107 +878,78 @@ window.onload = () => {
     if (selectedItems.length === 0) {
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "請選擇至少一個項目";
-      isSubmitting = false;
-      submitBtn.disabled = false;
       return;
     }
 
-    try {
-      const res = await fetch(scriptURL + "?mode=read&_="+Date.now());
-      const text = await res.text();
-      const data = JSON.parse(text);
-      const records = Array.isArray(data.records) ? data.records : [];
-      const exists = records.some(r => (r[0] || "").trim() === name.trim());
-      
-      if (exists) {
+    const itemString = selectedItems.join("、");
+    const formData = new URLSearchParams();
+    formData.append("name", name);
+    formData.append("item", itemString);
+    formData.append("userId", userId);
+    formData.append("displayName", displayName);
+    formData.append("submitTime", new Date().toLocaleString());
+
+    successMsg.textContent = "送出中...";
+
+    fetch(scriptURL, {
+      method: "POST",
+      body: formData,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        successMsg.style.color = "var(--accent-green)";
+        successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
+        form.reset();
+        otherInput.style.display = "none";
+        loadRecords();
+      } else {
         successMsg.style.color = "var(--accent-red)";
-        successMsg.textContent = "❌ 此姓名已報名，不可重複";
-        isSubmitting = false;
-        submitBtn.disabled = false;
-        return;
+        successMsg.textContent = "❌ 操作失敗：" + (data.message || "");
       }
-
-      const itemString = selectedItems.join("、");
-      const formData = new URLSearchParams();
-      formData.append("mode", "submit");
-      formData.append("name", name);
-      formData.append("item", itemString);
-      formData.append("userId", userId);
-      formData.append("displayName", displayName);
-
-      successMsg.textContent = "送出中...";
-
-      await fetch(scriptURL, {
-        method: "POST",
-        body: formData,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" }
-      });
-      
-      successMsg.style.color = "var(--accent-green)";
-      successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
-      form.reset();
-      otherInput.style.display = "none";
-      loadRecords();
-      
-      // 重置提交狀態
-      isSubmitting = false;
-      submitBtn.disabled = false;
-      
-    } catch (err) {
+    })
+    .catch(() => {
       successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "❌ 網路錯誤，請稍後再試";
-    } finally {
-      // 確保狀態一定重置
-      isSubmitting = false;
-      submitBtn.disabled = false;
-    }
+      successMsg.textContent = "❌ 網路錯誤";
+    });
   });
 };
 
-// 載入記錄
 function loadRecords() {
   loadingRecords.style.display = "block";
   recordsTable.style.display = "none";
   recordsBody.innerHTML = "";
 
-  fetch(scriptURL + "?mode=read&_="+Date.now())
-  .then(res => res.text())
-  .then(text => {
-    try {
-      const data = JSON.parse(text);
+  fetch(scriptURL + "?mode=read")
+    .then(res => res.json())
+    .then(data => {
       const records = Array.isArray(data.records) ? data.records : [];
-      totalCount.textContent = `總報名人數：${records.length}`;
-      
       if (records.length > 0) {
         renderRecords(records);
       } else {
-        loadingRecords.textContent = "目前沒有報名資料";
+        loadingRecords.textContent = "沒有資料";
+        totalCount.textContent = "總報名人數：0";
       }
-    } catch (e) {
-      loadingRecords.textContent = "目前沒有報名資料";
+    })
+    .catch(() => {
+      loadingRecords.textContent = "❌ 無法載入資料";
       totalCount.textContent = "總報名人數：0";
-    }
-  })
-  .catch(() => {
-    loadingRecords.textContent = "目前沒有報名資料";
-    totalCount.textContent = "總報名人數：0";
-  });
+    });
 }
 
-// 渲染表格
 function renderRecords(records) {
   loadingRecords.style.display = "none";
   recordsTable.style.display = "table";
   recordsBody.innerHTML = "";
 
-  [...records].reverse().forEach(item => {
+  records.slice().reverse().forEach(([name, item]) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${item[0] || ''}</td>
-      <td>${item[1] || ''}</td>
-    `;
+    tr.innerHTML = `<td>${name || '未知姓名'}</td><td>${item || '未選擇項目'}</td>`;
     recordsBody.appendChild(tr);
   });
+
+  totalCount.textContent = `總報名人數：${records.length}`;
 }
 </script>
 </body>
