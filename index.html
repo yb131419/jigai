@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>彥彬📿 祭改系統</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
@@ -133,7 +133,7 @@
 
     input[type="text"]:focus {
       border-color: var(--accent-blue);
-      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15), inset 0 0 1px var(--accent-blue);
+      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15), inset 0 0 0 1px var(--accent-blue);
       background-color: var(--bg-quaternary);
       transform: translateY(-1px);
     }
@@ -189,9 +189,10 @@
       box-shadow: none;
     }
 
+    /* 祭改項目：強制一行兩列 + 加大勾選框 */
     .checkbox-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr; /* 強制一行兩列，不隨螢幕變化 */
       gap: 14px;
       margin-top: 18px;
     }
@@ -217,9 +218,10 @@
       color: var(--text-primary);
     }
 
+    /* 加大勾選框尺寸 */
     .checkbox-grid input {
-      width: 24px;
-      height: 24px;
+      width: 24px; /* 原18px，加大至24px */
+      height: 24px; /* 原18px，加大至24px */
       margin-right: 10px;
       cursor: pointer;
       accent-color: var(--accent-green);
@@ -335,589 +337,169 @@
       h1 { font-size: 1.8rem; }
       h2 { font-size: 1.5rem; }
       form { padding: 24px; }
+      /* 手機端仍保持一行兩列，不更改 */
       .checkbox-grid { gap: 12px; }
       button { padding: 14px; font-size: 17px; }
-    }
-
-    /* 管理員樣式 */
-    .top-bar {
-      position: fixed;
-      top: 12px;
-      right: 15px;
-      z-index: 999;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .page-switch {
-      display: none;
-    }
-    .switch-btn {
-      padding: 10px 18px;
-      border-radius: 50px;
-      background: #161b22;
-      border: 1px solid #374151;
-      color: #60a5fa;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-    .switch-btn:hover {
-      transform: translateY(-2px);
-      background: #1f2937;
-      border-color: #60a5fa;
-    }
-    .admin-section {
-      display: none;
-      max-width: 520px;
-      margin: 0 auto 30px;
-    }
-    .access-denied {
-      text-align: center;
-      padding: 30px 20px;
-      color: #ef4444;
-      font-weight: 600;
-      font-size: 1rem;
-      background: #1f2937;
-      border-radius: 16px;
-      margin: 15px 0;
-      border: 1px solid #374151;
-      display: none;
-    }
-    .admin-card {
-      background: #161b22;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 6px 22px rgba(0,0,0,0.3);
-      border: 1px solid #2c313a;
-    }
-    .reservation-item {
-      padding: 16px;
-      border-radius: 12px;
-      background: #1f2937;
-      margin-bottom: 12px;
-      border: 1px solid #374151;
-      transition: all 0.3s ease;
-    }
-    .reservation-item:hover {
-      background: #272e3b;
-      border-color: #60a5fa;
-    }
-    .reserve-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-      gap: 10px;
-    }
-    .reserve-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .reserve-num {
-      font-size: 0.9rem;
-      color: #60a5fa;
-      font-weight: 900;
-      min-width: 28px;
-      text-align: center;
-    }
-    .reserve-check {
-      transform: scale(1.5);
-      width: auto;
-      height: auto;
-      margin: 0;
-    }
-    .reserve-btns {
-      display: flex;
-      gap: 8px;
-    }
-    .reserve-btns button {
-      height: 36px;
-      min-width: 60px;
-      font-size: 0.85rem;
-      border-radius: 8px;
-      margin-top: 0;
-      padding: 0 12px;
-    }
-    .batch-delete-btn {
-      background: #ef4444 !important;
-      margin-top: 15px !important;
-    }
-    .search-box {
-      width: 100%;
-      height: 48px;
-      padding: 0 16px;
-      border-radius: 12px;
-      border: 1px solid #374151;
-      background: #1f2937;
-      color: #f9fafb;
-      margin-bottom: 15px;
-      font-size: 1rem;
-    }
-    .search-box:focus {
-      outline: none;
-      border-color: #60a5fa;
-      background: #272e3b;
-    }
-    .empty-state {
-      text-align: center;
-      padding: 30px 10px;
-      color: #9ca3af;
-      font-size: 0.95rem;
-    }
-    .loader {
-      width: 16px;
-      height: 16px;
-      border: 2px solid #fff;
-      border-bottom-color: transparent;
-      border-radius: 50%;
-      animation: rotation 1s linear infinite;
-      display: none;
-    }
-    button.loading .loader {
-      display: block;
-    }
-    @keyframes rotation {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
 
-<div class="top-bar">
-  <div class="page-switch" id="switchContainer">
-    <button class="switch-btn" id="switchBtn">切換管理介面</button>
+<h1>📝 祭改報名</h1>
+
+<form id="myForm">
+  <label for="nameInput">姓名</label>
+  <input type="text" id="nameInput" name="name" autocomplete="off" required />
+
+  <label><i class="ri-book-line"></i> 📜 祭改項目（可多選）</label>
+  <div class="checkbox-grid">
+    <label><input type="checkbox" name="item" value="補財庫">補財庫</label>
+    <label><input type="checkbox" name="item" value="冤親債主">冤親債主</label>
+    <label><input type="checkbox" name="item" value="歷代祖先">歷代祖先</label>
+    <label><input type="checkbox" name="item" value="病符">病符</label>
+    <label><input type="checkbox" name="item" value="嬰靈">嬰靈</label>
+    <label><input type="checkbox" name="item" value="陰纏">陰纏</label>
+    <label><input type="checkbox" name="item" value="祭小人">祭小人</label>
+    <label><input type="checkbox" name="item" value="車關">車關</label>
+    <label><input type="checkbox" name="item" value="倒房">倒房</label>
+    <label><input type="checkbox" name="item" value="其他" id="chkOther">其他</label>
   </div>
-</div>
+  <input type="text" id="otherInput" placeholder="請輸入其他項目" />
 
-<!-- 一般使用者頁面 -->
-<div id="userPage">
-  <h1>📝 祭改報名</h1>
+  <button type="submit" id="submitBtn">
+    <i class="ri-send-plane-line"></i> 送出報名
+  </button>
+</form>
 
-  <form id="myForm">
-    <label for="nameInput">姓名</label>
-    <input type="text" id="nameInput" name="name" autocomplete="off" required />
+<div id="successMsg"></div>
 
-    <label><i class="ri-book-line"></i> 📜 祭改項目（可多選）</label>
-    <div class="checkbox-grid">
-      <label><input type="checkbox" name="item" value="補財庫">補財庫</label>
-      <label><input type="checkbox" name="item" value="冤親債主">冤親債主</label>
-      <label><input type="checkbox" name="item" value="歷代祖先">歷代祖先</label>
-      <label><input type="checkbox" name="item" value="病符">病符</label>
-      <label><input type="checkbox" name="item" value="嬰靈">嬰靈</label>
-      <label><input type="checkbox" name="item" value="陰纏">陰纏</label>
-      <label><input type="checkbox" name="item" value="祭小人">祭小人</label>
-      <label><input type="checkbox" name="item" value="車關">車關</label>
-      <label><input type="checkbox" name="item" value="倒房">倒房</label>
-      <label><input type="checkbox" name="item" value="其他" id="chkOther">其他</label>
-    </div>
-    <input type="text" id="otherInput" placeholder="請輸入其他項目" />
+<h2>📋 祭改名單</h2>
+<p id="totalCount">總報名人數：0</p>
+<p id="loadingRecords">讀取中...</p>
 
-    <button type="submit" id="submitBtn">
-      <i class="ri-send-plane-line"></i> 送出報名
-    </button>
-  </form>
-
-  <div id="successMsg"></div>
-
-  <h2>📋 祭改名單</h2>
-  <p id="totalCount">總報名人數：0</p>
-  <p id="loadingRecords">讀取中...</p>
-
-  <table id="recordsTable" style="display:none;">
-    <thead>
-      <tr>
-        <th>姓名</th>
-        <th>項目</th>
-      </tr>
-    </thead>
-    <tbody id="recordsBody"></tbody>
-  </table>
-</div>
-
-<!-- 管理員頁面 -->
-<div id="adminPage" class="admin-section">
-  <h2>🔐 祭改管理後台</h2>
-  <div id="adminAccessDenied" class="access-denied">
-    ❌ 您無管理員權限<br>請聯繫管理員開通權限
-  </div>
-
-  <div id="adminContent" style="display:none;">
-    <div class="admin-card">
-      <input 
-        type="text" 
-        id="searchInput" 
-        class="search-box" 
-        placeholder="🔍 搜尋：姓名 / 項目"
-        oninput="renderRecordsList(window.fullRecords || [])"
-      >
-
-      <button class="admin-btn" id="loadRecordsBtn" style="margin-top:0;">
-        <span class="loader"></span>
-        <span>重新載入名單</span>
-      </button>
-
-      <div id="recordsList" style="margin:15px 0;"></div>
-      <button class="batch-delete-btn" id="batchDeleteBtn">
-        <span class="loader"></span>
-        <span>刪除選取資料</span>
-      </button>
-    </div>
-  </div>
-</div>
+<table id="recordsTable" style="display:none;">
+  <thead>
+    <tr>
+      <th>姓名</th>
+      <th>項目</th>
+    </tr>
+  </thead>
+  <tbody id="recordsBody"></tbody>
+</table>
 
 <script>
 const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec";
 const LIFF_ID = "2007416974-JzvPy6DZ";
-let userId = "", displayName = "";
-let isAdmin = false;
-let currentPage = "user";
-let selectedItems = [];
-let isAdminLoading = false;
-let fullRecords = [];
+let userId = "", displayName = "", existingNames = [];
+const form = document.getElementById("myForm");
+const successMsg = document.getElementById("successMsg");
+const chkOther = document.getElementById("chkOther");
+const otherInput = document.getElementById("otherInput");
+const loadingRecords = document.getElementById("loadingRecords");
+const recordsTable = document.getElementById("recordsTable");
+const recordsBody = document.getElementById("recordsBody");
+const totalCount = document.getElementById("totalCount");
+const nameInput = document.getElementById("nameInput");
 
-// DOM 元素
-let switchBtn, switchContainer, userPage, adminPage;
-let adminContent, adminAccessDenied;
-let loadRecordsBtn, batchDeleteBtn;
-let form, nameInput, chkOther, otherInput, successMsg;
-let loadingRecords, recordsTable, recordsBody, totalCount;
+// 其他選項切換
+chkOther.addEventListener("change", () => {
+  otherInput.style.display = chkOther.checked ? "block" : "none";
+  !chkOther.checked && (otherInput.value = "");
+});
 
-// 切換頁面
-function togglePage() {
-  currentPage = currentPage === "user" ? "admin" : "user";
-  userPage.style.display = currentPage === "user" ? "block" : "none";
-  adminPage.style.display = currentPage === "admin" ? "block" : "none";
-  switchBtn.textContent = currentPage === "admin" ? "返回報名頁面" : "切換管理介面";
-  
-  if(currentPage === "admin"){
-    loadAllRecords();
-  }
-}
-
-// 管理員 loading 狀態
-function setAdminLoading(loading, btn = null) {
-  isAdminLoading = loading;
-  if (btn) {
-    btn.classList.toggle('loading', loading);
-    btn.disabled = loading;
-  }
-}
-
-// 驗證管理員
-function checkAdminByBackend() {
-  fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`)
-    .then(res => res.json())
-    .then(res => {
-      isAdmin = res?.isAdmin === true;
-      switchContainer.style.display = isAdmin ? "block" : "none";
-      adminAccessDenied.style.display = isAdmin ? "none" : "block";
-      adminContent.style.display = isAdmin ? "block" : "none";
-    })
-    .catch(() => {
-      isAdmin = false;
-      switchContainer.style.display = "none";
-    });
-}
-
-// 載入全部記錄
-function loadAllRecords() {
-  if(!isAdmin || isAdminLoading) return;
-  setAdminLoading(true, loadRecordsBtn);
-  
-  fetch(scriptURL + "?mode=read")
-    .then(res => res.json())
-    .then(data => {
-      fullRecords = (Array.isArray(data.records) ? data.records : []).map((item, index) => ({
-        id: index,
-        name: item[0] || "",
-        item: item[1] || ""
-      }));
-      renderRecordsList(fullRecords);
-    })
-    .catch(() => {
-      document.getElementById('recordsList').innerHTML = '<div class="empty-state">載入失敗</div>';
-    })
-    .finally(() => {
-      setAdminLoading(false, loadRecordsBtn);
-    });
-}
-
-// 渲染管理列表
-function renderRecordsList(list) {
-  const keyword = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
-  let filtered = list || [];
-  
-  if(keyword){
-    filtered = filtered.filter(item => 
-      item.name.toLowerCase().includes(keyword) || 
-      item.item.toLowerCase().includes(keyword)
-    );
-  }
-  
-  const container = document.getElementById('recordsList');
-  if(!filtered.length){
-    container.innerHTML = '<div class="empty-state">暫無資料</div>';
-    return;
-  }
-  
-  container.innerHTML = filtered.map((item, idx) => `
-    <div class="reservation-item">
-      <div class="reserve-header">
-        <div class="reserve-left">
-          <span class="reserve-num">${idx+1}</span>
-          <input type="checkbox" class="reserve-check" value="${item.id}" onchange="toggleSelect('${item.id}')">
-        </div>
-        <div class="reserve-btns">
-          <button onclick='editRecord(${JSON.stringify(item)})'>
-            <span class="loader"></span>修改
-          </button>
-          <button class="batch-delete-btn" onclick="deleteRecord('${item.id}')">
-            <span class="loader"></span>刪除
-          </button>
-        </div>
-      </div>
-      <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px;">
-        姓名：${item.name}<br>
-        項目：${item.item}
-      </div>
-    </div>
-  `).join('');
-}
-
-// 勾選選取
-function toggleSelect(id) {
-  const i = selectedItems.indexOf(id);
-  i > -1 ? selectedItems.splice(i, 1) : selectedItems.push(id);
-}
-
-// 修改記錄
-function editRecord(item) {
-  if(!isAdmin || isAdminLoading) return;
-  
-  const newName = prompt("修改姓名", item.name);
-  const newItem = prompt("修改項目", item.item);
-  
-  if(!newName || !newItem){
-    alert("請填寫完整資訊");
-    return;
-  }
-  
-  if(!confirm("確認修改？")) return;
-  
-  setAdminLoading(true);
-  const params = new URLSearchParams();
-  params.append("mode", "adminUpdate");
-  params.append("id", item.id);
-  params.append("name", newName);
-  params.append("item", newItem);
-  params.append("lineId", userId);
-  
-  fetch(scriptURL, {
-    method: "POST",
-    body: params,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" }
-  })
-  .then(res => res.json())
-  .then(data => {
-    if(data.success){
-      alert("修改成功");
-      loadAllRecords();
-      loadRecords();
-    }else{
-      alert("修改失敗");
-    }
-  })
-  .finally(() => setAdminLoading(false));
-}
-
-// 刪除單筆
-function deleteRecord(id) {
-  if(!isAdmin || isAdminLoading || !confirm("確定刪除？")) return;
-  
-  setAdminLoading(true);
-  const params = new URLSearchParams();
-  params.append("mode", "adminDelete");
-  params.append("id", id);
-  params.append("lineId", userId);
-  
-  fetch(scriptURL, {
-    method: "POST",
-    body: params,
-    headers: { "Content-Type": "application/x-www-form-urlencoded" }
-  })
-  .then(res => res.json())
-  .then(data => {
-    if(data.success){
-      alert("刪除成功");
-      loadAllRecords();
-      loadRecords();
-    }else{
-      alert("刪除失敗");
-    }
-  })
-  .finally(() => setAdminLoading(false));
-}
-
-// 批次刪除
-function batchDeleteRecords() {
-  if(!isAdmin || isAdminLoading || selectedItems.length === 0 || !confirm(`確定刪除 ${selectedItems.length} 筆？`)) return;
-  
-  setAdminLoading(true, batchDeleteBtn);
-  let success = 0;
-  let total = selectedItems.length;
-  
-  selectedItems.forEach(id => {
-    const params = new URLSearchParams();
-    params.append("mode", "adminDelete");
-    params.append("id", id);
-    params.append("lineId", userId);
-    
-    fetch(scriptURL, {
-      method: "POST",
-      body: params,
-      headers: { "Content-Type": "application/x-www-form-urlencoded" }
-    })
-    .then(res => res.json())
-    .then(data => {
-      if(data.success) success++;
-    })
-    .finally(() => {
-      if(success === total){
-        alert(`成功刪除 ${success} 筆`);
-        selectedItems = [];
-        loadAllRecords();
-        loadRecords();
-        setAdminLoading(false, batchDeleteBtn);
-      }
-    });
-  });
-}
-
-// ==================== 原本功能 ====================
-
+// 初始化LIFF並加載數據
 window.onload = () => {
-  // 初始化 DOM
-  switchBtn = document.getElementById('switchBtn');
-  switchContainer = document.getElementById('switchContainer');
-  userPage = document.getElementById('userPage');
-  adminPage = document.getElementById('adminPage');
-  adminContent = document.getElementById('adminContent');
-  adminAccessDenied = document.getElementById('adminAccessDenied');
-  loadRecordsBtn = document.getElementById('loadRecordsBtn');
-  batchDeleteBtn = document.getElementById('batchDeleteBtn');
-  
-  form = document.getElementById("myForm");
-  nameInput = document.getElementById("nameInput");
-  chkOther = document.getElementById("chkOther");
-  otherInput = document.getElementById("otherInput");
-  successMsg = document.getElementById("successMsg");
-  loadingRecords = document.getElementById("loadingRecords");
-  recordsTable = document.getElementById("recordsTable");
-  recordsBody = document.getElementById("recordsBody");
-  totalCount = document.getElementById("totalCount");
-
-  switchBtn.onclick = togglePage;
-  loadRecordsBtn.onclick = loadAllRecords;
-  batchDeleteBtn.onclick = batchDeleteRecords;
-
-  // LIFF 初始化
   liff.init({ liffId: LIFF_ID })
     .then(() => {
       if (liff.isLoggedIn()) {
-        return liff.getProfile();
+        liff.getProfile().then(profile => {
+          userId = profile.userId;
+          displayName = profile.displayName;
+          loadRecords();
+        });
       } else {
         liff.login();
       }
     })
-    .then(profile => {
-      if(profile){
-        userId = profile.userId;
-        displayName = profile.displayName;
-        checkAdminByBackend();
-        loadRecords();
-      }
-    })
     .catch(err => {
-      console.log("LIFF 初始化失敗：", err);
-      loadRecords();
+      alert("⚠️ LIFF 初始化失敗：" + err);
+      successMsg.style.color = "var(--accent-red)";
+      successMsg.textContent = "⚠️ LIFF 初始化失敗：" + err;
     });
-
-  // 其他項目切換
-  chkOther.addEventListener("change", () => {
-    otherInput.style.display = chkOther.checked ? "block" : "none";
-    if (!chkOther.checked) otherInput.value = "";
-  });
-
-  // 表單提交
-  form.addEventListener("submit", e => {
-    e.preventDefault();
-    successMsg.textContent = "";
-    successMsg.style.color = "var(--text-primary)";
-    const name = nameInput.value.trim();
-
-    if (!name) {
-      successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "請輸入姓名";
-      return;
-    }
-
-    let selectedItems = Array.from(document.querySelectorAll('input[name="item"]:checked'))
-      .map(cb => cb.value)
-      .filter(v => v !== "其他");
-
-    if (chkOther.checked) {
-      const otherVal = otherInput.value.trim();
-      if (otherVal) selectedItems.push(otherVal);
-    }
-
-    if (selectedItems.length === 0) {
-      successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "請選擇至少一個項目";
-      return;
-    }
-
-    const itemString = selectedItems.join("、");
-    const formData = new URLSearchParams();
-    formData.append("name", name);
-    formData.append("item", itemString);
-    formData.append("userId", userId);
-    formData.append("displayName", displayName);
-    formData.append("submitTime", new Date().toLocaleString());
-
-    successMsg.textContent = "送出中...";
-
-    fetch(scriptURL, {
-      method: "POST",
-      body: formData,
-      headers: { "Content-Type": "application/x-www-form-urlencoded" }
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        successMsg.style.color = "var(--accent-green)";
-        successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
-        form.reset();
-        otherInput.style.display = "none";
-        loadRecords();
-      } else {
-        successMsg.style.color = "var(--accent-red)";
-        successMsg.textContent = "❌ 操作失敗：" + (data.message || "");
-      }
-    })
-    .catch(() => {
-      successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "❌ 網路錯誤";
-    });
-  });
 };
 
+// 表單提交處理
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  successMsg.textContent = "";
+  successMsg.style.color = "var(--text-primary)";
+  const name = nameInput.value.trim();
+
+  // 驗證姓名
+  if (!name) {
+    successMsg.style.color = "var(--accent-red)";
+    successMsg.textContent = "請輸入姓名";
+    return;
+  }
+
+  // 獲取選中項目
+  let selectedItems = Array.from(document.querySelectorAll('input[name="item"]:checked'))
+    .map(cb => cb.value)
+    .filter(v => v !== "其他");
+
+  // 處理其他項目
+  if (chkOther.checked) {
+    const otherVal = otherInput.value.trim();
+    otherVal && selectedItems.push(otherVal);
+  }
+
+  // 驗證項目
+  if (selectedItems.length === 0) {
+    successMsg.style.color = "var(--accent-red)";
+    successMsg.textContent = "請選擇至少一個項目";
+    return;
+  }
+
+  const itemString = selectedItems.join("、");
+  const formData = new URLSearchParams();
+  formData.append("name", name);
+  formData.append("item", itemString);
+  formData.append("userId", userId);
+  formData.append("displayName", displayName);
+
+  // 顯示提交狀態
+  successMsg.textContent = existingNames.includes(name) ? "更新中..." : "送出中...";
+
+  // 提交數據
+  fetch(scriptURL, {
+    method: "POST",
+    body: formData,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    mode: "cors"
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      successMsg.style.color = "var(--accent-green)";
+      successMsg.innerHTML = `✅ ${existingNames.includes(name) ? '更新成功' : '報名成功'}！<br>姓名：<strong>${name}</strong>`;
+      form.reset();
+      otherInput.style.display = "none";
+      loadRecords();
+    } else {
+      successMsg.style.color = "var(--accent-red)";
+      successMsg.textContent = "❌ 操作失敗：" + (data.message || "未知錯誤");
+    }
+  })
+  .catch(() => {
+    successMsg.style.color = "var(--accent-red)";
+    successMsg.textContent = "❌ 網路或後端錯誤";
+  });
+});
+
+// 加載報名記錄
 function loadRecords() {
   loadingRecords.style.display = "block";
+  loadingRecords.textContent = "讀取中...";
   recordsTable.style.display = "none";
   recordsBody.innerHTML = "";
 
@@ -926,23 +508,39 @@ function loadRecords() {
     .then(data => {
       const records = Array.isArray(data.records) ? data.records : [];
       if (records.length > 0) {
+        existingNames = records.map(r => r[0]);
         renderRecords(records);
       } else {
+        existingNames = [];
         loadingRecords.textContent = "沒有資料";
+        loadingRecords.style.animation = "none";
+        recordsTable.style.display = "none";
         totalCount.textContent = "總報名人數：0";
       }
     })
     .catch(() => {
       loadingRecords.textContent = "❌ 無法載入資料";
+      loadingRecords.style.animation = "none";
       totalCount.textContent = "總報名人數：0";
+      recordsTable.style.display = "none";
     });
 }
 
+// 渲染報名記錄
 function renderRecords(records) {
+  if (!Array.isArray(records) || records.length === 0) {
+    recordsTable.style.display = "none";
+    loadingRecords.textContent = "沒有資料";
+    loadingRecords.style.animation = "none";
+    totalCount.textContent = "總報名人數：0";
+    return;
+  }
+
   loadingRecords.style.display = "none";
   recordsTable.style.display = "table";
   recordsBody.innerHTML = "";
 
+  // 倒序渲染記錄
   records.slice().reverse().forEach(([name, item]) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `<td>${name || '未知姓名'}</td><td>${item || '未選擇項目'}</td>`;
