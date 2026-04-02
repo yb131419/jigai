@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>彥彬📿 祭改系統</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
@@ -561,7 +561,6 @@
         <span>重新載入名單</span>
       </button>
       
-      <!-- 新增：工作表1 全部清除 -->
       <button class="admin-btn" id="clearAllBtn" style="margin-top:10px; background:var(--accent-red);">
         <span class="loader"></span>
         <span>工作表1 全部清除</span>
@@ -593,6 +592,7 @@ let adminContent, adminAccessDenied;
 let loadRecordsBtn, batchDeleteBtn, clearAllBtn;
 let form, nameInput, chkOther, otherInput, successMsg;
 let loadingRecords, recordsTable, recordsBody, totalCount;
+let submitBtn;
 
 // 切換頁面
 function togglePage() {
@@ -618,16 +618,24 @@ function setAdminLoading(loading, btn = null) {
 // 驗證管理員
 function checkAdminByBackend() {
   if(!userId) return;
-  fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`, { mode: 'no-cors' })
-    .then(res => {
-      isAdmin = true;
-      switchContainer.style.display = "block";
-      adminAccessDenied.style.display = "none";
-      adminContent.style.display = "block";
+  fetch(`${scriptURL}?action=checkAdmin&lineId=${userId}&_=${Date.now()}`)
+    .then(res => res.json())
+    .then(data => {
+      isAdmin = data.isAdmin || false;
+      switchContainer.style.display = isAdmin ? "block" : "none";
+      if (isAdmin) {
+        adminAccessDenied.style.display = "none";
+        adminContent.style.display = "block";
+      } else {
+        adminAccessDenied.style.display = "block";
+        adminContent.style.display = "none";
+      }
     })
     .catch(() => {
       isAdmin = false;
       switchContainer.style.display = "none";
+      adminAccessDenied.style.display = "block";
+      adminContent.style.display = "none";
     });
 }
 
@@ -663,8 +671,8 @@ function renderRecordsList(list) {
   
   if(keyword){
     filtered = filtered.filter(item => 
-      (item[0]?.toLowerCase().includes(keyword) || "") || 
-      (item[1]?.toLowerCase().includes(keyword) || "")
+      (item.name?.toLowerCase().includes(keyword) || "") || 
+      (item.item?.toLowerCase().includes(keyword) || "")
     );
   }
   
@@ -679,21 +687,22 @@ function renderRecordsList(list) {
       <div class="reserve-header">
         <div class="reserve-left">
           <span class="reserve-num">${idx+1}</span>
-          <input type="checkbox" class="reserve-check" value="${idx}" onchange="toggleSelect('${idx}')">
+          <input type="checkbox" class="reserve-check" value="${item.id}" onchange="toggleSelect('${item.id}')">
         </div>
         <div class="reserve-btns">
           <button onclick='editRecord(${JSON.stringify(item)})'>
             <span class="loader"></span>修改
           </button>
-          <button class="batch-delete-btn" onclick="deleteRecord('${idx}')">
+          <button class="batch-delete-btn" onclick="deleteRecord('${item.id}')">
             <span class="loader"></span>刪除
           </button>
         </div>
       </div>
-      <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px;">
-        姓名：${item[0] || ''}<br>
-        項目：${item[1] || ''}<br>
-        日期：${item[3] || ''}
+      <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px; line-height:1.6;">
+        祭改者：${item.name || ''}<br>
+        祭改項目：${item.item || ''}<br>
+        報名者：${item.displayName || ''}<br>
+        報名時間：${item.date || ''}
       </div>
     </div>
   `).join('');
@@ -709,9 +718,9 @@ function toggleSelect(id) {
 function editRecord(item) {
   if(!isAdmin || isAdminLoading) return;
   
-  const newName = prompt("修改姓名", item[0] || "");
-  const newItem = prompt("修改項目", item[1] || "");
-  const newDate = prompt("修改日期", item[3] || '');
+  const newName = prompt("修改祭改者", item.name || "");
+  const newItem = prompt("修改祭改項目", item.item || "");
+  const newDate = prompt("修改報名時間", item.date || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
@@ -731,7 +740,6 @@ function editRecord(item) {
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -755,7 +763,6 @@ function deleteRecord(id) {
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -783,7 +790,6 @@ function batchDeleteRecords() {
     
     fetch(scriptURL, {
       method: "POST",
-      mode: 'no-cors',
       body: params,
       headers: { "Content-Type": "application/x-www-form-urlencoded" }
     })
@@ -813,7 +819,6 @@ function clearAllSheet1() {
   
   fetch(scriptURL, {
     method: "POST",
-    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -848,6 +853,7 @@ window.onload = () => {
   recordsTable = document.getElementById("recordsTable");
   recordsBody = document.getElementById("recordsBody");
   totalCount = document.getElementById("totalCount");
+  submitBtn = document.getElementById("submitBtn");
 
   switchBtn.onclick = togglePage;
   loadRecordsBtn.onclick = loadAllRecords;
@@ -880,7 +886,7 @@ window.onload = () => {
     if (!chkOther.checked) otherInput.value = "";
   });
 
-  // 表單提交 + 名稱不可重複報名
+  // 表單提交
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     
@@ -918,11 +924,12 @@ window.onload = () => {
     }
 
     try {
+      // 檢查重複報名
       const res = await fetch(scriptURL + "?mode=read&_="+Date.now());
       const text = await res.text();
       const data = JSON.parse(text);
       const records = Array.isArray(data.records) ? data.records : [];
-      const exists = records.some(r => (r[0] || "").trim() === name.trim());
+      const exists = records.some(r => (r.name || "").trim() === name.trim());
       
       if (exists) {
         successMsg.style.color = "var(--accent-red)";
@@ -942,23 +949,29 @@ window.onload = () => {
 
       successMsg.textContent = "送出中...";
 
-      await fetch(scriptURL, {
+      const response = await fetch(scriptURL, {
         method: "POST",
         body: formData,
         headers: { "Content-Type": "application/x-www-form-urlencoded" }
       });
       
-      successMsg.style.color = "var(--accent-green)";
-      successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
-      form.reset();
-      otherInput.style.display = "none";
-      loadRecords();
+      const result = await response.json();
+      
+      if (result.success) {
+        successMsg.style.color = "var(--accent-green)";
+        successMsg.innerHTML = `✅ 報名成功！<br>姓名：<strong>${name}</strong>`;
+        form.reset();
+        otherInput.style.display = "none";
+        loadRecords();
+      } else {
+        successMsg.style.color = "var(--accent-red)";
+        successMsg.textContent = "❌ " + (result.message || "報名失敗，請稍後再試");
+      }
       
     } catch (err) {
+      console.error(err);
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "❌ 網路錯誤，請稍後再試";
-      isSubmitting = false;
-      submitBtn.disabled = false;
     } finally {
       isSubmitting = false;
       submitBtn.disabled = false;
@@ -1005,8 +1018,8 @@ function renderRecords(records) {
   [...records].reverse().forEach(item => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${item[0] || ''}</td>
-      <td>${item[1] || ''}</td>
+      <td>${item.name || ''}</td>
+      <td>${item.item || ''}</td>
     `;
     recordsBody.appendChild(tr);
   });
