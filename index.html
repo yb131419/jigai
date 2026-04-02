@@ -674,8 +674,8 @@ function renderRecordsList(list) {
   
   if(keyword){
     filtered = filtered.filter(item => 
-      item.name.toLowerCase().includes(keyword) || 
-      item.item.toLowerCase().includes(keyword)
+      (item?.name || '').toLowerCase().includes(keyword) || 
+      (item?.item || '').toLowerCase().includes(keyword)
     );
   }
   
@@ -702,8 +702,8 @@ function renderRecordsList(list) {
         </div>
       </div>
       <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px;">
-        姓名：${item.name}<br>
-        項目：${item.item}<br>
+        姓名：${item.name || '未知姓名'}<br>
+        項目：${item.item || '未選擇項目'}<br>
         日期：${item.date || ''}
       </div>
     </div>
