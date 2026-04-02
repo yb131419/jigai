@@ -593,6 +593,7 @@ let adminContent, adminAccessDenied;
 let loadRecordsBtn, batchDeleteBtn, clearAllBtn;
 let form, nameInput, chkOther, otherInput, successMsg;
 let loadingRecords, recordsTable, recordsBody, totalCount;
+let submitBtn;
 
 // 切換頁面
 function togglePage() {
@@ -711,7 +712,7 @@ function editRecord(item) {
   
   const newName = prompt("修改姓名", item[0] || "");
   const newItem = prompt("修改項目", item[1] || "");
-  const newDate = prompt("修改日期", item[5] || '');
+  const newDate = prompt("修改日期", item[3] || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
@@ -848,6 +849,7 @@ window.onload = () => {
   recordsTable = document.getElementById("recordsTable");
   recordsBody = document.getElementById("recordsBody");
   totalCount = document.getElementById("totalCount");
+  submitBtn = document.getElementById("submitBtn");
 
   switchBtn.onclick = togglePage;
   loadRecordsBtn.onclick = loadAllRecords;
@@ -954,12 +956,15 @@ window.onload = () => {
       otherInput.style.display = "none";
       loadRecords();
       
+      // 重置提交狀態
+      isSubmitting = false;
+      submitBtn.disabled = false;
+      
     } catch (err) {
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "❌ 網路錯誤，請稍後再試";
-      isSubmitting = false;
-      submitBtn.disabled = false;
     } finally {
+      // 確保狀態一定重置
       isSubmitting = false;
       submitBtn.disabled = false;
     }
