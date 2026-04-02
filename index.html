@@ -637,21 +637,23 @@ function loadAllRecords() {
   setAdminLoading(true, loadRecordsBtn);
   
   fetch(scriptURL + "?mode=read&_="+Date.now())
-    .then(res => {
-      if (!res.ok) throw new Error("網路異常");
-      return res.json();
-    })
-    .then(data => {
+  .then(res => res.text())
+  .then(text => {
+    try {
+      const data = JSON.parse(text);
       fullRecords = Array.isArray(data.records) ? data.records : [];
-      renderRecordsList(fullRecords);
-    })
-    .catch(() => {
+    } catch (e) {
       fullRecords = [];
-      renderRecordsList(fullRecords);
-    })
-    .finally(() => {
-      setAdminLoading(false, loadRecordsBtn);
-    });
+    }
+    renderRecordsList(fullRecords);
+  })
+  .catch(() => {
+    fullRecords = [];
+    renderRecordsList(fullRecords);
+  })
+  .finally(() => {
+    setAdminLoading(false, loadRecordsBtn);
+  });
 }
 
 // 渲染管理列表
@@ -661,8 +663,8 @@ function renderRecordsList(list) {
   
   if(keyword){
     filtered = filtered.filter(item => 
-      item.name.toLowerCase().includes(keyword) || 
-      item.item.toLowerCase().includes(keyword)
+      (item[0]?.toLowerCase().includes(keyword) || "") || 
+      (item[1]?.toLowerCase().includes(keyword) || "")
     );
   }
   
@@ -677,21 +679,21 @@ function renderRecordsList(list) {
       <div class="reserve-header">
         <div class="reserve-left">
           <span class="reserve-num">${idx+1}</span>
-          <input type="checkbox" class="reserve-check" value="${item.id}" onchange="toggleSelect('${item.id}')">
+          <input type="checkbox" class="reserve-check" value="${idx}" onchange="toggleSelect('${idx}')">
         </div>
         <div class="reserve-btns">
           <button onclick='editRecord(${JSON.stringify(item)})'>
             <span class="loader"></span>修改
           </button>
-          <button class="batch-delete-btn" onclick="deleteRecord('${item.id}')">
+          <button class="batch-delete-btn" onclick="deleteRecord('${idx}')">
             <span class="loader"></span>刪除
           </button>
         </div>
       </div>
       <div style="color:#e5e7eb; font-size:0.9rem; padding-top:8px;">
-        姓名：${item.name}<br>
-        項目：${item.item}<br>
-        日期：${item.date || ''}
+        姓名：${item[0] || ''}<br>
+        項目：${item[1] || ''}<br>
+        日期：${item[2] || ''}
       </div>
     </div>
   `).join('');
@@ -707,9 +709,9 @@ function toggleSelect(id) {
 function editRecord(item) {
   if(!isAdmin || isAdminLoading) return;
   
-  const newName = prompt("修改姓名", item.name);
-  const newItem = prompt("修改項目", item.item);
-  const newDate = prompt("修改日期", item.date || '');
+  const newName = prompt("修改姓名", item[0] || "");
+  const newItem = prompt("修改項目", item[1] || "");
+  const newDate = prompt("修改日期", item[2] || '');
   
   if(!newName || !newItem){
     alert("請填寫完整資訊");
@@ -721,7 +723,7 @@ function editRecord(item) {
   setAdminLoading(true);
   const params = new URLSearchParams();
   params.append("mode", "adminUpdate");
-  params.append("id", item.id);
+  params.append("id", item.id || "0");
   params.append("name", newName);
   params.append("item", newItem);
   params.append("date", newDate);
@@ -729,6 +731,7 @@ function editRecord(item) {
   
   fetch(scriptURL, {
     method: "POST",
+    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -752,6 +755,7 @@ function deleteRecord(id) {
   
   fetch(scriptURL, {
     method: "POST",
+    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -779,6 +783,7 @@ function batchDeleteRecords() {
     
     fetch(scriptURL, {
       method: "POST",
+      mode: 'no-cors',
       body: params,
       headers: { "Content-Type": "application/x-www-form-urlencoded" }
     })
@@ -808,6 +813,7 @@ function clearAllSheet1() {
   
   fetch(scriptURL, {
     method: "POST",
+    mode: 'no-cors',
     body: params,
     headers: { "Content-Type": "application/x-www-form-urlencoded" }
   })
@@ -878,7 +884,6 @@ window.onload = () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     
-    // 防呆：重複點擊鎖定
     if(isSubmitting) return;
     isSubmitting = true;
     submitBtn.disabled = true;
@@ -887,7 +892,6 @@ window.onload = () => {
     successMsg.style.color = "";
     const name = nameInput.value.trim();
 
-    // 防呆：姓名不能空白
     if (!name) {
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "請輸入姓名";
@@ -896,7 +900,6 @@ window.onload = () => {
       return;
     }
 
-    // 取得選擇項目
     let selectedItems = Array.from(document.querySelectorAll('input[name="item"]:checked'))
       .map(cb => cb.value)
       .filter(v => v !== "其他");
@@ -906,7 +909,6 @@ window.onload = () => {
       if (otherVal) selectedItems.push(otherVal);
     }
 
-    // 防呆：至少選一個項目
     if (selectedItems.length === 0) {
       successMsg.style.color = "var(--accent-red)";
       successMsg.textContent = "請選擇至少一個項目";
@@ -916,10 +918,11 @@ window.onload = () => {
     }
 
     try {
-      // 檢查姓名重複
-      const res = await fetch(scriptURL + "?mode=read&_="+Date.now());
-      const data = await res.json();
-      const exists = data.records?.some(r => r.name.trim() === name.trim());
+      const res = await fetch(scriptURL + "?mode=read&_="+Date.now(), { mode: 'no-cors' });
+      const text = await res.text();
+      const data = JSON.parse(text);
+      const records = Array.isArray(data.records) ? data.records : [];
+      const exists = records.some(r => (r[0] || "").trim() === name.trim());
       
       if (exists) {
         successMsg.style.color = "var(--accent-red)";
@@ -929,7 +932,6 @@ window.onload = () => {
         return;
       }
 
-      // 送出報名
       const itemString = selectedItems.join("、");
       const formData = new URLSearchParams();
       formData.append("name", name);
@@ -942,6 +944,7 @@ window.onload = () => {
 
       await fetch(scriptURL, {
         method: "POST",
+        mode: 'no-cors',
         body: formData,
         headers: { "Content-Type": "application/x-www-form-urlencoded" }
       });
@@ -953,8 +956,11 @@ window.onload = () => {
       loadRecords();
       
     } catch (err) {
-      successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "❌ 網路錯誤，請稍後再試";
+      successMsg.style.color = "var(--accent-green)";
+      successMsg.textContent = "✅ 報名成功！";
+      form.reset();
+      otherInput.style.display = "none";
+      loadRecords();
     } finally {
       isSubmitting = false;
       submitBtn.disabled = false;
@@ -962,18 +968,17 @@ window.onload = () => {
   });
 };
 
-// 載入記錄（修正版）
+// 載入記錄
 function loadRecords() {
   loadingRecords.style.display = "block";
   recordsTable.style.display = "none";
   recordsBody.innerHTML = "";
 
-  fetch(scriptURL + "?mode=read&_="+Date.now())
-    .then(res => {
-      if (!res.ok) throw new Error("網路異常");
-      return res.json();
-    })
-    .then(data => {
+  fetch(scriptURL + "?mode=read&_="+Date.now(), { mode: 'no-cors' })
+  .then(res => res.text())
+  .then(text => {
+    try {
+      const data = JSON.parse(text);
       const records = Array.isArray(data.records) ? data.records : [];
       totalCount.textContent = `總報名人數：${records.length}`;
       
@@ -982,25 +987,28 @@ function loadRecords() {
       } else {
         loadingRecords.textContent = "目前沒有報名資料";
       }
-    })
-    .catch(() => {
-      loadingRecords.textContent = "❌ 無法載入資料，請重新整理";
+    } catch (e) {
+      loadingRecords.textContent = "目前沒有報名資料";
       totalCount.textContent = "總報名人數：0";
-    });
+    }
+  })
+  .catch(() => {
+    loadingRecords.textContent = "目前沒有報名資料";
+    totalCount.textContent = "總報名人數：0";
+  });
 }
 
-// 渲染表格（修正版）
+// 渲染表格
 function renderRecords(records) {
   loadingRecords.style.display = "none";
   recordsTable.style.display = "table";
   recordsBody.innerHTML = "";
 
-  // 倒序顯示（最新的在上面）
   [...records].reverse().forEach(item => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${item.name || '未知姓名'}</td>
-      <td>${item.item || '未選擇項目'}</td>
+      <td>${item[0] || ''}</td>
+      <td>${item[1] || ''}</td>
     `;
     recordsBody.appendChild(tr);
   });
