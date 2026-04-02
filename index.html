@@ -339,7 +339,7 @@
       button { padding: 14px; font-size: 17px; }
     }
 
-    /* 管理員樣式 - 修正為右下角浮窗 */
+    /* 管理員樣式 - 右下角浮窗 */
     .top-bar {
       position: fixed;
       bottom: 20px;
@@ -529,7 +529,7 @@
   <p id="totalCount">總報名人數：0</p>
   <p id="loadingRecords">讀取中...</p>
 
-  <table id="recordsTable" style="display:none;">
+  <table id="recordsTable">
     <thead>
       <tr>
         <th>姓名</th>
@@ -547,7 +547,7 @@
     ❌ 您無管理員權限<br>請聯繫管理員開通權限
   </div>
 
-  <div id="adminContent" style="display:none;">
+  <div id="adminContent">
     <div class="admin-card">
       <input 
         type="text" 
@@ -624,6 +624,8 @@ function checkAdminByBackend() {
     .then(data => {
       isAdmin = data.isAdmin || false;
       switchContainer.style.display = isAdmin ? "block" : "none";
+      
+      // 強制修正管理頁面顯示
       if (isAdmin) {
         adminAccessDenied.style.display = "none";
         adminContent.style.display = "block";
@@ -983,7 +985,6 @@ window.onload = () => {
 // 載入記錄
 function loadRecords() {
   loadingRecords.style.display = "block";
-  recordsTable.style.display = "none";
   recordsBody.innerHTML = "";
 
   fetch(scriptURL + "?mode=read&_="+Date.now())
@@ -998,19 +999,16 @@ function loadRecords() {
         renderRecords(records);
       } else {
         loadingRecords.textContent = "目前沒有報名資料";
-        loadingRecords.style.display = "block";
         recordsTable.style.display = "none";
       }
     } catch (e) {
       loadingRecords.textContent = "目前沒有報名資料";
-      loadingRecords.style.display = "block";
       recordsTable.style.display = "none";
       totalCount.textContent = "總報名人數：0";
     }
   })
   .catch(() => {
     loadingRecords.textContent = "目前沒有報名資料";
-    loadingRecords.style.display = "block";
     recordsTable.style.display = "none";
     totalCount.textContent = "總報名人數：0";
   });
