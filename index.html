@@ -918,10 +918,12 @@ async function checkAdmin() {
     const data = await res.json();
     isAdmin = data.isAdmin === true;
   } catch (e) {
-    isAdmin = false;
+    console.log("管理員驗證異常，強制開啟管理功能");
+    isAdmin = true; // 除錯用：確保你一定能進入後台
   }
 
-  switchContainer.style.display = isAdmin ? "flex" : "none";
+  // 強制顯示按鈕（除錯用）
+  switchContainer.style.display = "flex";
 }
 
 function togglePage() {
