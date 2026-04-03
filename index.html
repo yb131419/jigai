@@ -380,93 +380,167 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .admin-card {
-      background: #161b22;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 6px 22px rgba(0,0,0,0.3);
-      border: 1px solid #2c313a;
-      margin-bottom: 20px;
+    /* 完全對齊預約系統的管理介面樣式 */
+    .collapse-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+    .collapse-arrow {
+      transition: transform 0.3s;
+    }
+    .collapse-arrow.open {
+      transform: rotate(180deg);
+    }
+    .collapse-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
     }
 
+    .admin-card {
+      background: #161b22;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.3);
+      border: 1px solid #2c313a;
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .admin-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5px;
+      height: 100%;
+      background: linear-gradient(180deg, #60a5fa, #10b981);
+    }
+    .admin-card:hover {
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      transform: translateY(-2px);
+    }
     .admin-card h3 {
       font-size: 1.15rem;
       font-weight: 700;
       color: #e5e7eb;
-      margin-bottom: 18px;
+      margin-bottom: 22px;
       padding-bottom: 12px;
       border-bottom: 1px solid #374151;
       display: flex;
       align-items: center;
       gap: 8px;
+      letter-spacing: 0.5px;
     }
 
     .search-box {
       width: 100%;
-      height: 48px;
-      padding: 0 16px;
-      border-radius: 12px;
+      height: 50px;
+      padding: 0 18px;
+      border-radius: 16px;
       background: #1f2937;
       border: 1px solid #374151;
       color: #f9fafb;
       margin-bottom: 15px;
-      font-size: 15px;
+      font-size: 1rem;
+      font-family: 'Inter', sans-serif;
+    }
+    .search-box:focus {
+      outline: none;
+      background: #272e3b;
+      border-color: #60a5fa;
     }
 
     .admin-btn {
       width: 100%;
-      height: 48px;
-      border-radius: 12px;
+      height: 52px;
+      border-radius: 16px;
       background: #10b981;
       color: #fff;
       font-weight: 600;
+      font-size: 1rem;
       border: none;
       cursor: pointer;
       margin-bottom: 15px;
-      transition: 0.3s;
+      transition: all 0.3s;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
     }
     .admin-btn:hover {
       background: #059669;
+      transform: translateY(-2px);
     }
     .batch-delete-btn {
-      background: #ef4444;
+      background: #ef4444 !important;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2) !important;
     }
     .batch-delete-btn:hover {
-      background: #dc2626;
+      background: #dc2626 !important;
     }
 
     .reservation-item {
-      padding: 14px;
-      border-radius: 12px;
+      padding: 16px;
+      border-radius: 14px;
       background: #1f2937;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       border: 1px solid #374151;
+      transition: all 0.3s ease;
+    }
+    .reservation-item:hover {
+      background: #272e3b;
+      border-color: #60a5fa;
+      transform: translateX(2px);
+    }
+    .reservation-item:last-child {
+      margin-bottom: 0;
     }
     .reserve-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+    .reserve-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .reserve-num {
+      font-size: 0.9rem;
+      color: #60a5fa;
+      font-weight: 900;
+      min-width: 28px;
+      text-align: center;
     }
     .reserve-check {
-      transform: scale(1.5);
-      margin-right: 8px;
+      transform: scale(1.6);
+      width: auto;
+      height: auto;
+      margin: 0;
+      align-self: center;
+      accent-color: #10b981;
     }
     .reserve-btns {
       display: flex;
       gap: 8px;
     }
     .reserve-btns button {
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
+      height: 36px;
+      min-width: 60px;
+      font-size: 0.85rem;
+      border-radius: 10px;
       border: none;
       color: #fff;
       cursor: pointer;
+      padding: 0 12px;
+      margin-top: 0;
     }
     .reserve-btns .edit-btn {
       background: #60a5fa;
@@ -477,13 +551,15 @@
 
     .empty-state {
       text-align: center;
-      padding: 30px 10px;
+      padding: 40px 10px;
       color: #9ca3af;
+      font-size: 0.95rem;
+      font-weight: 500;
     }
 
     .loader {
-      width: 16px;
-      height: 16px;
+      width: 20px;
+      height: 20px;
       border: 2px solid #fff;
       border-bottom-color: transparent;
       border-radius: 50%;
@@ -491,7 +567,7 @@
       display: none;
     }
     button.loading .loader {
-      display: inline-block;
+      display: block;
     }
     @keyframes rotation {
       0% { transform: rotate(0deg); }
@@ -500,13 +576,53 @@
 
     .access-denied {
       text-align: center;
-      padding: 40px 20px;
+      padding: 60px 20px;
       color: #ef4444;
       font-weight: 600;
+      font-size: 1.05rem;
+      line-height: 1.7;
       background: #1f2937;
-      border-radius: 16px;
+      border-radius: 20px;
       margin: 15px 0;
+      border: 1px solid rgba(239,68,68,0.2);
       display: none;
+    }
+
+    /* 分頁樣式 */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .page-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid #374151;
+      background: #161b22;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: 700;
+      color: #9ca3af;
+      transition: all 0.2s;
+    }
+    .page-btn:hover:not(:disabled) {
+      background: #1f2937;
+      border-color: #60a5fa;
+      color: #60a5fa;
+    }
+    .page-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .page-info {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      font-weight: 500;
     }
   </style>
 </head>
@@ -567,20 +683,37 @@
   </div>
 
   <div id="adminAccessDenied" class="access-denied">
-    ❌ 您無管理員權限
+    ❌ 您無管理員權限<br>請聯繫店家開通高級管理權限
   </div>
 
-  <div id="adminContent">
+  <div id="adminContent" style="display:none;">
     <div class="admin-card">
-      <h3>📋 報名紀錄管理</h3>
-      <input type="text" id="searchInput" class="search-box" placeholder="🔍 搜尋姓名/項目" oninput="renderAdminList()">
-      <button class="admin-btn" id="refreshBtn" onclick="loadAdminRecords()">
-        <span class="loader"></span>重新整理
-      </button>
-      <div id="adminList"></div>
-      <button class="admin-btn batch-delete-btn" id="batchDeleteBtn" onclick="batchDelete()">
-        <span class="loader"></span>刪除選取資料
-      </button>
+      <div class="collapse-header" onclick="toggleCollapse('recordCollapse')">
+        <h3>📋 祭改報名紀錄 <span id="recordCount" style="color:#60a5fa;">(0 筆)</span></h3>
+        <span class="collapse-arrow" id="recordArrow">▼</span>
+      </div>
+      <div class="collapse-body" id="recordCollapse">
+        <input 
+          type="text" 
+          id="searchInput" 
+          class="search-box" 
+          placeholder="🔍 搜尋：姓名 / 項目"
+          oninput="renderAdminList()"
+        >
+
+        <button class="admin-btn" id="refreshBtn" onclick="loadAdminRecords()">
+          <span class="loader"></span>
+          <span>重新載入報名</span>
+        </button>
+        
+        <div id="adminList"></div>
+        <div id="recordPagination" class="pagination" style="display: none;"></div>
+        
+        <button class="admin-btn batch-delete-btn" id="batchDeleteBtn" onclick="batchDelete()">
+          <span class="loader"></span>
+          <span>刪除選取資料</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -595,6 +728,10 @@ let allRecords = [];
 let selectedIds = [];
 let isAdmin = false;
 let currentPage = "user";
+
+// 分頁參數
+let currentRecordPage = 1;
+const recordsPerPage = 5;
 
 let switchBtn, userPage, adminPage, adminContent, adminAccessDenied, switchContainer;
 
@@ -612,6 +749,19 @@ chkOther.addEventListener("change", () => {
   otherInput.style.display = chkOther.checked ? "block" : "none";
   if (!chkOther.checked) otherInput.value = "";
 });
+
+// 收合功能（對齊預約系統）
+function toggleCollapse(id) {
+  const body = document.getElementById(id);
+  const arrow = document.getElementById(id.replace('Collapse','Arrow'));
+  if (body.style.maxHeight && body.style.maxHeight !== '0px') {
+    body.style.maxHeight = '0px';
+    arrow.classList.remove('open');
+  } else {
+    body.style.maxHeight = '5000px';
+    arrow.classList.add('open');
+  }
+}
 
 window.onload = async () => {
   initAdminElements();
@@ -664,7 +814,6 @@ form.addEventListener("submit", async (e) => {
   formData.append("userId", userId);
   formData.append("displayName", displayName);
   
-  // 生成標準時間格式，完全對齊後端
   const submitTime = new Date().toLocaleString('zh-TW', {
     timeZone: 'Asia/Taipei',
     year: 'numeric',
@@ -776,14 +925,6 @@ async function checkAdmin() {
 }
 
 function togglePage() {
-  if (!isAdmin) {
-    adminAccessDenied.style.display = "block";
-    adminContent.style.display = "none";
-    adminPage.style.display = "block";
-    userPage.style.display = "none";
-    return;
-  }
-
   currentPage = currentPage === "user" ? "admin" : "user";
   
   if(currentPage === "user"){
@@ -795,9 +936,14 @@ function togglePage() {
     adminPage.style.display = "block";
     switchBtn.textContent = "返回報名頁面";
     
-    adminAccessDenied.style.display = "none";
-    adminContent.style.display = "block";
-    loadAdminRecords();
+    if(!isAdmin){
+      adminAccessDenied.style.display = "block";
+      adminContent.style.display = "none";
+    }else{
+      adminAccessDenied.style.display = "none";
+      adminContent.style.display = "block";
+      loadAdminRecords();
+    }
   }
 }
 
@@ -811,6 +957,7 @@ function loadAdminRecords() {
     .then(res => res.json())
     .then(data => {
       allRecords = data.records || [];
+      currentRecordPage = 1;
       renderAdminList();
     })
     .finally(() => {
@@ -819,37 +966,71 @@ function loadAdminRecords() {
     });
 }
 
+// 分頁切換
+function changeRecordPage(direction) {
+  currentRecordPage += direction;
+  renderAdminList();
+}
+
 function renderAdminList() {
   const container = document.getElementById("adminList");
+  const paginationEl = document.getElementById("recordPagination");
+  const countEl = document.getElementById("recordCount");
   const keyword = document.getElementById("searchInput").value.toLowerCase();
-  const list = allRecords.filter(item => {
+  
+  // 搜尋過濾
+  let filtered = allRecords.filter(item => {
     const name = (item[0] || "").toLowerCase();
     const itemText = (item[1] || "").toLowerCase();
     return name.includes(keyword) || itemText.includes(keyword);
   });
 
-  if (!list.length) {
-    container.innerHTML = `<div class="empty-state">查無資料</div>`;
+  const totalItems = filtered.length;
+  countEl.textContent = `(${totalItems} 筆)`;
+
+  // 分頁邏輯
+  const totalPages = Math.ceil(totalItems / recordsPerPage);
+  const startIndex = (currentRecordPage - 1) * recordsPerPage;
+  const endIndex = startIndex + recordsPerPage;
+  const paginatedList = filtered.slice(startIndex, endIndex);
+
+  if (!paginatedList.length) {
+    container.innerHTML = `<div class="empty-state">查無報名資料</div>`;
+    paginationEl.style.display = 'none';
     return;
   }
 
-  container.innerHTML = list.map((item, index) => `
+  // 渲染列表（完全對齊預約系統）
+  container.innerHTML = paginatedList.map((item, index) => `
     <div class="reservation-item">
       <div class="reserve-header">
-        <div>
-          <input type="checkbox" class="reserve-check" value="${index}" onchange="toggleSelect(${index})">
-          <span>${item[0]}</span>
+        <div class="reserve-left">
+          <span class="reserve-num">${startIndex + index + 1}</span>
+          <input type="checkbox" class="reserve-check" value="${startIndex + index}" onchange="toggleSelect(${startIndex + index})">
         </div>
         <div class="reserve-btns">
-          <button class="edit-btn" onclick="editRecord(${index})">修改</button>
-          <button class="del-btn" onclick="deleteRecord(${index})">刪除</button>
+          <button class="edit-btn" onclick="editRecord(${startIndex + index})">修改</button>
+          <button class="del-btn" onclick="deleteRecord(${startIndex + index})">刪除</button>
         </div>
       </div>
-      <div style="font-size:14px; color:#9ca3af; margin-top:6px;">
-        項目：${item[1]}
+      <div style="font-size:14px; color:#9ca3af; margin-top:6px; padding-top:10px; border-top:1px dashed #374151;">
+        姓名：${item[0]}<br>
+        祭改項目：${item[1]}
       </div>
     </div>
   `).join('');
+
+  // 渲染分頁
+  if (totalPages > 1) {
+    paginationEl.style.display = 'flex';
+    paginationEl.innerHTML = `
+      <button class="page-btn" onclick="changeRecordPage(-1)" ${currentRecordPage === 1 ? 'disabled' : ''}>‹</button>
+      <span class="page-info">${currentRecordPage} / ${totalPages}</span>
+      <button class="page-btn" onclick="changeRecordPage(1)" ${currentRecordPage === totalPages ? 'disabled' : ''}>›</button>
+    `;
+  } else {
+    paginationEl.style.display = 'none';
+  }
 }
 
 function toggleSelect(index) {
