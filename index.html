@@ -723,6 +723,7 @@ const LIFF_ID = "2007416974-JzvPy6DZ";
 let userId = "";
 let displayName = "";
 let allRecords = [];
+let allAdminRecords = [];
 let selectedIds = [];
 let isAdmin = false;
 let currentPage = "user";
@@ -774,7 +775,7 @@ window.onload = async () => {
     console.log("LIFF 初始化失敗", err);
   }
 
-  await checkAdmin();
+  await checkAdmin(); // 一定要等待驗證完成
   loadRecords();
 };
 
@@ -899,7 +900,7 @@ function initAdminElements() {
   adminContent = document.getElementById("adminContent");
   adminAccessDenied = document.getElementById("adminAccessDenied");
 
-  switchBtn.onclick = togglePage;
+  switchContainer.style.display = "none";
 }
 
 async function checkAdmin() {
@@ -910,7 +911,6 @@ async function checkAdmin() {
   }
 
   try {
-    // 呼叫後端驗證是否為管理員
     const res = await fetch(`${scriptURL}?mode=checkAdmin&userId=${userId}`);
     const data = await res.json();
     isAdmin = data.isAdmin || false;
@@ -944,11 +944,10 @@ function togglePage() {
       adminAccessDenied.style.display = "none";
       adminContent.style.display = "block";
       loadAdminRecords();
+      toggleCollapse('recordCollapse');
     }
   }
 }
-
-let allAdminRecords = []; 
 
 function loadAdminRecords() {
   if (!isAdmin) return;
@@ -1113,7 +1112,7 @@ function batchDelete() {
       btn.disabled = false;
     });
 }
-
 </script>
+
 </body>
 </html>
