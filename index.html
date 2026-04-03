@@ -908,8 +908,21 @@ async function checkAdmin() {
     isAdmin = false;
     return;
   }
-  isAdmin = true;
-  switchContainer.style.display = "flex";
+
+  try {
+    // 呼叫後端驗證是否為管理員
+    const res = await fetch(`${scriptURL}?mode=checkAdmin&userId=${userId}`);
+    const data = await res.json();
+    isAdmin = data.isAdmin || false;
+  } catch (e) {
+    isAdmin = false;
+  }
+
+  if (isAdmin) {
+    switchContainer.style.display = "flex";
+  } else {
+    switchContainer.style.display = "none";
+  }
 }
 
 function togglePage() {
@@ -1034,11 +1047,12 @@ function editRecord(index) {
   const oldItem = item[1];
 
   const newName = prompt("修改姓名", oldName);
-  if (newName === null) return;
+  if (newName === null || newName.trim() === "") return;
+  
   const newItem = prompt("修改項目", oldItem);
-  if (newItem === null) return;
+  if (newItem === null || newItem.trim() === "") return;
 
-  fetch(`${scriptURL}?mode=adminEdit&userId=${userId}&index=${index}&name=${encodeURIComponent(newName)}&item=${encodeURIComponent(newItem)}`)
+  fetch(`${scriptURL}?mode=adminEdit&userId=${userId}&oldName=${encodeURIComponent(oldName)}&name=${encodeURIComponent(newName)}&item=${encodeURIComponent(newItem)}`)
     .then(res => res.json())
     .then(data => {
       if (data.success) {
@@ -1051,8 +1065,13 @@ function editRecord(index) {
 }
 
 function deleteRecord(index) {
-  if (!confirm("確定刪除這筆資料？")) return;
-  fetch(`${scriptURL}?mode=adminDelete&userId=${userId}&index=${index}`)
+  const item = allAdminRecords[index];
+  if (!item) return alert("找不到該筆資料");
+  
+  const name = item[0];
+  if (!confirm(`確定刪除：${name}？`)) return;
+  
+  fetch(`${scriptURL}?mode=adminDelete&userId=${userId}&name=${encodeURIComponent(name)}`)
     .then(res => res.json())
     .then(data => {
       if (data.success) {
@@ -1069,13 +1088,16 @@ function batchDelete() {
     alert("請先勾選要刪除的資料");
     return;
   }
-  if (!confirm(`確定刪除 ${selectedIds.length} 筆資料？`)) return;
+  
+  const names = selectedIds.map(idx => allAdminRecords[idx][0]);
+  
+  if (!confirm(`確定刪除 ${names.length} 筆資料？`)) return;
 
   const btn = document.getElementById("batchDeleteBtn");
   btn.classList.add("loading");
   btn.disabled = true;
 
-  fetch(`${scriptURL}?mode=adminBatchDelete&userId=${userId}&indexes=${encodeURIComponent(JSON.stringify(selectedIds))}`)
+  fetch(`${scriptURL}?mode=adminBatchDelete&userId=${userId}&names=${encodeURIComponent(JSON.stringify(names))}`)
     .then(res => res.json())
     .then(data => {
       if (data.success) {
@@ -1091,6 +1113,7 @@ function batchDelete() {
       btn.disabled = false;
     });
 }
+
 </script>
 </body>
 </html>
