@@ -751,19 +751,31 @@ function initAdminElements() {
   switchBtn.onclick = togglePage;
 }
 
+// ✅ 驗證 Google試算表「管理員清單」UserID
 function checkAdmin() {
-  fetch(`${scriptURL}?mode=checkAdmin&userId=${userId}`)
-    .then(res => res.json())
-    .then(data => {
-      isAdmin = data.isAdmin === true;
-      switchContainer.style.display = isAdmin ? "block" : "none";
-      adminAccessDenied.style.display = isAdmin ? "none" : "block";
-      adminContent.style.display = isAdmin ? "block" : "none";
-    })
-    .catch(() => {
-      isAdmin = false;
-      switchContainer.style.display = "none";
-    });
+  if (!userId) {
+    switchContainer.style.display = "none";
+    isAdmin = false;
+    return;
+  }
+
+  fetch(`${scriptURL}?mode=checkAdmin&userId=${userId}`, {
+    method: "GET",
+    mode: "cors"
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("Network error");
+    return res.json();
+  })
+  .then(data => {
+    isAdmin = data.isAdmin === true;
+    // ✅ 驗證成功 → 顯示右上角管理介面浮窗
+    switchContainer.style.display = isAdmin ? "flex" : "none";
+  })
+  .catch(err => {
+    isAdmin = false;
+    switchContainer.style.display = "none";
+  });
 }
 
 function togglePage() {
