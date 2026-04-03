@@ -663,6 +663,18 @@ form.addEventListener("submit", async (e) => {
   formData.append("item", itemString);
   formData.append("userId", userId);
   formData.append("displayName", displayName);
+  
+  // 生成標準時間格式，完全對齊後端
+  const submitTime = new Date().toLocaleString('zh-TW', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }).replace(/\//g, '-');
+  formData.append("submitTime", submitTime);
 
   successMsg.textContent = "處理中...";
 
@@ -698,6 +710,11 @@ function loadRecords() {
   fetch(scriptURL + "?mode=read")
     .then(res => res.json())
     .then(data => {
+      if (!data.success) {
+        loadingRecords.textContent = "❌ 載入失敗";
+        recordsTable.style.display = "none";
+        return;
+      }
       const records = Array.isArray(data.records) ? data.records : [];
       allRecords = records;
       renderRecords(records);
@@ -889,7 +906,7 @@ function batchDelete() {
   btn.classList.add("loading");
   btn.disabled = true;
 
-  fetch(`${scriptURL}?mode=adminBatchDelete&userId=${userId}&indexes=${JSON.stringify(selectedIds)}`)
+  fetch(`${scriptURL}?mode=adminBatchDelete&userId=${userId}&indexes=${encodeURIComponent(JSON.stringify(selectedIds))}`)
     .then(res => res.json())
     .then(data => {
       if (data.success) {
