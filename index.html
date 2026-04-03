@@ -424,6 +424,10 @@
       cursor: pointer;
       margin-bottom: 15px;
       transition: 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
     .admin-btn:hover {
       background: #059669;
@@ -566,7 +570,7 @@
     ❌ 您無管理員權限
   </div>
 
-  <div id="adminContent" style="display:none;">
+  <div id="adminContent">
     <div class="admin-card">
       <h3>📋 報名紀錄管理</h3>
       <input type="text" id="searchInput" class="search-box" placeholder="🔍 搜尋姓名/項目" oninput="renderAdminList()">
@@ -761,11 +765,16 @@ function togglePage() {
   }
 
   currentPage = currentPage === "user" ? "admin" : "user";
-  userPage.style.display = currentPage === "user" ? "block" : "none";
-  adminPage.style.display = currentPage === "admin" ? "block" : "none";
-  switchBtn.textContent = currentPage === "admin" ? "返回報名頁面" : "切換管理介面";
-
-  if (currentPage === "admin") {
+  
+  if(currentPage === "user"){
+    userPage.style.display = "block";
+    adminPage.style.display = "none";
+    switchBtn.textContent = "切換管理介面";
+  }else{
+    userPage.style.display = "none";
+    adminPage.style.display = "block";
+    switchBtn.textContent = "返回報名頁面";
+    
     adminAccessDenied.style.display = "none";
     adminContent.style.display = "block";
     loadAdminRecords();
