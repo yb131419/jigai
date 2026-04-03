@@ -589,7 +589,8 @@
 const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec";
 const LIFF_ID = "2007416974-JzvPy6DZ";
 
-let userId = "", displayName = "";
+let userId = "";
+let displayName = "";
 let allRecords = [];
 let selectedIds = [];
 let isAdmin = false;
@@ -761,6 +762,8 @@ function togglePage() {
   if (!isAdmin) {
     adminAccessDenied.style.display = "block";
     adminContent.style.display = "none";
+    adminPage.style.display = "block";
+    userPage.style.display = "none";
     return;
   }
 
