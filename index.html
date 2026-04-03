@@ -911,18 +911,26 @@ async function checkAdmin() {
   }
 
   try {
-    const res = await fetch(`${scriptURL}?mode=checkAdmin&userId=${userId}`);
+    // 統一使用 POST + JSON 格式，避免 URL 長度問題
+    const res = await fetch(scriptURL, {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        mode: "checkAdmin",
+        userId: userId
+      })
+    });
+    
     const data = await res.json();
-    isAdmin = data.isAdmin || false;
+    isAdmin = data.isAdmin === true; // 嚴格布林判斷
   } catch (e) {
+    console.error("管理員驗證失敗：", e);
     isAdmin = false;
   }
 
-  if (isAdmin) {
-    switchContainer.style.display = "flex";
-  } else {
-    switchContainer.style.display = "none";
-  }
+  // 只有真正的管理員才顯示切換按鈕
+  switchContainer.style.display = isAdmin ? "flex" : "none";
 }
 
 function togglePage() {
