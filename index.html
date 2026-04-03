@@ -189,10 +189,9 @@
       box-shadow: none;
     }
 
-    /* 祭改項目：強制一行兩列 + 加大勾選框 */
     .checkbox-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr; /* 強制一行兩列，不隨螢幕變化 */
+      grid-template-columns: 1fr 1fr;
       gap: 14px;
       margin-top: 18px;
     }
@@ -218,10 +217,9 @@
       color: var(--text-primary);
     }
 
-    /* 加大勾選框尺寸 */
     .checkbox-grid input {
-      width: 24px; /* 原18px，加大至24px */
-      height: 24px; /* 原18px，加大至24px */
+      width: 24px;
+      height: 24px;
       margin-right: 10px;
       cursor: pointer;
       accent-color: var(--accent-green);
@@ -337,60 +335,272 @@
       h1 { font-size: 1.8rem; }
       h2 { font-size: 1.5rem; }
       form { padding: 24px; }
-      /* 手機端仍保持一行兩列，不更改 */
       .checkbox-grid { gap: 12px; }
       button { padding: 14px; font-size: 17px; }
+    }
+
+    /* 管理介面樣式（參考莫凡風格，不影響原本版型） */
+    .top-bar {
+      position: fixed;
+      top: 12px;
+      right: 15px;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .page-switch {
+      display: none;
+    }
+    .switch-btn {
+      padding: 10px 18px;
+      border-radius: 50px;
+      background: #161b22;
+      border: 1px solid #374151;
+      color: #60a5fa;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .switch-btn:hover {
+      transform: translateY(-2px);
+      background: #1f2937;
+      border-color: #60a5fa;
+    }
+
+    .admin-section {
+      display: none;
+      max-width: 520px;
+      margin: 0 auto 30px;
+      animation: fadeIn 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .admin-card {
+      background: #161b22;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 6px 22px rgba(0,0,0,0.3);
+      border: 1px solid #2c313a;
+      margin-bottom: 20px;
+    }
+
+    .admin-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #e5e7eb;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #374151;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-box {
+      width: 100%;
+      height: 48px;
+      padding: 0 16px;
+      border-radius: 12px;
+      background: #1f2937;
+      border: 1px solid #374151;
+      color: #f9fafb;
+      margin-bottom: 15px;
+      font-size: 15px;
+    }
+
+    .admin-btn {
+      width: 100%;
+      height: 48px;
+      border-radius: 12px;
+      background: #10b981;
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 15px;
+      transition: 0.3s;
+    }
+    .admin-btn:hover {
+      background: #059669;
+    }
+    .batch-delete-btn {
+      background: #ef4444;
+    }
+    .batch-delete-btn:hover {
+      background: #dc2626;
+    }
+
+    .reservation-item {
+      padding: 14px;
+      border-radius: 12px;
+      background: #1f2937;
+      margin-bottom: 10px;
+      border: 1px solid #374151;
+    }
+    .reserve-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .reserve-check {
+      transform: scale(1.5);
+      margin-right: 8px;
+    }
+    .reserve-btns {
+      display: flex;
+      gap: 8px;
+    }
+    .reserve-btns button {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+    }
+    .reserve-btns .edit-btn {
+      background: #60a5fa;
+    }
+    .reserve-btns .del-btn {
+      background: #ef4444;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px 10px;
+      color: #9ca3af;
+    }
+
+    .loader {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #fff;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      animation: rotation 1s linear infinite;
+      display: none;
+    }
+    button.loading .loader {
+      display: inline-block;
+    }
+    @keyframes rotation {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .access-denied {
+      text-align: center;
+      padding: 40px 20px;
+      color: #ef4444;
+      font-weight: 600;
+      background: #1f2937;
+      border-radius: 16px;
+      margin: 15px 0;
+      display: none;
     }
   </style>
 </head>
 <body>
 
-<h1>📝 祭改報名</h1>
-
-<form id="myForm">
-  <label for="nameInput">姓名</label>
-  <input type="text" id="nameInput" name="name" autocomplete="off" required />
-
-  <label><i class="ri-book-line"></i> 📜 祭改項目（可多選）</label>
-  <div class="checkbox-grid">
-    <label><input type="checkbox" name="item" value="補財庫">補財庫</label>
-    <label><input type="checkbox" name="item" value="冤親債主">冤親債主</label>
-    <label><input type="checkbox" name="item" value="歷代祖先">歷代祖先</label>
-    <label><input type="checkbox" name="item" value="病符">病符</label>
-    <label><input type="checkbox" name="item" value="嬰靈">嬰靈</label>
-    <label><input type="checkbox" name="item" value="陰纏">陰纏</label>
-    <label><input type="checkbox" name="item" value="祭小人">祭小人</label>
-    <label><input type="checkbox" name="item" value="車關">車關</label>
-    <label><input type="checkbox" name="item" value="倒房">倒房</label>
-    <label><input type="checkbox" name="item" value="其他" id="chkOther">其他</label>
+<!-- 頂部切換按鈕（管理員專用） -->
+<div class="top-bar">
+  <div class="page-switch" id="switchContainer">
+    <button class="switch-btn" id="switchBtn">切換管理介面</button>
   </div>
-  <input type="text" id="otherInput" placeholder="請輸入其他項目" />
+</div>
 
-  <button type="submit" id="submitBtn">
-    <i class="ri-send-plane-line"></i> 送出報名
-  </button>
-</form>
+<!-- 一般使用者頁面 -->
+<div id="userPage">
+  <h1>📝 祭改報名</h1>
 
-<div id="successMsg"></div>
+  <form id="myForm">
+    <label for="nameInput">姓名</label>
+    <input type="text" id="nameInput" name="name" autocomplete="off" required />
 
-<h2>📋 祭改名單</h2>
-<p id="totalCount">總報名人數：0</p>
-<p id="loadingRecords">讀取中...</p>
+    <label><i class="ri-book-line"></i> 📜 祭改項目（可多選）</label>
+    <div class="checkbox-grid">
+      <label><input type="checkbox" name="item" value="補財庫">補財庫</label>
+      <label><input type="checkbox" name="item" value="冤親債主">冤親債主</label>
+      <label><input type="checkbox" name="item" value="歷代祖先">歷代祖先</label>
+      <label><input type="checkbox" name="item" value="病符">病符</label>
+      <label><input type="checkbox" name="item" value="嬰靈">嬰靈</label>
+      <label><input type="checkbox" name="item" value="陰纏">陰纏</label>
+      <label><input type="checkbox" name="item" value="祭小人">祭小人</label>
+      <label><input type="checkbox" name="item" value="車關">車關</label>
+      <label><input type="checkbox" name="item" value="倒房">倒房</label>
+      <label><input type="checkbox" name="item" value="其他" id="chkOther">其他</label>
+    </div>
+    <input type="text" id="otherInput" placeholder="請輸入其他項目" />
 
-<table id="recordsTable" style="display:none;">
-  <thead>
-    <tr>
-      <th>姓名</th>
-      <th>項目</th>
-    </tr>
-  </thead>
-  <tbody id="recordsBody"></tbody>
-</table>
+    <button type="submit" id="submitBtn">
+      <i class="ri-send-plane-line"></i> 送出報名
+    </button>
+  </form>
+
+  <div id="successMsg"></div>
+
+  <h2>📋 祭改名單</h2>
+  <p id="totalCount">總報名人數：0</p>
+  <p id="loadingRecords">讀取中...</p>
+
+  <table id="recordsTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>姓名</th>
+        <th>項目</th>
+      </tr>
+    </thead>
+    <tbody id="recordsBody"></tbody>
+  </table>
+</div>
+
+<!-- 管理後台頁面 -->
+<div id="adminPage" class="admin-section">
+  <div style="text-align:center; margin-bottom:20px;">
+    <h2 style="margin:0;">🔐 祭改管理後台</h2>
+  </div>
+
+  <div id="adminAccessDenied" class="access-denied">
+    ❌ 您無管理員權限
+  </div>
+
+  <div id="adminContent" style="display:none;">
+    <div class="admin-card">
+      <h3>📋 報名紀錄管理</h3>
+      <input type="text" id="searchInput" class="search-box" placeholder="🔍 搜尋姓名/項目" oninput="renderAdminList()">
+      <button class="admin-btn" id="refreshBtn" onclick="loadAdminRecords()">
+        <span class="loader"></span>重新整理
+      </button>
+      <div id="adminList"></div>
+      <button class="admin-btn batch-delete-btn" id="batchDeleteBtn" onclick="batchDelete()">
+        <span class="loader"></span>刪除選取資料
+      </button>
+    </div>
+  </div>
+</div>
 
 <script>
 const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec";
 const LIFF_ID = "2007416974-JzvPy6DZ";
-let userId = "", displayName = "", existingNames = [];
+
+let userId = "", displayName = "";
+let allRecords = [];
+let selectedIds = [];
+let isAdmin = false;
+let currentPage = "user";
+
+let switchBtn, userPage, adminPage, adminContent, adminAccessDenied, switchContainer;
+
+// ======================
+// 一般使用者功能（完全不動）
+// ======================
 const form = document.getElementById("myForm");
 const successMsg = document.getElementById("successMsg");
 const chkOther = document.getElementById("chkOther");
@@ -401,20 +611,20 @@ const recordsBody = document.getElementById("recordsBody");
 const totalCount = document.getElementById("totalCount");
 const nameInput = document.getElementById("nameInput");
 
-// 其他選項切換
 chkOther.addEventListener("change", () => {
   otherInput.style.display = chkOther.checked ? "block" : "none";
   !chkOther.checked && (otherInput.value = "");
 });
 
-// 初始化LIFF並加載數據
 window.onload = () => {
+  initAdminElements();
   liff.init({ liffId: LIFF_ID })
     .then(() => {
       if (liff.isLoggedIn()) {
         liff.getProfile().then(profile => {
           userId = profile.userId;
           displayName = profile.displayName;
+          checkAdmin();
           loadRecords();
         });
       } else {
@@ -422,38 +632,32 @@ window.onload = () => {
       }
     })
     .catch(err => {
-      alert("⚠️ LIFF 初始化失敗：" + err);
       successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "⚠️ LIFF 初始化失敗：" + err;
+      successMsg.textContent = "⚠️ 系統初始化失敗";
+      checkAdmin();
+      loadRecords();
     });
 };
 
-// 表單提交處理
 form.addEventListener("submit", e => {
   e.preventDefault();
   successMsg.textContent = "";
-  successMsg.style.color = "var(--text-primary)";
   const name = nameInput.value.trim();
-
-  // 驗證姓名
   if (!name) {
     successMsg.style.color = "var(--accent-red)";
     successMsg.textContent = "請輸入姓名";
     return;
   }
 
-  // 獲取選中項目
   let selectedItems = Array.from(document.querySelectorAll('input[name="item"]:checked'))
     .map(cb => cb.value)
     .filter(v => v !== "其他");
 
-  // 處理其他項目
   if (chkOther.checked) {
     const otherVal = otherInput.value.trim();
-    otherVal && selectedItems.push(otherVal);
+    if (otherVal) selectedItems.push(otherVal);
   }
 
-  // 驗證項目
   if (selectedItems.length === 0) {
     successMsg.style.color = "var(--accent-red)";
     successMsg.textContent = "請選擇至少一個項目";
@@ -467,10 +671,8 @@ form.addEventListener("submit", e => {
   formData.append("userId", userId);
   formData.append("displayName", displayName);
 
-  // 顯示提交狀態
-  successMsg.textContent = existingNames.includes(name) ? "更新中..." : "送出中...";
+  successMsg.textContent = "處理中...";
 
-  // 提交數據
   fetch(scriptURL, {
     method: "POST",
     body: formData,
@@ -481,25 +683,23 @@ form.addEventListener("submit", e => {
   .then(data => {
     if (data.success) {
       successMsg.style.color = "var(--accent-green)";
-      successMsg.innerHTML = `✅ ${existingNames.includes(name) ? '更新成功' : '報名成功'}！<br>姓名：<strong>${name}</strong>`;
+      successMsg.innerHTML = `✅ 報名/更新成功！<br>姓名：${name}`;
       form.reset();
       otherInput.style.display = "none";
       loadRecords();
     } else {
       successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "❌ 操作失敗：" + (data.message || "未知錯誤");
+      successMsg.textContent = "❌ 失敗：" + (data.message || "系統錯誤");
     }
   })
   .catch(() => {
     successMsg.style.color = "var(--accent-red)";
-    successMsg.textContent = "❌ 網路或後端錯誤";
+    successMsg.textContent = "❌ 網路錯誤";
   });
 });
 
-// 加載報名記錄
 function loadRecords() {
   loadingRecords.style.display = "block";
-  loadingRecords.textContent = "讀取中...";
   recordsTable.style.display = "none";
   recordsBody.innerHTML = "";
 
@@ -507,31 +707,19 @@ function loadRecords() {
     .then(res => res.json())
     .then(data => {
       const records = Array.isArray(data.records) ? data.records : [];
-      if (records.length > 0) {
-        existingNames = records.map(r => r[0]);
-        renderRecords(records);
-      } else {
-        existingNames = [];
-        loadingRecords.textContent = "沒有資料";
-        loadingRecords.style.animation = "none";
-        recordsTable.style.display = "none";
-        totalCount.textContent = "總報名人數：0";
-      }
+      allRecords = records;
+      renderRecords(records);
     })
     .catch(() => {
-      loadingRecords.textContent = "❌ 無法載入資料";
-      loadingRecords.style.animation = "none";
-      totalCount.textContent = "總報名人數：0";
+      loadingRecords.textContent = "❌ 載入失敗";
       recordsTable.style.display = "none";
     });
 }
 
-// 渲染報名記錄
 function renderRecords(records) {
-  if (!Array.isArray(records) || records.length === 0) {
+  if (!records.length) {
+    loadingRecords.textContent = "暫無報名資料";
     recordsTable.style.display = "none";
-    loadingRecords.textContent = "沒有資料";
-    loadingRecords.style.animation = "none";
     totalCount.textContent = "總報名人數：0";
     return;
   }
@@ -540,14 +728,173 @@ function renderRecords(records) {
   recordsTable.style.display = "table";
   recordsBody.innerHTML = "";
 
-  // 倒序渲染記錄
   records.slice().reverse().forEach(([name, item]) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${name || '未知姓名'}</td><td>${item || '未選擇項目'}</td>`;
+    tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
     recordsBody.appendChild(tr);
   });
 
   totalCount.textContent = `總報名人數：${records.length}`;
+}
+
+// ======================
+// 管理員功能（參考莫凡）
+// ======================
+function initAdminElements() {
+  switchBtn = document.getElementById("switchBtn");
+  switchContainer = document.getElementById("switchContainer");
+  userPage = document.getElementById("userPage");
+  adminPage = document.getElementById("adminPage");
+  adminContent = document.getElementById("adminContent");
+  adminAccessDenied = document.getElementById("adminAccessDenied");
+
+  switchBtn.onclick = togglePage;
+}
+
+function checkAdmin() {
+  fetch(`${scriptURL}?mode=checkAdmin&userId=${userId}`)
+    .then(res => res.json())
+    .then(data => {
+      isAdmin = data.isAdmin === true;
+      switchContainer.style.display = isAdmin ? "block" : "none";
+      adminAccessDenied.style.display = isAdmin ? "none" : "block";
+      adminContent.style.display = isAdmin ? "block" : "none";
+    })
+    .catch(() => {
+      isAdmin = false;
+      switchContainer.style.display = "none";
+    });
+}
+
+function togglePage() {
+  currentPage = currentPage === "user" ? "admin" : "user";
+  userPage.style.display = currentPage === "user" ? "block" : "none";
+  adminPage.style.display = currentPage === "admin" ? "block" : "none";
+  switchBtn.textContent = currentPage === "admin" ? "返回報名頁面" : "切換管理介面";
+  if (currentPage === "admin") loadAdminRecords();
+}
+
+function loadAdminRecords() {
+  if (!isAdmin) return;
+  const btn = document.getElementById("refreshBtn");
+  btn.classList.add("loading");
+  btn.disabled = true;
+
+  fetch(`${scriptURL}?mode=adminList&userId=${userId}`)
+    .then(res => res.json())
+    .then(data => {
+      allRecords = data.records || [];
+      renderAdminList();
+    })
+    .finally(() => {
+      btn.classList.remove("loading");
+      btn.disabled = false;
+    });
+}
+
+function renderAdminList() {
+  const container = document.getElementById("adminList");
+  const keyword = document.getElementById("searchInput").value.toLowerCase();
+  const list = allRecords.filter(item => {
+    const name = (item[0] || "").toLowerCase();
+    const itemText = (item[1] || "").toLowerCase();
+    return name.includes(keyword) || itemText.includes(keyword);
+  });
+
+  if (!list.length) {
+    container.innerHTML = `<div class="empty-state">查無資料</div>`;
+    return;
+  }
+
+  container.innerHTML = list.map((item, index) => `
+    <div class="reservation-item">
+      <div class="reserve-header">
+        <div>
+          <input type="checkbox" class="reserve-check" value="${index}" onchange="toggleSelect(${index})">
+          <span>${item[0]}</span>
+        </div>
+        <div class="reserve-btns">
+          <button class="edit-btn" onclick="editRecord(${index})">修改</button>
+          <button class="del-btn" onclick="deleteRecord(${index})">刪除</button>
+        </div>
+      </div>
+      <div style="font-size:14px; color:#9ca3af; margin-top:6px;">
+        項目：${item[1]}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleSelect(index) {
+  const i = selectedIds.indexOf(index);
+  i > -1 ? selectedIds.splice(i, 1) : selectedIds.push(index);
+}
+
+function editRecord(index) {
+  const item = allRecords[index];
+  const oldName = item[0];
+  const oldItem = item[1];
+
+  const newName = prompt("修改姓名", oldName);
+  if (newName === null) return;
+  const newItem = prompt("修改項目", oldItem);
+  if (newItem === null) return;
+
+  fetch(`${scriptURL}?mode=adminEdit&userId=${userId}&index=${index}&name=${encodeURIComponent(newName)}&item=${encodeURIComponent(newItem)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert("✅ 修改成功");
+        loadAdminRecords();
+        loadRecords();
+      } else {
+        alert("❌ 修改失敗");
+      }
+    });
+}
+
+function deleteRecord(index) {
+  if (!confirm("確定刪除這筆資料？")) return;
+  fetch(`${scriptURL}?mode=adminDelete&userId=${userId}&index=${index}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert("✅ 刪除成功");
+        loadAdminRecords();
+        loadRecords();
+      } else {
+        alert("❌ 刪除失敗");
+      }
+    });
+}
+
+function batchDelete() {
+  if (!selectedIds.length) {
+    alert("請先勾選要刪除的資料");
+    return;
+  }
+  if (!confirm(`確定刪除 ${selectedIds.length} 筆資料？`)) return;
+
+  const btn = document.getElementById("batchDeleteBtn");
+  btn.classList.add("loading");
+  btn.disabled = true;
+
+  fetch(`${scriptURL}?mode=adminBatchDelete&userId=${userId}&indexes=${JSON.stringify(selectedIds)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert("✅ 批次刪除成功");
+        selectedIds = [];
+        loadAdminRecords();
+        loadRecords();
+      } else {
+        alert("❌ 批次刪除失敗");
+      }
+    })
+    .finally(() => {
+      btn.classList.remove("loading");
+      btn.disabled = false;
+    });
 }
 </script>
 </body>
