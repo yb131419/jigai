@@ -942,6 +942,9 @@ function togglePage() {
   }
 }
 
+// 儲存「真實完整資料」，用 realIndex 識別
+let allAdminRecords = []; 
+
 function loadAdminRecords() {
   if (!isAdmin) return;
   const btn = document.getElementById("refreshBtn");
@@ -951,7 +954,8 @@ function loadAdminRecords() {
   fetch(`${scriptURL}?mode=adminList&userId=${userId}`)
     .then(res => res.json())
     .then(data => {
-      allRecords = data.records || [];
+      // 儲存「真實完整資料」
+      allAdminRecords = data.records || []; 
       currentRecordPage = 1;
       renderAdminList();
     })
@@ -974,7 +978,7 @@ function renderAdminList() {
   const keyword = document.getElementById("searchInput").value.toLowerCase();
   
   // 搜尋過濾
-  let filtered = allRecords.filter(item => {
+  let filtered = allAdminRecords.filter(item => {
     const name = (item[0] || "").toLowerCase();
     const itemText = (item[1] || "").toLowerCase();
     return name.includes(keyword) || itemText.includes(keyword);
@@ -995,17 +999,21 @@ function renderAdminList() {
     return;
   }
 
-  // 渲染列表（完全對齊預約系統）
-  container.innerHTML = paginatedList.map((item, index) => `
+  // 渲染列表 → 重點：綁定 realIndex（真實索引）
+  container.innerHTML = paginatedList.map((item, index) => {
+    const realIndex = allAdminRecords.findIndex(r => 
+      r[0] === item[0] && r[1] === item[1]
+    );
+    return `
     <div class="reservation-item">
       <div class="reserve-header">
         <div class="reserve-left">
           <span class="reserve-num">${startIndex + index + 1}</span>
-          <input type="checkbox" class="reserve-check" value="${startIndex + index}" onchange="toggleSelect(${startIndex + index})">
+          <input type="checkbox" class="reserve-check" value="${realIndex}" onchange="toggleSelect(${realIndex})">
         </div>
         <div class="reserve-btns">
-          <button class="edit-btn" onclick="editRecord(${startIndex + index})">修改</button>
-          <button class="del-btn" onclick="deleteRecord(${startIndex + index})">刪除</button>
+          <button class="edit-btn" onclick="editRecord(${realIndex})">修改</button>
+          <button class="del-btn" onclick="deleteRecord(${realIndex})">刪除</button>
         </div>
       </div>
       <div style="font-size:14px; color:#9ca3af; margin-top:6px; padding-top:10px; border-top:1px dashed #374151;">
@@ -1013,9 +1021,9 @@ function renderAdminList() {
         祭改項目：${item[1]}
       </div>
     </div>
-  `).join('');
+  `}).join('');
 
-  // 渲染分頁
+  // 分頁
   if (totalPages > 1) {
     paginationEl.style.display = 'flex';
     paginationEl.innerHTML = `
