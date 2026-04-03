@@ -380,7 +380,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 完全對齊預約系統的管理介面樣式 */
     .collapse-header {
       display: flex;
       justify-content: space-between;
@@ -588,7 +587,6 @@
       display: none;
     }
 
-    /* 分頁樣式 */
     .pagination {
       display: flex;
       justify-content: center;
@@ -729,7 +727,6 @@ let selectedIds = [];
 let isAdmin = false;
 let currentPage = "user";
 
-// 分頁參數
 let currentRecordPage = 1;
 const recordsPerPage = 5;
 
@@ -750,7 +747,6 @@ chkOther.addEventListener("change", () => {
   if (!chkOther.checked) otherInput.value = "";
 });
 
-// 收合功能（對齊預約系統）
 function toggleCollapse(id) {
   const body = document.getElementById(id);
   const arrow = document.getElementById(id.replace('Collapse','Arrow'));
@@ -912,10 +908,7 @@ async function checkAdmin() {
     isAdmin = false;
     return;
   }
-
-  // ✅ 強制開啟管理員（永久有效）
   isAdmin = true;
-
   switchContainer.style.display = "flex";
 }
 
@@ -942,7 +935,6 @@ function togglePage() {
   }
 }
 
-// 儲存「真實完整資料」，用 realIndex 識別
 let allAdminRecords = []; 
 
 function loadAdminRecords() {
@@ -954,10 +946,10 @@ function loadAdminRecords() {
   fetch(`${scriptURL}?mode=adminList&userId=${userId}`)
     .then(res => res.json())
     .then(data => {
-      // 儲存「真實完整資料」
       allAdminRecords = data.records || []; 
       currentRecordPage = 1;
       renderAdminList();
+      loadRecords();
     })
     .finally(() => {
       btn.classList.remove("loading");
@@ -965,7 +957,6 @@ function loadAdminRecords() {
     });
 }
 
-// 分頁切換
 function changeRecordPage(direction) {
   currentRecordPage += direction;
   renderAdminList();
@@ -977,7 +968,6 @@ function renderAdminList() {
   const countEl = document.getElementById("recordCount");
   const keyword = document.getElementById("searchInput").value.toLowerCase();
   
-  // 搜尋過濾
   let filtered = allAdminRecords.filter(item => {
     const name = (item[0] || "").toLowerCase();
     const itemText = (item[1] || "").toLowerCase();
@@ -987,7 +977,6 @@ function renderAdminList() {
   const totalItems = filtered.length;
   countEl.textContent = `(${totalItems} 筆)`;
 
-  // 分頁邏輯
   const totalPages = Math.ceil(totalItems / recordsPerPage);
   const startIndex = (currentRecordPage - 1) * recordsPerPage;
   const endIndex = startIndex + recordsPerPage;
@@ -999,11 +988,8 @@ function renderAdminList() {
     return;
   }
 
-  // 渲染列表 → 重點：綁定 realIndex（真實索引）
   container.innerHTML = paginatedList.map((item, index) => {
-    const realIndex = allAdminRecords.findIndex(r => 
-      r[0] === item[0] && r[1] === item[1]
-    );
+    const realIndex = startIndex + index;
     return `
     <div class="reservation-item">
       <div class="reserve-header">
@@ -1023,7 +1009,6 @@ function renderAdminList() {
     </div>
   `}).join('');
 
-  // 分頁
   if (totalPages > 1) {
     paginationEl.style.display = 'flex';
     paginationEl.innerHTML = `
@@ -1042,7 +1027,9 @@ function toggleSelect(index) {
 }
 
 function editRecord(index) {
-  const item = allRecords[index];
+  const item = allAdminRecords[index];
+  if (!item) return alert("找不到該筆資料");
+  
   const oldName = item[0];
   const oldItem = item[1];
 
@@ -1057,7 +1044,6 @@ function editRecord(index) {
       if (data.success) {
         alert("✅ 修改成功");
         loadAdminRecords();
-        loadRecords();
       } else {
         alert("❌ 修改失敗");
       }
@@ -1072,7 +1058,6 @@ function deleteRecord(index) {
       if (data.success) {
         alert("✅ 刪除成功");
         loadAdminRecords();
-        loadRecords();
       } else {
         alert("❌ 刪除失敗");
       }
@@ -1097,7 +1082,6 @@ function batchDelete() {
         alert("✅ 批次刪除成功");
         selectedIds = [];
         loadAdminRecords();
-        loadRecords();
       } else {
         alert("❌ 批次刪除失敗");
       }
