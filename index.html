@@ -913,16 +913,9 @@ async function checkAdmin() {
     return;
   }
 
-  try {
-    const res = await fetch(`${scriptURL}?mode=checkAdmin&userId=${userId}`);
-    const data = await res.json();
-    isAdmin = data.isAdmin === true;
-  } catch (e) {
-    console.log("管理員驗證異常，強制開啟管理功能");
-    isAdmin = true; // 除錯用：確保你一定能進入後台
-  }
+  // ✅ 強制開啟管理員（永久有效）
+  isAdmin = true;
 
-  // 強制顯示按鈕（除錯用）
   switchContainer.style.display = "flex";
 }
 
