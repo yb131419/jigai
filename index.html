@@ -1093,9 +1093,15 @@
   }
 
   function checkAdminByBackend() {
-    const script = document.createElement('script');
-    script.src = `${CONFIG.SCRIPT_URL}?action=checkAdmin&lineId=${LINE_USER_ID}&callback=onAdminCheck&_=${Date.now()}`;
-    document.body.appendChild(script);
+    try {
+      const script = document.createElement('script');
+      script.src = `${CONFIG.SCRIPT_URL}?action=checkAdmin&lineId=${encodeURIComponent(LINE_USER_ID)}&callback=onAdminCheck&_=${Date.now()}`;
+      document.body.appendChild(script);
+    } catch (e) {
+      console.error("管理員驗證失敗", e);
+      isAdmin = false;
+      onAdminCheck({ isAdmin: false });
+    }
   }
 
   function loadReservationCount() {
@@ -1148,10 +1154,22 @@
   };
 
   window.onAdminCheck = function(res) {
-    isAdmin = res?.isAdmin === true;
-    switchContainer.style.display = isAdmin ? "block" : "none";
-    adminAccessDenied.style.display = isAdmin ? "none" : "block";
-    adminContent.style.display = isAdmin ? "block" : "none";
+    try {
+      isAdmin = !!(res && res.isAdmin === true);
+      
+      if (switchContainer) {
+        switchContainer.style.display = isAdmin ? "block" : "none";
+      }
+      if (adminAccessDenied) {
+        adminAccessDenied.style.display = isAdmin ? "none" : "block";
+      }
+      if (adminContent) {
+        adminContent.style.display = isAdmin ? "block" : "none";
+      }
+    } catch (e) {
+      console.error("管理員狀態設置失敗", e);
+      isAdmin = false;
+    }
   };
 
   window.callback = function (response) {
@@ -1276,7 +1294,8 @@ function renderTimeList() {
       s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
       document.body.appendChild(s);
     } catch(e) {
-      alert("提交失敗");
+      console.error(e);
+      alert("提交失敗，請重試");
       resetButtonState();
     }
   }
@@ -1287,7 +1306,7 @@ function renderTimeList() {
     selectedReservations = [];
     const todayStr = getTaipeiDateString();
     const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetAll&pageId=祭改系統&lineId=${LINE_USER_ID}&cleanBeforeDays=7&today=${todayStr}&callback=callback&_=${Date.now()}`;
+    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetAll&pageId=祭改系統&lineId=${encodeURIComponent(LINE_USER_ID)}&cleanBeforeDays=7&today=${todayStr}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
   }
 
@@ -1406,7 +1425,7 @@ function renderTimeList() {
     setAdminLoading(true, batchDeleteBtn);
     
     selectedReservations.forEach(id => {
-      const p = new URLSearchParams({action:"adminDelReserve",pageId:"祭改系統",lineId:LINE_USER_ID,submitTime:id});
+      const p = new URLSearchParams({action:"adminDelReserve",pageId:"祭改系統",lineId:encodeURIComponent(LINE_USER_ID),submitTime:id});
       const s = document.createElement('script');
       s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
       document.body.appendChild(s);
@@ -1419,7 +1438,7 @@ function renderTimeList() {
     if (!date) return;
     setAdminLoading(true, loadTimeBtn);
     const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetTimes&pageId=祭改系統&lineId=${LINE_USER_ID}&date=${date}&callback=callback&_=${Date.now()}`;
+    s.src = `${CONFIG.SCRIPT_URL}?action=adminGetTimes&pageId=祭改系統&lineId=${encodeURIComponent(LINE_USER_ID)}&date=${date}&callback=callback&_=${Date.now()}`;
     document.body.appendChild(s);
   }
 
@@ -1620,6 +1639,7 @@ async function initLiff() {
 
     infoForm.onsubmit = (e) => {
       e.preventDefault();
+      if (isSubmitting || isSubmittedSuccess) return;
       
       const name = document.getElementById('name').value.trim();
       if (!name) {
