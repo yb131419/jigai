@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title> 祭改系統 </title>
+  <title>祭改系統</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
@@ -723,7 +723,6 @@
       transform: translateY(-1px);
     }
 
-    /* 勾選樣式 一行兩列 */
     .checkbox-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -769,13 +768,11 @@
       <input type="hidden" id="lineId">
       <input type="hidden" id="lineName">
       <input type="hidden" id="appointTime" name="appointTime">
-      <input type="hidden" id="appointDate">
+      <input type="hidden" id="appointDateHidden">
 
-      <!-- 姓名移到最上方 -->
       <label>姓名</label>
       <input type="text" id="name" required placeholder="請輸入您的姓名">
 
-      <!-- 祭改項目 -->
       <label>祭改項目（可多選）</label>
       <div class="checkbox-grid">
         <label class="checkbox-item"><input type="checkbox" name="serviceType" value="補財庫"> 補財庫</label>
@@ -789,16 +786,14 @@
         <label class="checkbox-item"><input type="checkbox" name="serviceType" value="倒房"> 倒房</label>
       </div>
 
-      <!-- 其他項目 -->
       <label>其他項目（自訂填寫）</label>
       <input type="text" id="otherItem" placeholder="請輸入其他祭改項目（沒有可留空）">
 
-      <!-- 隱藏日期時段 -->
       <div style="display: none;">
         <label>報名日期</label>
         <div class="date-nav-row">
           <button type="button" class="date-nav-btn" id="prevDateBtn">&lt;</button>
-          <input type="date" id="appointDate" required>
+          <input type="date" id="userAppointDate" required>
           <button type="button" class="date-nav-btn" id="nextDateBtn">&gt;</button>
           <div class="week-box" id="weekText">星期幾</div>
         </div>
@@ -934,7 +929,7 @@
   let loadReservationsBtn, batchDeleteBtn, addTimeBtn, loadTimeBtn, manageDate, deleteSelectedTimeBtn;
   let prevManageDateBtn, nextManageDateBtn;
   let headerTimeEl;
-  let prevDateBtn, nextDateBtn, appointDate;
+  let prevDateBtn, nextDateBtn, userAppointDate, appointDateHidden, appointTimeHidden;
   let maxBookingInput, saveMaxBookingBtn;
 
   function toggleCollapse(id) {
@@ -962,7 +957,7 @@
   }
 
   function changeDate(days) {
-    const dateInput = document.getElementById('appointDate');
+    const dateInput = document.getElementById('userAppointDate');
     if (!dateInput.value) dateInput.value = getTaipeiDateString();
     const current = new Date(dateInput.value + 'T00:00:00+08:00');
     current.setDate(current.getDate() + days);
@@ -972,6 +967,7 @@
     const newDate = `${y}-${m}-${d}`;
     if (newDate >= getTaipeiDateString()) {
       dateInput.value = newDate;
+      document.getElementById('appointDateHidden').value = newDate;
       renderTimeList();
     }
   }
@@ -1106,7 +1102,7 @@
 
   function loadReservationCount() {
     const s = document.createElement('script');
-    s.src = `${CONFIG.SCRIPT_URL}?action=getReservationCount&pageId=祭改系統&callback=callback&_=${Date.now()}`;
+    s.src = `${CONFIG.SCRIPT_URL}?action=getReservationCount&pageId=祭改系統&callback=callbackReservationCount&_=${Date.now()}`;
     document.body.appendChild(s);
   }
 
@@ -1190,12 +1186,6 @@ window.callback = function (response) {
       return;
     }
     
-    if (response.status === "reservationCount") {
-      reservationCountMap = response.data || {};
-      renderTimeList();
-      return;
-    }
-    
     if (response.status === "success") {
       if(currentPage === "user"){
         isSubmittedSuccess = true;
@@ -1230,14 +1220,49 @@ window.callback = function (response) {
   }
 };
 
+window.callbackReservationCount = function(response) {
+  try {
+    if (response.status === "reservationCount") {
+      reservationCountMap = response.data || {};
+      renderTimeList();
+    }
+  } catch (e) {}
+};
+
 function renderTimeList() {
-  const date = document.getElementById('appointDate').value;
+  const date = document.getElementById('userAppointDate').value;
   const grid = document.getElementById('timeGrid');
   const timeInput = document.getElementById('appointTime');
   
   grid.innerHTML = "";
   timeInput.value = "00:00";
   document.getElementById('weekText').textContent = getWeekDayStr(date);
+
+  const times = timeDataMap[date] || [];
+  if (times.length === 0) {
+    grid.innerHTML = `<div style="color:#999;text-align:center;grid-column:1/3;height:56px;display:flex;align-items:center;justify-content:center;">當日無開放時段</div>`;
+    return;
+  }
+
+  times.forEach(time => {
+    const timeVal = formatToStandardTimeSafe(time);
+    const count = reservationCountMap[`${date}_${timeVal}`] || 0;
+    const full = count >= MAX_BOOKING_COUNT;
+    const expired = shouldHideTime(date, timeVal);
+    
+    const div = document.createElement('div');
+    div.className = `time-btn ${expired ? 'expired' : ''} ${full ? 'expired' : ''}`;
+    div.innerText = `${timeVal} (${count}/${MAX_BOOKING_COUNT})`;
+    
+    if (!expired && !full) {
+      div.onclick = () => {
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        div.classList.add('active');
+        timeInput.value = timeVal;
+      };
+    }
+    grid.appendChild(div);
+  });
 }
     
 
@@ -1282,8 +1307,8 @@ function sendData() {
     const data = {
       pageId: "祭改系統", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
       serviceType: serviceType,
-      appointDate: getTaipeiDateString(),
-      appointTime: "00:00",
+      appointDate: document.getElementById('appointDateHidden').value || getTaipeiDateString(),
+      appointTime: document.getElementById('appointTime').value || "00:00",
       name: name,
       phone: "",
       email: "",
@@ -1610,7 +1635,9 @@ async function initLiff() {
     submitBtn = document.getElementById('submitBtn');
     btnText = submitBtn.querySelector('.btn-text');
     infoForm = document.getElementById('infoForm');
-    appointDate = document.getElementById('appointDate');
+    userAppointDate = document.getElementById('userAppointDate');
+    appointDateHidden = document.getElementById('appointDateHidden');
+    appointTimeHidden = document.getElementById('appointTime');
     
     prevDateBtn = document.getElementById('prevDateBtn');
     nextDateBtn = document.getElementById('nextDateBtn');
@@ -1639,8 +1666,11 @@ async function initLiff() {
     updateHeaderTime();
     setInterval(updateHeaderTime, 1000);
 
-    appointDate.value = getTaipeiDateString();
-    document.getElementById('appointTime').value = "00:00";
+    const today = getTaipeiDateString();
+    userAppointDate.value = today;
+    appointDateHidden.value = today;
+    appointTimeHidden.value = "00:00";
+    renderTimeList();
 
     switchBtn.onclick = togglePage;
     loadReservationsBtn.onclick = loadAllReservations;
