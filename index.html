@@ -1186,7 +1186,7 @@ window.callback = function (response) {
       return;
     }
     
-    if (response.status === "success") {
+    if (response.success === true || response.status === "success") {
       if(currentPage === "user"){
         isSubmittedSuccess = true;
         submitBtn.classList.add('success','permanent-disabled');
@@ -1210,7 +1210,7 @@ window.callback = function (response) {
         loadReservationCount();
         document.querySelectorAll('.time-select-item.active').forEach(el => el.classList.remove('active'));
       }
-    } else if (response.status === "error") {
+    } else if (response.success === false || response.status === "error") {
       alert("❌ 錯誤：" + (response.message || "系統異常"));
       currentPage === "user" && resetButtonState();
     }
@@ -1220,50 +1220,50 @@ window.callback = function (response) {
   }
 };
 
-window.callbackReservationCount = function(response) {
-  try {
-    if (response.status === "reservationCount") {
-      reservationCountMap = response.data || {};
-      renderTimeList();
+  window.callbackReservationCount = function(response) {
+    try {
+      if (response.status === "reservationCount") {
+        reservationCountMap = response.data || {};
+        renderTimeList();
+      }
+    } catch (e) {}
+  };
+
+  function renderTimeList() {
+    const date = document.getElementById('userAppointDate').value;
+    const grid = document.getElementById('timeGrid');
+    const timeInput = document.getElementById('appointTime');
+    
+    grid.innerHTML = "";
+    timeInput.value = "00:00";
+    document.getElementById('weekText').textContent = getWeekDayStr(date);
+
+    const times = timeDataMap[date] || [];
+    if (times.length === 0) {
+      grid.innerHTML = `<div style="color:#999;text-align:center;grid-column:1/3;height:56px;display:flex;align-items:center;justify-content:center;">當日無開放時段</div>`;
+      return;
     }
-  } catch (e) {}
-};
 
-function renderTimeList() {
-  const date = document.getElementById('userAppointDate').value;
-  const grid = document.getElementById('timeGrid');
-  const timeInput = document.getElementById('appointTime');
-  
-  grid.innerHTML = "";
-  timeInput.value = "00:00";
-  document.getElementById('weekText').textContent = getWeekDayStr(date);
-
-  const times = timeDataMap[date] || [];
-  if (times.length === 0) {
-    grid.innerHTML = `<div style="color:#999;text-align:center;grid-column:1/3;height:56px;display:flex;align-items:center;justify-content:center;">當日無開放時段</div>`;
-    return;
+    times.forEach(time => {
+      const timeVal = formatToStandardTimeSafe(time);
+      const count = reservationCountMap[`${date}_${timeVal}`] || 0;
+      const full = count >= MAX_BOOKING_COUNT;
+      const expired = shouldHideTime(date, timeVal);
+      
+      const div = document.createElement('div');
+      div.className = `time-btn ${expired ? 'expired' : ''} ${full ? 'expired' : ''}`;
+      div.innerText = `${timeVal} (${count}/${MAX_BOOKING_COUNT})`;
+      
+      if (!expired && !full) {
+        div.onclick = () => {
+          document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+          div.classList.add('active');
+          timeInput.value = timeVal;
+        };
+      }
+      grid.appendChild(div);
+    });
   }
-
-  times.forEach(time => {
-    const timeVal = formatToStandardTimeSafe(time);
-    const count = reservationCountMap[`${date}_${timeVal}`] || 0;
-    const full = count >= MAX_BOOKING_COUNT;
-    const expired = shouldHideTime(date, timeVal);
-    
-    const div = document.createElement('div');
-    div.className = `time-btn ${expired ? 'expired' : ''} ${full ? 'expired' : ''}`;
-    div.innerText = `${timeVal} (${count}/${MAX_BOOKING_COUNT})`;
-    
-    if (!expired && !full) {
-      div.onclick = () => {
-        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-        div.classList.add('active');
-        timeInput.value = timeVal;
-      };
-    }
-    grid.appendChild(div);
-  });
-}
     
 
   function resetButtonState() {
@@ -1282,10 +1282,21 @@ function renderTimeList() {
 
 function sendData() {
   try {
+    isSubmitting = true;
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    btnText.textContent = '報名中...';
+
     const checkboxes = document.querySelectorAll('input[name="serviceType"]:checked');
     const serviceList = Array.from(checkboxes).map(cb => cb.value);
     const otherItem = document.getElementById('otherItem').value.trim();
-    
+    const name = document.getElementById('name').value.trim();
+
+    if (!name) {
+      alert("請輸入姓名");
+      resetButtonState();
+      return;
+    }
     if (serviceList.length === 0 && !otherItem) {
       alert("請至少選擇一個祭改項目或填寫其他項目");
       resetButtonState();
@@ -1297,45 +1308,30 @@ function sendData() {
       serviceType = serviceType ? `${serviceType}、${otherItem}` : otherItem;
     }
 
-    const name = document.getElementById('name').value.trim();
-    if (!name) {
-      alert("請輸入姓名");
-      resetButtonState();
-      return;
-    }
-
-    const data = {
-      pageId: "祭改系統", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
-      serviceType: serviceType,
-      appointDate: document.getElementById('appointDateHidden').value || getTaipeiDateString(),
-      appointTime: document.getElementById('appointTime').value || "00:00",
-      name: name,
-      phone: "",
-      email: "",
-      extraInfo: ""
-    };
-    
-    const formData = new FormData();
-    for (const key in data) {
-      formData.append(key, data[key]);
-    }
+    const submitTime = formatFullTime();
+    const params = new URLSearchParams();
+    params.append('name', name);
+    params.append('item', serviceType);
+    params.append('userId', LINE_USER_ID);
+    params.append('displayName', LINE_USER_NAME);
+    params.append('submitTime', submitTime);
 
     fetch(CONFIG.SCRIPT_URL, {
       method: 'POST',
-      body: formData
+      body: params
     })
     .then(res => res.json())
     .then(res => {
       callback(res);
     })
     .catch(err => {
-      console.error(err);
+      console.error('提交錯誤:', err);
       alert("提交失敗，請檢查網路後重試");
       resetButtonState();
     });
     
   } catch(e) {
-    console.error(e);
+    console.error("提交異常:", e);
     alert("提交失敗，請重試");
     resetButtonState();
   }
@@ -1686,18 +1682,6 @@ async function initLiff() {
     infoForm.onsubmit = (e) => {
       e.preventDefault();
       if (isSubmitting || isSubmittedSuccess) return;
-      
-      const name = document.getElementById('name').value.trim();
-      if (!name) {
-        alert("請輸入姓名");
-        document.getElementById('name').focus();
-        return;
-      }
-      
-      isSubmitting = true;
-      submitBtn.disabled = true;
-      submitBtn.classList.add('loading');
-      btnText.textContent = '報名中...';
       sendData();
     };
   });
