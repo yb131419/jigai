@@ -775,7 +775,7 @@ window.onload = async () => {
     console.log("LIFF 初始化失敗", err);
   }
 
-  await checkAdmin(); // 一定要等待驗證完成
+  await checkAdmin();
   loadRecords();
 };
 
@@ -853,26 +853,28 @@ function loadRecords() {
   recordsTable.style.display = "none";
   recordsBody.innerHTML = "";
 
-  fetch(scriptURL + "?mode=read")
+  fetch(scriptURL + "?mode=read&t=" + new Date().getTime())
     .then(res => res.json())
     .then(data => {
-      if (!data.success) {
-        loadingRecords.textContent = "❌ 載入失敗";
+      if (!data.success || !data.records) {
+        loadingRecords.textContent = "暫無報名資料";
         recordsTable.style.display = "none";
+        totalCount.textContent = "總報名人數：0";
         return;
       }
-      const records = Array.isArray(data.records) ? data.records : [];
+      const records = (Array.isArray(data.records) ? data.records : []).filter(row => row && row.length >= 2);
       allRecords = records;
       renderRecords(records);
     })
     .catch(() => {
-      loadingRecords.textContent = "❌ 載入失敗";
+      loadingRecords.textContent = "暫無報名資料";
       recordsTable.style.display = "none";
+      totalCount.textContent = "總報名人數：0";
     });
 }
 
 function renderRecords(records) {
-  if (!records.length) {
+  if (!records || records.length === 0) {
     loadingRecords.textContent = "暫無報名資料";
     recordsTable.style.display = "none";
     totalCount.textContent = "總報名人數：0";
@@ -885,7 +887,7 @@ function renderRecords(records) {
 
   records.slice().reverse().forEach(([name, item]) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
+    tr.innerHTML = `<td>${name || ''}</td><td>${item || ''}</td>`;
     recordsBody.appendChild(tr);
   });
 
@@ -911,7 +913,6 @@ async function checkAdmin() {
   }
 
   try {
-    // 統一使用 POST + JSON 格式，避免 URL 長度問題
     const res = await fetch(scriptURL, {
       method: "POST",
       mode: "cors",
@@ -923,13 +924,12 @@ async function checkAdmin() {
     });
     
     const data = await res.json();
-    isAdmin = data.isAdmin === true; // 嚴格布林判斷
+    isAdmin = data.isAdmin === true;
   } catch (e) {
     console.error("管理員驗證失敗：", e);
     isAdmin = false;
   }
 
-  // 只有真正的管理員才顯示切換按鈕
   switchContainer.style.display = isAdmin ? "flex" : "none";
 }
 
@@ -963,10 +963,10 @@ function loadAdminRecords() {
   btn.classList.add("loading");
   btn.disabled = true;
 
-  fetch(`${scriptURL}?mode=adminList&userId=${userId}`)
+  fetch(`${scriptURL}?mode=adminList&userId=${userId}&t=${new Date().getTime()}`)
     .then(res => res.json())
     .then(data => {
-      allAdminRecords = data.records || []; 
+      allAdminRecords = (data.records || []).filter(row => row && row.length >= 2); 
       currentRecordPage = 1;
       renderAdminList();
       loadRecords();
@@ -988,9 +988,9 @@ function renderAdminList() {
   const countEl = document.getElementById("recordCount");
   const keyword = document.getElementById("searchInput").value.toLowerCase();
   
-  let filtered = allAdminRecords.filter(item => {
-    const name = (item[0] || "").toLowerCase();
-    const itemText = (item[1] || "").toLowerCase();
+  let filtered = (allAdminRecords || []).filter(item => {
+    const name = ((item[0] || "") + "").toLowerCase();
+    const itemText = ((item[1] || "") + "").toLowerCase();
     return name.includes(keyword) || itemText.includes(keyword);
   });
 
@@ -1023,8 +1023,8 @@ function renderAdminList() {
         </div>
       </div>
       <div style="font-size:14px; color:#9ca3af; margin-top:6px; padding-top:10px; border-top:1px dashed #374151;">
-        姓名：${item[0]}<br>
-        祭改項目：${item[1]}
+        姓名：${item[0] || ''}<br>
+        祭改項目：${item[1] || ''}
       </div>
     </div>
   `}).join('');
@@ -1059,7 +1059,7 @@ function editRecord(index) {
   const newItem = prompt("修改項目", oldItem);
   if (newItem === null || newItem.trim() === "") return;
 
-  fetch(`${scriptURL}?mode=adminEdit&userId=${userId}&oldName=${encodeURIComponent(oldName)}&name=${encodeURIComponent(newName)}&item=${encodeURIComponent(newItem)}`)
+  fetch(`${scriptURL}?mode=adminEdit&userId=${userId}&oldName=${encodeURIComponent(oldName)}&name=${encodeURIComponent(newName)}&item=${encodeURIComponent(newItem)}&t=${new Date().getTime()}`)
     .then(res => res.json())
     .then(data => {
       if (data.success) {
@@ -1078,7 +1078,7 @@ function deleteRecord(index) {
   const name = item[0];
   if (!confirm(`確定刪除：${name}？`)) return;
   
-  fetch(`${scriptURL}?mode=adminDelete&userId=${userId}&name=${encodeURIComponent(name)}`)
+  fetch(`${scriptURL}?mode=adminDelete&userId=${userId}&name=${encodeURIComponent(name)}&t=${new Date().getTime()}`)
     .then(res => res.json())
     .then(data => {
       if (data.success) {
@@ -1104,7 +1104,7 @@ function batchDelete() {
   btn.classList.add("loading");
   btn.disabled = true;
 
-  fetch(`${scriptURL}?mode=adminBatchDelete&userId=${userId}&names=${encodeURIComponent(JSON.stringify(names))}`)
+  fetch(`${scriptURL}?mode=adminBatchDelete&userId=${userId}&names=${encodeURIComponent(JSON.stringify(names))}&t=${new Date().getTime()}`)
     .then(res => res.json())
     .then(data => {
       if (data.success) {
