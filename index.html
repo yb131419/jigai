@@ -1172,70 +1172,63 @@
     }
   };
 
-  window.callback = function (response) {
-    try {
-      isSubmitting = false;
-      isAdminLoading = false;
-      [submitBtn,loadReservationsBtn,batchDeleteBtn,addTimeBtn,loadTimeBtn,deleteSelectedTimeBtn,saveMaxBookingBtn].forEach(btn=>{
-        if(btn) {btn.classList.remove('loading'); btn.disabled=false;}
-      });
-      document.querySelectorAll('.reserve-btns button, .time-manage-item').forEach(btn=>{
-        btn.classList.remove('loading');
-        btn.disabled = false;
-      });
+window.callback = function (response) {
+  try {
+    isSubmitting = false;
+    isAdminLoading = false;
+    [submitBtn,loadReservationsBtn,batchDeleteBtn,addTimeBtn,loadTimeBtn,deleteSelectedTimeBtn,saveMaxBookingBtn].forEach(btn=>{
+      if(btn) {btn.classList.remove('loading'); btn.disabled=false;}
+    });
+    document.querySelectorAll('.reserve-btns button, .time-manage-item').forEach(btn=>{
+      btn.classList.remove('loading');
+      btn.disabled = false;
+    });
 
-      if (response.status === "init") {
-        timeDataMap = response.timeMap || {};
-        renderTimeList();
-        return;
-      }
-      
-      if (response.status === "reservationCount") {
-        reservationCountMap = response.data || {};
-        renderTimeList();
-        return;
-      }
-      
-      if (response.status === "success") {
-        if(currentPage === "user"){
-          isSubmittedSuccess = true;
-          submitBtn.classList.add('success','permanent-disabled');
-          submitBtn.disabled = true;
-          btnText.textContent = '報名成功 ✅';
-          alert("\n✅ 報名成功！\n\n專人將透過LINE與您聯繫");
-          infoForm.reset();
-          loadReservationCount();
-          
-        }else{
-          if(batchDeleteTimesCount > 0 && isBatchDeletingTimes){
-            alert(`✅ 成功刪除 ${batchDeleteTimesCount} 筆時段`);
-            batchDeleteTimesCount = 0;
-            isBatchDeletingTimes = false;
-          }else if(!isBatchDeletingTimes){
-            alert("✅ 操作成功");
-          }
-          loadAllReservations();
-          loadManageTime();
-          loadTimeData();
-          loadReservationCount();
-          document.querySelectorAll('.time-select-item.active').forEach(el => el.classList.remove('active'));
+    if (response.status === "init") {
+      timeDataMap = response.timeMap || {};
+      renderTimeList();
+      return;
+    }
+    
+    if (response.status === "reservationCount") {
+      reservationCountMap = response.data || {};
+      renderTimeList();
+      return;
+    }
+    
+    if (response.status === "success") {
+      if(currentPage === "user"){
+        isSubmittedSuccess = true;
+        submitBtn.classList.add('success','permanent-disabled');
+        submitBtn.disabled = true;
+        btnText.textContent = '報名成功 ✅';
+        alert("\n✅ 報名成功！\n\n專人將透過LINE與您聯繫");
+        infoForm.reset();
+        loadReservationCount();
+        
+      }else{
+        if(batchDeleteTimesCount > 0 && isBatchDeletingTimes){
+          alert(`✅ 成功刪除 ${batchDeleteTimesCount} 筆時段`);
+          batchDeleteTimesCount = 0;
+          isBatchDeletingTimes = false;
+        }else if(!isBatchDeletingTimes){
+          alert("✅ 操作成功");
         }
-      } else if (response.status === "adminList") {
-        window.fullReservationList = response.data || [];
-        window.fullReservationList.sort((a, b) => (a.submitTime || 0) - (b.submitTime || 0));
-        currentReservationPage = 1;
-        renderReservationsList(window.fullReservationList);
-      } else if (response.status === "adminTimeList") {
-        renderManageTimeList(response.date, response.times);
-      } else if (response.status === "error") {
-        alert("❌ 錯誤：" + (response.message || "系統異常"));
-        currentPage === "user" && resetButtonState();
+        loadAllReservations();
+        loadManageTime();
+        loadTimeData();
+        loadReservationCount();
+        document.querySelectorAll('.time-select-item.active').forEach(el => el.classList.remove('active'));
       }
-    } catch (e) {
-      console.error(e);
+    } else if (response.status === "error") {
+      alert("❌ 錯誤：" + (response.message || "系統異常"));
       currentPage === "user" && resetButtonState();
     }
-  };
+  } catch (e) {
+    console.error(e);
+    currentPage === "user" && resetButtonState();
+  }
+};
 
 function renderTimeList() {
   const date = document.getElementById('appointDate').value;
@@ -1262,43 +1255,66 @@ function renderTimeList() {
     document.body.appendChild(s);
   }
 
-  function sendData() {
-    try {
-      const checkboxes = document.querySelectorAll('input[name="serviceType"]:checked');
-      const serviceList = Array.from(checkboxes).map(cb => cb.value);
-      const otherItem = document.getElementById('otherItem').value.trim();
-      
-      if (serviceList.length === 0 && !otherItem) {
-        alert("請至少選擇一個祭改項目或填寫其他項目");
-        resetButtonState();
-        return;
-      }
-
-      let serviceType = serviceList.join('、');
-      if (otherItem) {
-        serviceType = serviceType ? `${serviceType}、${otherItem}` : otherItem;
-      }
-
-      const data = {
-        pageId: "祭改系統", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
-        serviceType: serviceType,
-        appointDate: getTaipeiDateString(),
-        appointTime: "00:00",
-        name: document.getElementById('name').value,
-        phone: "",
-        email: "",
-        extraInfo: ""
-      };
-      const p = new URLSearchParams(data);
-      const s = document.createElement('script');
-      s.src = `${CONFIG.SCRIPT_URL}?${p}&callback=callback&_=${Date.now()}`;
-      document.body.appendChild(s);
-    } catch(e) {
-      console.error(e);
-      alert("提交失敗，請重試");
+function sendData() {
+  try {
+    const checkboxes = document.querySelectorAll('input[name="serviceType"]:checked');
+    const serviceList = Array.from(checkboxes).map(cb => cb.value);
+    const otherItem = document.getElementById('otherItem').value.trim();
+    
+    if (serviceList.length === 0 && !otherItem) {
+      alert("請至少選擇一個祭改項目或填寫其他項目");
       resetButtonState();
+      return;
     }
+
+    let serviceType = serviceList.join('、');
+    if (otherItem) {
+      serviceType = serviceType ? `${serviceType}、${otherItem}` : otherItem;
+    }
+
+    const name = document.getElementById('name').value.trim();
+    if (!name) {
+      alert("請輸入姓名");
+      resetButtonState();
+      return;
+    }
+
+    const data = {
+      pageId: "祭改系統", lineId: LINE_USER_ID, lineName: LINE_USER_NAME,
+      serviceType: serviceType,
+      appointDate: getTaipeiDateString(),
+      appointTime: "00:00",
+      name: name,
+      phone: "",
+      email: "",
+      extraInfo: ""
+    };
+    
+    const formData = new FormData();
+    for (const key in data) {
+      formData.append(key, data[key]);
+    }
+
+    fetch(CONFIG.SCRIPT_URL, {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(res => {
+      callback(res);
+    })
+    .catch(err => {
+      console.error(err);
+      alert("提交失敗，請檢查網路後重試");
+      resetButtonState();
+    });
+    
+  } catch(e) {
+    console.error(e);
+    alert("提交失敗，請重試");
+    resetButtonState();
   }
+}
 
   function loadAllReservations() {
     if(!isAdmin||isAdminLoading) return;
