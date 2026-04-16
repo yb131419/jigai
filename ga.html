@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>祭改報名系統</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", sans-serif;
+        }
+        body {
+            background: #fff5f8;
+            margin: 0;
+            padding: 15px;
+            max-width: 600px;
+            margin: auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px #00000010;
+        }
+        h2 {
+            color: #8B0000;
+            text-align: center;
+            margin-top: 0;
+        }
+        .title {
+            color: #8B0000;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .checkbox-group label {
+            background: #F0F8FF;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #00336633;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #8B0000;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button.secondary {
+            background: #003366;
+        }
+        .msg {
+            text-align: center;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+        .msg.success {
+            background: #e6ffed;
+            color: #006633;
+        }
+        .msg.error {
+            background: #ffe6e6;
+            color: #8B0000;
+        }
+        .list {
+            margin-top: 10px;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+        .item {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 15px;
+        }
+        .name {
+            color: #8B0000;
+            font-weight: bold;
+        }
+        .itemText {
+            color: #003366;
+        }
+        .time {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .admin-btn {
+            background: #b80000;
+            font-size: 14px;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        .admin-area {
+            display: none;
+        }
+        .del-btn {
+            background: #ff4444;
+            font-size: 12px;
+            padding: 4px 8px;
+            float: right;
+            width: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h2>☸️ 祭改報名系統 ☸️</h2>
+    </div>
+
+    <!-- 報名表單 -->
+    <div class="card">
+        <div class="title">報名者姓名</div>
+        <input id="name" placeholder="請輸入姓名">
+        
+        <div class="title">勾選祭改項目（可多選）</div>
+        <div class="checkbox-group" id="items"></div>
+        
+        <button onclick="submitSignup()">✅ 送出報名</button>
+        <div id="msg" class="msg"></div>
+    </div>
+
+    <!-- 即時報名列表 -->
+    <div class="card">
+        <div class="title">📋 目前報名名單</div>
+        <div id="list" class="list">載入中...</div>
+    </div>
+
+    <!-- 管理員專區 -->
+    <div class="card">
+        <button class="admin-btn" onclick="toggleAdmin()">🔑 管理員專區</button>
+        <div class="admin-area" id="adminArea">
+            <input id="pwd" type="password" placeholder="請輸入管理員密碼">
+            <button class="secondary" onclick="loginAdmin()">登入管理</button>
+            <br><br>
+            <button style="background:#cc0000" onclick="clearAll()">🗑️ 清空所有報名</button>
+        </div>
+    </div>
+
+<script>
+    // ================= 設定 =================
+    const WEB_APP_URL = "你的GAS Web App網址";
+    const ADMIN_PASSWORD = "admin123"; // 自行修改
+
+    // 祭改項目（完全對齊你的後端）
+    const WISH_ITEMS = [
+        "補財庫", "冤親債主", "歷代祖先",
+        "病符", "嬰靈", "陰纏", "祭小人", "車關"
+    ];
+
+    // 初始化項目勾選框
+    window.onload = function() {
+        const box = document.getElementById("items");
+        WISH_ITEMS.forEach(item => {
+            const label = document.createElement("label");
+            label.innerHTML = `<input type="checkbox" value="${item}"> ${item}`;
+            box.appendChild(label);
+        });
+        loadList();
+    };
+
+    // 送出報名
+    function submitSignup() {
+        const name = document.getElementById("name").value.trim();
+        const checks = document.querySelectorAll(".checkbox-group input:checked");
+        const items = Array.from(checks).map(c => c.value);
+        
+        if (!name) {
+            showMsg("請輸入姓名", false);
+            return;
+        }
+        if (items.length === 0) {
+            showMsg("請至少勾選一個項目", false);
+            return;
+        }
+
+        const formData = new URLSearchParams();
+        formData.append("name", name);
+        formData.append("item", items.join("、"));
+
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showMsg(data.message, true);
+                document.getElementById("name").value = "";
+                document.querySelectorAll(".checkbox-group input").forEach(c => c.checked = false);
+                loadList();
+            } else {
+                showMsg(data.message, false);
+            }
+        });
+    }
+
+    // 讀取報名列表
+    function loadList() {
+        fetch(WEB_APP_URL + "?mode=read", { method: "POST" })
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById("list");
+            if (!data.success || data.records.length === 0) {
+                list.innerHTML = "目前無報名資料";
+                return;
+            }
+            let html = "";
+            data.records.forEach(row => {
+                const name = row[0] || "";
+                const item = row[1] || "";
+                const time = row[2] || "";
+                html += `
+                <div class="item">
+                    <span class="name">${name}</span>
+                    <span class="itemText">：${item}</span>
+                    <div class="time">${time}</div>
+                </div>`;
+            });
+            list.innerHTML = html;
+        });
+    }
+
+    // 管理員功能
+    let isAdmin = false;
+    function toggleAdmin() {
+        const area = document.getElementById("adminArea");
+        area.style.display = area.style.display === "block" ? "none" : "block";
+    }
+
+    function loginAdmin() {
+        const pwd = document.getElementById("pwd").value;
+        if (pwd === ADMIN_PASSWORD) {
+            isAdmin = true;
+            showMsg("管理員登入成功", true);
+        } else {
+            showMsg("密碼錯誤", false);
+        }
+    }
+
+    function clearAll() {
+        if (!isAdmin) {
+            showMsg("請先登入管理員", false);
+            return;
+        }
+        if (!confirm("確定要清空所有報名？")) return;
+        
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            body: new URLSearchParams({ clear: "all" })
+        })
+        .then(() => {
+            showMsg("已清空所有報名", true);
+            loadList();
+        });
+    }
+
+    function showMsg(text, success) {
+        const msg = document.getElementById("msg");
+        msg.innerText = text;
+        msg.className = "msg " + (success ? "success" : "error");
+        msg.style.display = "block";
+        setTimeout(() => msg.style.display = "none", 2500);
+    }
+</script>
+</body>
+</html>
