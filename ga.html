@@ -10,7 +10,7 @@
             font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
         }
         body {
-            background: #fff5f8;
+            background: #F8F3EF;
             margin: 0;
             padding: 15px;
             max-width: 600px;
@@ -23,6 +23,8 @@
             position: relative;
             padding-top: 25px;
             padding-bottom: 25px;
+            background: linear-gradient(135deg, #7B241C, #992B21);
+            color: white;
         }
 
         /* 管理介面按鈕 - 垂直兩行：管理 / 介面，自適應文字大小 */
@@ -31,7 +33,7 @@
             right: 18px;
             top: 50%;
             transform: translateY(-50%);
-            background: #B91C1C;
+            background: #5E1914;
             color: white;
             border: none;
             border-radius: 8px;
@@ -50,21 +52,22 @@
         }
 
         .card {
-            background: white;
+            background: #FFFFFF;
             border-radius: 14px;
             padding: 20px;
             margin-bottom: 16px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.06);
             position: relative;
+            border: 1px solid #EAE0DA;
         }
         h2 {
-            color: #8B0000;
+            color: #FFFFFF;
             text-align: center;
             margin-top: 0;
             font-size: 22px;
         }
         .title {
-            color: #8B0000;
+            color: #7B241C;
             font-weight: bold;
             margin-bottom: 10px;
             font-size: 16px;
@@ -76,16 +79,17 @@
         input {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 1px solid #D9C8BF;
             border-radius: 8px;
             font-size: 16px;
             margin-bottom: 12px;
+            background: #FFFDFB;
         }
 
         .collapse-btn {
             background: none;
             border: none;
-            color: #8B0000;
+            color: #992B21;
             font-size: 15px;
             cursor: pointer;
             padding: 4px 8px;
@@ -105,10 +109,10 @@
             margin-top: 8px;
         }
         .checkbox-group label {
-            background: #F8FAFC;
+            background: #FFF9F5;
             padding: 9px 6px;
             border-radius: 8px;
-            border: 1px solid #CBD5E1;
+            border: 1px solid #D9C8BF;
             font-size: 14px;
             cursor: pointer;
             display: flex;
@@ -117,8 +121,8 @@
             transition: all 0.2s;
         }
         .checkbox-group label:hover {
-            background: #f0f7ff;
-            border-color: #8B0000;
+            background: #F8EAE6;
+            border-color: #992B21;
         }
         .checkbox-group input[type="checkbox"] {
             width: 18px;
@@ -138,7 +142,7 @@
         button {
             width: 100%;
             padding: 14px;
-            background: #8B0000;
+            background: #8B281F;
             color: white;
             border: none;
             border-radius: 10px;
@@ -152,7 +156,7 @@
             cursor: not-allowed;
         }
         button.secondary {
-            background: #003366;
+            background: #2A4B6E;
         }
         .msg {
             text-align: center;
@@ -164,11 +168,11 @@
         }
         .msg.success {
             background: #E6FFED;
-            color: #006633;
+            color: #1D5F3B;
         }
         .msg.error {
-            background: #FFE6E6;
-            color: #8B0000;
+            background: #FFEAEA;
+            color: #8B281F;
         }
         .list {
             margin-top: 10px;
@@ -177,15 +181,15 @@
         }
         .item {
             padding: 10px;
-            border-bottom: 1px solid #F1F5F9;
+            border-bottom: 1px solid #F1EAE4;
             font-size: 15px;
         }
         .name {
-            color: #8B0000;
+            color: #8B281F;
             font-weight: bold;
         }
         .itemText {
-            color: #003366;
+            color: #2A4B6E;
         }
         .admin-row {
             display: flex;
@@ -232,7 +236,7 @@
         /* 搜尋框 */
         #searchInput {
             margin-bottom: 10px;
-            border: 1px solid #ccc;
+            border: 1px solid #D9C8BF;
         }
     </style>
 </head>
@@ -276,10 +280,10 @@
         <div class="modal-content">
             <h3 style="text-align:center; margin:0 0 16px 0;">管理員選單</h3>
             
-            <button class="secondary" onclick="updateSheet2Date()">📅 更新工作表2日期</button>
+            <button class="secondary" onclick="updateSheet2Date()">📅 修改『祭改日期』</button>
             <br><br>
             
-            <button style="background:#cc0000" onclick="clearSheet1()">🗑️ 清空工作表1</button>
+            <button style="background:#cc0000" onclick="clearSheet1()">🗑️ 清空『祭改名單』</button>
             <br><br>
             
             <button class="secondary" onclick="closeModal()">關閉</button>
