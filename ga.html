@@ -297,7 +297,7 @@
                 body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId })
             });
             const data = await res.json();
-            if (data.isAdmin) {
+            if (data.isAdmin === true) {
                 isAdmin = true;
                 document.getElementById("adminBtn").style.display = "block";
             }
@@ -342,13 +342,30 @@
                 document.querySelectorAll(".checkbox-group input").forEach(c => c.checked = false);
                 loadList();
             } else {
-                showMsg("❌ 報名失敗", false);
+                showMsg("❌ 報名失敗：" + (data.message || ""), false);
             }
         } catch (err) {
             showMsg("❌ 連線異常", false);
         } finally {
             btn.disabled = false;
             btn.innerText = "✅ 送出報名";
+        }
+    }
+
+    function formatTime(dateStr) {
+        try {
+            const d = new Date(dateStr);
+            const y = d.getFullYear();
+            const m = d.getMonth() + 1;
+            const day = d.getDate();
+            let h = d.getHours();
+            const min = String(d.getMinutes()).padStart(2, '0');
+            const sec = String(d.getSeconds()).padStart(2, '0');
+            const period = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            return `${y}/${m}/${day} ${period} ${h}:${min}:${sec}`;
+        } catch (e) {
+            return dateStr;
         }
     }
 
@@ -368,7 +385,7 @@
             data.records.forEach(row => {
                 const name = row[0] || "";
                 const item = row[1] || "";
-                const time = row[4] || "";
+                const time = row[4] ? formatTime(row[4]) : "";
                 html += `
                 <div class="item">
                     <span class="name">${name}</span>
@@ -397,7 +414,10 @@
         fetch(WEB_APP_URL,{
             method:"POST",
             body:new URLSearchParams({ name:name, item:newItem })
-        }).then(()=>{ showMsg("✅ 修改完成", true); loadList(); });
+        }).then(()=>{ 
+            showMsg("✅ 修改完成", true); 
+            loadList(); 
+        });
     }
 
     function deleteItem(name){
@@ -406,7 +426,10 @@
         fetch(WEB_APP_URL,{
             method:"POST",
             body:new URLSearchParams({ mode:"delete", name:name })
-        }).then(()=>{ showMsg("✅ 已刪除", true); loadList(); });
+        }).then(()=>{ 
+            showMsg("✅ 已刪除", true); 
+            loadList(); 
+        });
     }
 
     function clearAll() {
