@@ -1,1126 +1,598 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>彥彬📿 祭改系統</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css">
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>彥彬📿 祭改系統</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+        }
+        body {
+            background: #121212;
+            margin: 0;
+            padding: 15px;
+            max-width: 600px;
+            margin: auto;
+            position: relative;
+        }
 
-    :root {
-      --bg-primary: #0d1117;
-      --bg-secondary: #161b22;
-      --bg-tertiary: #1f2937;
-      --bg-quaternary: #272e3b;
-      --border-primary: #2c313a;
-      --border-secondary: #374151;
-      --text-primary: #f9fafb;
-      --text-secondary: #e5e7eb;
-      --text-tertiary: #9ca3af;
-      --accent-green: #10b981;
-      --accent-green-gradient: linear-gradient(to right, #10b981, #06c755);
-      --accent-blue: #60a5fa;
-      --accent-yellow: #facc15;
-      --accent-red: #ef4444;
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-      --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.5);
-      --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.4);
-      --radius-sm: 8px;
-      --radius-md: 10px;
-      --radius-lg: 16px;
-      --transition-fast: 0.2s ease;
-      --transition-normal: 0.3s ease;
-    }
+        /* 標題區塊 + 管理按鈕 */
+        .header-card {
+            position: relative;
+            padding-top: 25px;
+            padding-bottom: 25px;
+            background: linear-gradient(135deg, #2D2D2D, #1A1A1A);
+            color: #E0CFC0;
+        }
 
-    body {
-      font-family: 'Inter', 'Segoe UI', sans-serif;
-      background-color: var(--bg-primary);
-      color: var(--text-secondary);
-      font-size: 16px;
-      line-height: 1.5;
-      padding: 20px;
-      min-height: 100vh;
-      background-image: radial-gradient(circle at 10% 20%, rgba(30, 35, 45, 0.5) 0%, transparent 90%);
-    }
+        /* 管理介面按鈕 */
+        .admin-vertical-btn {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #4A2C2A;
+            color: #E0CFC0;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            z-index: 10;
+            white-space: normal;
+            line-height: 1.6;
+            text-align: center;
+            width: auto !important;
+            min-width: unset !important;
+            max-width: fit-content !important;
+        }
 
-    h1, h2 {
-      text-align: center;
-      color: var(--text-primary);
-      font-weight: 700;
-      position: relative;
-      margin-bottom: 30px;
-    }
+        .card {
+            background: #1E1E1E;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+            position: relative;
+            border: 1px solid #333333;
+        }
+        h2 {
+            color: #E0CFC0;
+            text-align: center;
+            margin-top: 0;
+            font-size: 22px;
+        }
+        .title {
+            color: #D4B59E;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            white-space: nowrap;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #444444;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 12px;
+            background: #2A2A2A;
+            color: #E0E0E0;
+        }
+        input::placeholder {
+            color: #888888;
+        }
 
-    h1 {
-      font-size: 2.2rem;
-      letter-spacing: 1px;
-    }
+        .collapse-btn {
+            background: none;
+            border: none;
+            color: #D4B59E;
+            font-size: 15px;
+            cursor: pointer;
+            padding: 4px 8px;
+            white-space: nowrap;
+        }
 
-    h1::after {
-      content: '';
-      display: block;
-      width: 80px;
-      height: 3px;
-      background: var(--accent-green-gradient);
-      margin: 12px auto 0;
-      border-radius: 2px;
-    }
+        .collapse-content {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.4s ease-out;
+        }
 
-    h2 {
-      font-size: 1.8rem;
-      margin-top: 40px;
-    }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .checkbox-group label {
+            background: #252525;
+            padding: 9px 6px;
+            border-radius: 8px;
+            border: 1px solid #444444;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            color: #E0E0E0;
+        }
+        .checkbox-group label:hover {
+            background: #352523;
+            border-color: #A0524D;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+        }
 
-    h2::after {
-      content: '';
-      display: block;
-      width: 60px;
-      height: 2px;
-      background: var(--accent-blue);
-      margin: 8px auto 0;
-      border-radius: 2px;
-    }
+        #customItem {
+            margin-top: 10px;
+            display: none;
+        }
 
-    form {
-      max-width: 520px;
-      margin: 0 auto 30px;
-      background: linear-gradient(145deg, var(--bg-secondary), var(--bg-quaternary));
-      padding: 30px;
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-lg), inset 0 0 1px rgba(255, 255, 255, 0.1);
-      border: 1px solid var(--border-primary);
-      position: relative;
-      overflow: hidden;
-    }
+        #submitBtn {
+            margin-top: 20px;
+        }
 
-    form::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: var(--accent-green-gradient);
-    }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #A0524D;
+            color: #FFF;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        button.secondary {
+            background: #3D5A73;
+        }
+        .msg {
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 12px 0;
+            display: none;
+            font-weight: bold;
+        }
+        .msg.success {
+            background: #1B3B29;
+            color: #A8E6CF;
+        }
+        .msg.error {
+            background: #3B2121;
+            color: #FFB3B3;
+        }
+        .list {
+            margin-top: 10px;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+        .item {
+            padding: 10px;
+            border-bottom: 1px solid #333333;
+            font-size: 15px;
+            color: #E0E0E0;
+        }
+        .name {
+            color: #D4B59E;
+            font-weight: bold;
+        }
+        .itemText {
+            color: #A9B4D8;
+        }
+        .admin-row {
+            display: flex;
+            margin-top: 8px;
+            gap: 6px;
+        }
 
-    label {
-      display: block;
-      margin-top: 20px;
-      font-weight: 600;
-      color: var(--text-primary);
-      font-size: 1rem;
-    }
+        /* 手機按鈕 */
+        .admin-row button {
+            padding: 6px 10px !important;
+            font-size: 13px !important;
+            width: auto !important;
+            flex: 1;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
 
-    input[type="text"] {
-      width: 100%;
-      padding: 15px 18px;
-      margin-top: 10px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-secondary);
-      background-color: var(--bg-tertiary);
-      color: var(--text-primary);
-      font-size: 17px;
-      transition: var(--transition-normal);
-      outline: none;
-    }
+        /* 彈窗 */
+        .modal {
+            display: none !important;
+            position: fixed !important;
+            z-index: 9999 !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background-color: rgba(0,0,0,0.7) !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .modal.show {
+            display: flex !important;
+        }
+        .modal-content {
+            background-color: #222222 !important;
+            color: #E0E0E0 !important;
+            margin: auto !important;
+            padding: 24px !important;
+            border-radius: 16px !important;
+            width: 90% !important;
+            max-width: 400px !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+        }
 
-    input[type="text"]:focus {
-      border-color: var(--accent-blue);
-      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15), inset 0 0 1px var(--accent-blue);
-      background-color: var(--bg-quaternary);
-      transform: translateY(-1px);
-    }
-
-    input[type="text"]::placeholder {
-      color: var(--text-tertiary);
-      font-weight: 400;
-      font-size: 15px;
-    }
-
-    button {
-      width: 100%;
-      padding: 16px;
-      margin-top: 28px;
-      border-radius: var(--radius-md);
-      border: none;
-      background: var(--accent-green-gradient);
-      color: var(--text-primary);
-      font-weight: 700;
-      font-size: 18px;
-      cursor: pointer;
-      transition: var(--transition-fast);
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-      position: relative;
-      overflow: hidden;
-    }
-
-    button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-      transition: 0.6s ease;
-    }
-
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-    }
-
-    button:hover::before {
-      left: 100%;
-    }
-
-    button:disabled {
-      background: var(--border-secondary);
-      cursor: not-allowed;
-      opacity: 0.7;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .checkbox-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-top: 18px;
-    }
-
-    .checkbox-grid label {
-      background-color: var(--bg-tertiary);
-      border: 1px solid var(--border-secondary);
-      border-radius: var(--radius-md);
-      padding: 14px 16px;
-      font-weight: 500;
-      cursor: pointer;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      transition: var(--transition-normal);
-      margin-top: 0;
-    }
-
-    .checkbox-grid label:hover {
-      background-color: var(--bg-quaternary);
-      border-color: var(--accent-blue);
-      transform: translateY(-2px);
-      color: var(--text-primary);
-    }
-
-    .checkbox-grid input {
-      width: 24px;
-      height: 24px;
-      margin-right: 10px;
-      cursor: pointer;
-      accent-color: var(--accent-green);
-    }
-
-    #otherInput {
-      display: none;
-      margin-top: 10px;
-    }
-
-    #successMsg {
-      text-align: center;
-      margin-top: 20px;
-      min-height: 28px;
-      font-weight: 600;
-      text-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
-      font-size: 1.05rem;
-      transition: var(--transition-normal);
-    }
-
-    table {
-      width: 100%;
-      max-width: 520px;
-      margin: 0 auto;
-      border-collapse: collapse;
-      background: var(--bg-tertiary);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      box-shadow: var(--shadow-md);
-      color: var(--text-primary);
-      border: 1px solid var(--border-primary);
-    }
-
-    th, td {
-      border-bottom: 1px solid var(--border-secondary);
-      padding: 16px;
-      text-align: center;
-      font-size: 16px;
-    }
-
-    th {
-      background: linear-gradient(180deg, var(--bg-secondary), var(--bg-tertiary));
-      font-weight: 700;
-      color: var(--accent-blue);
-      position: relative;
-    }
-
-    th:last-child {
-      border-left: 1px solid var(--border-secondary);
-    }
-
-    td {
-      background-color: var(--bg-tertiary);
-      transition: var(--transition-fast);
-    }
-
-    td:nth-child(2) {
-      font-weight: 600;
-      color: var(--accent-yellow);
-      text-shadow: 0 0 6px rgba(250, 204, 21, 0.3);
-      border-left: 1px solid var(--border-secondary);
-    }
-
-    tr:hover td {
-      background-color: var(--bg-quaternary);
-      transform: scale(1.01);
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    #loadingRecords {
-      text-align: center;
-      color: var(--text-tertiary);
-      font-style: italic;
-      margin-top: 10px;
-      font-size: 1rem;
-      position: relative;
-    }
-
-    #loadingRecords::after {
-      content: '';
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid var(--text-tertiary);
-      border-top: 2px solid var(--accent-green);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-left: 8px;
-      vertical-align: middle;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    #totalCount {
-      text-align: center;
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--accent-blue);
-      margin-top: 15px;
-      margin-bottom: 10px;
-      text-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
-      letter-spacing: 0.5px;
-    }
-
-    @media (max-width: 480px) {
-      body { padding: 15px; }
-      h1 { font-size: 1.8rem; }
-      h2 { font-size: 1.5rem; }
-      form { padding: 24px; }
-      .checkbox-grid { gap: 12px; }
-      button { padding: 14px; font-size: 17px; }
-    }
-
-    .top-bar {
-      position: fixed;
-      top: 12px;
-      right: 15px;
-      z-index: 999;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .page-switch {
-      display: none;
-    }
-    .switch-btn {
-      padding: 10px 18px;
-      border-radius: 50px;
-      background: #161b22;
-      border: 1px solid #374151;
-      color: #60a5fa;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-    .switch-btn:hover {
-      transform: translateY(-2px);
-      background: #1f2937;
-      border-color: #60a5fa;
-    }
-
-    .admin-section {
-      display: none;
-      max-width: 520px;
-      margin: 0 auto 30px;
-      animation: fadeIn 0.45s cubic-bezier(0.25, 1, 0.5, 1);
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .collapse-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      user-select: none;
-    }
-    .collapse-arrow {
-      transition: transform 0.3s;
-    }
-    .collapse-arrow.open {
-      transform: rotate(180deg);
-    }
-    .collapse-body {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.5s ease;
-    }
-
-    .admin-card {
-      background: #161b22;
-      border-radius: 24px;
-      padding: 28px;
-      box-shadow: 0 6px 22px rgba(0,0,0,0.3);
-      border: 1px solid #2c313a;
-      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
-    .admin-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 5px;
-      height: 100%;
-      background: linear-gradient(180deg, #60a5fa, #10b981);
-    }
-    .admin-card:hover {
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-      transform: translateY(-2px);
-    }
-    .admin-card h3 {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: #e5e7eb;
-      margin-bottom: 22px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #374151;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      letter-spacing: 0.5px;
-    }
-
-    .search-box {
-      width: 100%;
-      height: 50px;
-      padding: 0 18px;
-      border-radius: 16px;
-      background: #1f2937;
-      border: 1px solid #374151;
-      color: #f9fafb;
-      margin-bottom: 15px;
-      font-size: 1rem;
-      font-family: 'Inter', sans-serif;
-    }
-    .search-box:focus {
-      outline: none;
-      background: #272e3b;
-      border-color: #60a5fa;
-    }
-
-    .admin-btn {
-      width: 100%;
-      height: 52px;
-      border-radius: 16px;
-      background: #10b981;
-      color: #fff;
-      font-weight: 600;
-      font-size: 1rem;
-      border: none;
-      cursor: pointer;
-      margin-bottom: 15px;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
-    }
-    .admin-btn:hover {
-      background: #059669;
-      transform: translateY(-2px);
-    }
-    .batch-delete-btn {
-      background: #ef4444 !important;
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2) !important;
-    }
-    .batch-delete-btn:hover {
-      background: #dc2626 !important;
-    }
-
-    .reservation-item {
-      padding: 16px;
-      border-radius: 14px;
-      background: #1f2937;
-      margin-bottom: 12px;
-      border: 1px solid #374151;
-      transition: all 0.3s ease;
-    }
-    .reservation-item:hover {
-      background: #272e3b;
-      border-color: #60a5fa;
-      transform: translateX(2px);
-    }
-    .reservation-item:last-child {
-      margin-bottom: 0;
-    }
-    .reserve-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-      gap: 10px;
-    }
-    .reserve-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .reserve-num {
-      font-size: 0.9rem;
-      color: #60a5fa;
-      font-weight: 900;
-      min-width: 28px;
-      text-align: center;
-    }
-    .reserve-check {
-      transform: scale(1.6);
-      width: auto;
-      height: auto;
-      margin: 0;
-      align-self: center;
-      accent-color: #10b981;
-    }
-    .reserve-btns {
-      display: flex;
-      gap: 8px;
-    }
-    .reserve-btns button {
-      height: 36px;
-      min-width: 60px;
-      font-size: 0.85rem;
-      border-radius: 10px;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-      padding: 0 12px;
-      margin-top: 0;
-    }
-    .reserve-btns .edit-btn {
-      background: #60a5fa;
-    }
-    .reserve-btns .del-btn {
-      background: #ef4444;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 40px 10px;
-      color: #9ca3af;
-      font-size: 0.95rem;
-      font-weight: 500;
-    }
-
-    .loader {
-      width: 20px;
-      height: 20px;
-      border: 2px solid #fff;
-      border-bottom-color: transparent;
-      border-radius: 50%;
-      animation: rotation 1s linear infinite;
-      display: none;
-    }
-    button.loading .loader {
-      display: block;
-    }
-    @keyframes rotation {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .access-denied {
-      text-align: center;
-      padding: 60px 20px;
-      color: #ef4444;
-      font-weight: 600;
-      font-size: 1.05rem;
-      line-height: 1.7;
-      background: #1f2937;
-      border-radius: 20px;
-      margin: 15px 0;
-      border: 1px solid rgba(239,68,68,0.2);
-      display: none;
-    }
-
-    .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    .page-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 1px solid #374151;
-      background: #161b22;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-weight: 700;
-      color: #9ca3af;
-      transition: all 0.2s;
-    }
-    .page-btn:hover:not(:disabled) {
-      background: #1f2937;
-      border-color: #60a5fa;
-      color: #60a5fa;
-    }
-    .page-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-    .page-info {
-      font-size: 0.9rem;
-      color: #9ca3af;
-      font-weight: 500;
-    }
-  </style>
+        /* 搜尋框 */
+        #searchInput {
+            margin-bottom: 10px;
+            border: 1px solid #444444;
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="top-bar">
-  <div class="page-switch" id="switchContainer">
-    <button class="switch-btn" id="switchBtn">切換管理介面</button>
-  </div>
-</div>
-
-<div id="userPage">
-  <h1>📝 祭改報名</h1>
-  <form id="myForm">
-    <label for="nameInput">姓名</label>
-    <input type="text" id="nameInput" name="name" autocomplete="off" required />
-
-    <label><i class="ri-book-line"></i> 📜 祭改項目（可多選）</label>
-    <div class="checkbox-grid">
-      <label><input type="checkbox" name="item" value="補財庫">補財庫</label>
-      <label><input type="checkbox" name="item" value="冤親債主">冤親債主</label>
-      <label><input type="checkbox" name="item" value="歷代祖先">歷代祖先</label>
-      <label><input type="checkbox" name="item" value="病符">病符</label>
-      <label><input type="checkbox" name="item" value="嬰靈">嬰靈</label>
-      <label><input type="checkbox" name="item" value="陰纏">陰纏</label>
-      <label><input type="checkbox" name="item" value="祭小人">祭小人</label>
-      <label><input type="checkbox" name="item" value="車關">車關</label>
-      <label><input type="checkbox" name="item" value="倒房">倒房</label>
-      <label><input type="checkbox" name="item" value="其他" id="chkOther">其他</label>
+    <div class="card header-card">
+        <h2>☸️ 祭改報名系統 ☸️</h2>
+        <button class="admin-vertical-btn" onclick="openModal()">管理<br>介面</button>
     </div>
-    <input type="text" id="otherInput" placeholder="請輸入其他項目" />
 
-    <button type="submit" id="submitBtn">
-      <i class="ri-send-plane-line"></i> 送出報名
-    </button>
-  </form>
-
-  <div id="successMsg"></div>
-
-  <h2>📋 祭改名單</h2>
-  <p id="totalCount">總報名人數：0</p>
-  <p id="loadingRecords">讀取中...</p>
-
-  <table id="recordsTable" style="display:none;">
-    <thead>
-      <tr>
-        <th>姓名</th>
-        <th>項目</th>
-      </tr>
-    </thead>
-    <tbody id="recordsBody"></tbody>
-  </table>
-</div>
-
-<div id="adminPage" class="admin-section">
-  <div style="text-align:center; margin-bottom:20px;">
-    <h2 style="margin:0;">🔐 祭改管理後台</h2>
-  </div>
-
-  <div id="adminAccessDenied" class="access-denied">
-    ❌ 您無管理員權限<br>請聯繫店家開通高級管理權限
-  </div>
-
-  <div id="adminContent" style="display:none;">
-    <div class="admin-card">
-      <div class="collapse-header" onclick="toggleCollapse('recordCollapse')">
-        <h3>📋 祭改報名紀錄 <span id="recordCount" style="color:#60a5fa;">(0 筆)</span></h3>
-        <span class="collapse-arrow" id="recordArrow">▼</span>
-      </div>
-      <div class="collapse-body" id="recordCollapse">
-        <input 
-          type="text" 
-          id="searchInput" 
-          class="search-box" 
-          placeholder="🔍 搜尋：姓名 / 項目"
-          oninput="renderAdminList()"
-        >
-
-        <button class="admin-btn" id="refreshBtn" onclick="loadAdminRecords()">
-          <span class="loader"></span>
-          <span>重新載入報名</span>
-        </button>
+    <div class="card">
+        <div class="title">報名者姓名</div>
+        <input id="name" placeholder="請輸入姓名">
         
-        <div id="adminList"></div>
-        <div id="recordPagination" class="pagination" style="display: none;"></div>
-        
-        <button class="admin-btn batch-delete-btn" id="batchDeleteBtn" onclick="batchDelete()">
-          <span class="loader"></span>
-          <span>刪除選取資料</span>
-        </button>
-      </div>
+        <div class="title">
+            📜 祭改項目（可多選）
+            <button class="collapse-btn" onclick="toggleCollapse()">展開：▶</button>
+        </div>
+
+        <div class="collapse-content" id="collapseContent">
+            <div class="checkbox-group" id="items"></div>
+            <input id="customItem" placeholder="✍️ 請輸入其他項目說明">
+        </div>
+
+        <button id="submitBtn" onclick="submitSignup()"> 送出報名 </button>
+        <div id="msg" class="msg"></div>
     </div>
-  </div>
-</div>
 
+    <div class="card">
+        <div class="title">🔍 搜尋姓名 / 項目</div>
+        <input type="text" id="searchInput" placeholder="請輸入關鍵字搜尋..." oninput="searchList()">
+        
+        <div class="title" style="margin-top:5px;">📋 目前報名名單</div>
+        <div id="list" class="list">載入中...</div>
+    </div>
+
+    <!-- 管理員彈窗 -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <h3 style="text-align:center; margin:0 0 16px 0;">管理員選單</h3>
+            
+            <button class="secondary" onclick="updateSheet2Date()">📅 修改『祭改日期』</button>
+            <br><br>
+            
+            <button style="background:#cc0000" onclick="clearSheet1()">🗑️ 清空『祭改名單』</button>
+            <br><br>
+            
+            <button class="secondary" onclick="closeModal()">關閉</button>
+        </div>
+    </div>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbxzLkjKUrz3DZIT7k0KHkY7QGjz0bp1eXRtcG7O5mryJr1IJQJlU-v3gyOJEaeVypvT/exec";
-const LIFF_ID = "2007416974-JzvPy6DZ";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwWIZ3ID5K9PNgSJ20wwMZOiMIQ4dcDGm8M8FIU-u8sRqrzGdomM74OEREGPt2Fgxz8Og/exec";
+    const WISH_ITEMS = [
+        "補財庫", "冤親債主", "歷代祖先",
+        "病符", "嬰靈", "陰纏", "祭小人",
+        "車關", "倒房", "其他"
+    ];
 
-let userId = "";
-let displayName = "";
-let allRecords = [];
-let allAdminRecords = [];
-let selectedIds = [];
-let isAdmin = false;
-let currentPage = "user";
+    let currentUserId = "";
+    let currentDisplayName = "";
+    let allRecords = [];
+    let isAdminUser = false;
 
-let currentRecordPage = 1;
-const recordsPerPage = 5;
+    window.onload = async function () {
+        const box = document.getElementById("items");
+        WISH_ITEMS.forEach(item => {
+            const label = document.createElement("label");
+            label.innerHTML = `<input type="checkbox" value="${item}"> ${item}`;
+            box.appendChild(label);
+        });
 
-let switchBtn, userPage, adminPage, adminContent, adminAccessDenied, switchContainer;
+        document.querySelectorAll('input[value="其他"]').forEach(input => {
+            input.addEventListener('change', function() {
+                document.getElementById('customItem').style.display = this.checked ? 'block' : 'none';
+            });
+        });
 
-const form = document.getElementById("myForm");
-const successMsg = document.getElementById("successMsg");
-const chkOther = document.getElementById("chkOther");
-const otherInput = document.getElementById("otherInput");
-const loadingRecords = document.getElementById("loadingRecords");
-const recordsTable = document.getElementById("recordsTable");
-const recordsBody = document.getElementById("recordsBody");
-const totalCount = document.getElementById("totalCount");
-const nameInput = document.getElementById("nameInput");
+        await initLiffAndGetUser();
+        loadList();
+    };
 
-chkOther.addEventListener("change", () => {
-  otherInput.style.display = chkOther.checked ? "block" : "none";
-  if (!chkOther.checked) otherInput.value = "";
-});
-
-function toggleCollapse(id) {
-  const body = document.getElementById(id);
-  const arrow = document.getElementById(id.replace('Collapse','Arrow'));
-  if (body.style.maxHeight && body.style.maxHeight !== '0px') {
-    body.style.maxHeight = '0px';
-    arrow.classList.remove('open');
-  } else {
-    body.style.maxHeight = '5000px';
-    arrow.classList.add('open');
-  }
-}
-
-window.onload = async () => {
-  initAdminElements();
-  try {
-    await liff.init({ liffId: LIFF_ID });
-    if (!liff.isLoggedIn()) {
-      liff.login();
-      return;
+    async function initLiffAndGetUser() {
+        try {
+            await liff.init({ liffId: "2007416974-JzvPy6DZ" });
+            if (!liff.isLoggedIn()) {
+                liff.login();
+                return;
+            }
+            const p = await liff.getProfile();
+            currentUserId = p.userId || "unknown_user";
+            currentDisplayName = p.displayName || "unknown_name";
+            
+            // 從 GAS 後端驗證管理員，不暴露ID在前端
+            const res = await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId })
+            });
+            const data = await res.json();
+            isAdminUser = data.isAdmin || false;
+        } catch (e) {
+            currentUserId = "error_user";
+            currentDisplayName = "error_name";
+            isAdminUser = false;
+        }
     }
-    const profile = await liff.getProfile();
-    userId = profile.userId;
-    displayName = profile.displayName;
-  } catch (err) {
-    console.log("LIFF 初始化失敗", err);
-  }
 
-  await checkAdmin(); // 一定要等待驗證完成
-  loadRecords();
-};
-
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  successMsg.textContent = "";
-  const name = nameInput.value.trim();
-  if (!name) {
-    successMsg.style.color = "var(--accent-red)";
-    successMsg.textContent = "請輸入姓名";
-    return;
-  }
-
-  let selectedItems = Array.from(document.querySelectorAll('input[name="item"]:checked'))
-    .map(cb => cb.value)
-    .filter(v => v !== "其他");
-
-  if (chkOther.checked) {
-    const otherVal = otherInput.value.trim();
-    if (otherVal) selectedItems.push(otherVal);
-  }
-
-  if (selectedItems.length === 0) {
-    successMsg.style.color = "var(--accent-red)";
-    successMsg.textContent = "請選擇至少一個項目";
-    return;
-  }
-
-  const itemString = selectedItems.join("、");
-  const formData = new URLSearchParams();
-  formData.append("name", name);
-  formData.append("item", itemString);
-  formData.append("userId", userId);
-  formData.append("displayName", displayName);
-  
-  const submitTime = new Date().toLocaleString('zh-TW', {
-    timeZone: 'Asia/Taipei',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  }).replace(/\//g, '-');
-  formData.append("submitTime", submitTime);
-
-  successMsg.textContent = "處理中...";
-
-  try {
-    const res = await fetch(scriptURL, {
-      method: "POST",
-      body: formData,
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      mode: "cors"
-    });
-    const data = await res.json();
-    if (data.success) {
-      successMsg.style.color = "var(--accent-green)";
-      successMsg.innerHTML = `✅ 報名/更新成功！<br>姓名：${name}`;
-      form.reset();
-      otherInput.style.display = "none";
-      loadRecords();
-    } else {
-      successMsg.style.color = "var(--accent-red)";
-      successMsg.textContent = "❌ 失敗：" + (data.message || "系統錯誤");
+    function toggleCollapse() {
+        const content = document.getElementById("collapseContent");
+        const btn = document.querySelector(".collapse-btn");
+        if (content.style.maxHeight) {
+            content.style.maxHeight = null;
+            btn.innerText = "展開：▶";
+        } else {
+            content.style.maxHeight = "800px";
+            btn.innerText = "收合：▼";
+        }
     }
-  } catch {
-    successMsg.style.color = "var(--accent-red)";
-    successMsg.textContent = "❌ 網路錯誤";
-  }
-});
 
-function loadRecords() {
-  loadingRecords.style.display = "block";
-  recordsTable.style.display = "none";
-  recordsBody.innerHTML = "";
-
-  fetch(scriptURL + "?mode=read")
-    .then(res => res.json())
-    .then(data => {
-      if (!data.success) {
-        loadingRecords.textContent = "❌ 載入失敗";
-        recordsTable.style.display = "none";
-        return;
-      }
-      const records = Array.isArray(data.records) ? data.records : [];
-      allRecords = records;
-      renderRecords(records);
-    })
-    .catch(() => {
-      loadingRecords.textContent = "❌ 載入失敗";
-      recordsTable.style.display = "none";
-    });
-}
-
-function renderRecords(records) {
-  if (!records.length) {
-    loadingRecords.textContent = "暫無報名資料";
-    recordsTable.style.display = "none";
-    totalCount.textContent = "總報名人數：0";
-    return;
-  }
-
-  loadingRecords.style.display = "none";
-  recordsTable.style.display = "table";
-  recordsBody.innerHTML = "";
-
-  records.slice().reverse().forEach(([name, item]) => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${name}</td><td>${item}</td>`;
-    recordsBody.appendChild(tr);
-  });
-
-  totalCount.textContent = `總報名人數：${records.length}`;
-}
-
-function initAdminElements() {
-  switchBtn = document.getElementById("switchBtn");
-  switchContainer = document.getElementById("switchContainer");
-  userPage = document.getElementById("userPage");
-  adminPage = document.getElementById("adminPage");
-  adminContent = document.getElementById("adminContent");
-  adminAccessDenied = document.getElementById("adminAccessDenied");
-
-  switchContainer.style.display = "none";
-}
-
-async function checkAdmin() {
-  if (!userId) {
-    switchContainer.style.display = "none";
-    isAdmin = false;
-    return;
-  }
-
-  try {
-    // 統一使用 POST + JSON 格式，避免 URL 長度問題
-    const res = await fetch(scriptURL, {
-      method: "POST",
-      mode: "cors",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        mode: "checkAdmin",
-        userId: userId
-      })
-    });
-    
-    const data = await res.json();
-    isAdmin = data.isAdmin === true; // 嚴格布林判斷
-  } catch (e) {
-    console.error("管理員驗證失敗：", e);
-    isAdmin = false;
-  }
-
-  // 只有真正的管理員才顯示切換按鈕
-  switchContainer.style.display = isAdmin ? "flex" : "none";
-}
-
-function togglePage() {
-  currentPage = currentPage === "user" ? "admin" : "user";
-  
-  if(currentPage === "user"){
-    userPage.style.display = "block";
-    adminPage.style.display = "none";
-    switchBtn.textContent = "切換管理介面";
-  }else{
-    userPage.style.display = "none";
-    adminPage.style.display = "block";
-    switchBtn.textContent = "返回報名頁面";
-    
-    if(!isAdmin){
-      adminAccessDenied.style.display = "block";
-      adminContent.style.display = "none";
-    }else{
-      adminAccessDenied.style.display = "none";
-      adminContent.style.display = "block";
-      loadAdminRecords();
-      toggleCollapse('recordCollapse');
+    // 純日期格式 (給工作表2用)
+    function getSignDate() {
+        const now = new Date();
+        const y = now.getFullYear();
+        m = now.getMonth() + 1;
+        d = now.getDate();
+        return `${y}/${m}/${d}`;
     }
-  }
-}
 
-function loadAdminRecords() {
-  if (!isAdmin) return;
-  const btn = document.getElementById("refreshBtn");
-  btn.classList.add("loading");
-  btn.disabled = true;
+    // 完整日期時間格式 (給報名時間用：2026/4/13 上午 6:51:01)
+    function getFullDateTime() {
+        const now = new Date();
+        const y = now.getFullYear();
+        m = now.getMonth() + 1;
+        d = now.getDate();
+        
+        let hours = now.getHours();
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+        const period = hours >= 12 ? "下午" : "上午";
+        
+        if (hours > 12) hours -= 12;
+        if (hours === 0) hours = 12;
+        
+        const timeStr = `${period} ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        return `${y}/${m}/${d} ${timeStr}`;
+    }
 
-  fetch(`${scriptURL}?mode=adminList&userId=${userId}`)
-    .then(res => res.json())
-    .then(data => {
-      allAdminRecords = data.records || []; 
-      currentRecordPage = 1;
-      renderAdminList();
-      loadRecords();
-    })
-    .finally(() => {
-      btn.classList.remove("loading");
-      btn.disabled = false;
-    });
-}
+    async function submitSignup() {
+        const btn = document.getElementById("submitBtn");
+        const name = document.getElementById("name").value.trim();
+        const custom = document.getElementById("customItem").value.trim();
+        const checks = document.querySelectorAll(".checkbox-group input:checked");
+        
+        let items = Array.from(checks).map(c => c.value);
+        const hasOther = items.includes("其他");
 
-function changeRecordPage(direction) {
-  currentRecordPage += direction;
-  renderAdminList();
-}
+        if (hasOther) {
+            items = items.filter(i => i !== "其他");
+            if (!custom) { showMsg("請輸入其他項目", false); return; }
+            items.push(custom);
+        }
 
-function renderAdminList() {
-  const container = document.getElementById("adminList");
-  const paginationEl = document.getElementById("recordPagination");
-  const countEl = document.getElementById("recordCount");
-  const keyword = document.getElementById("searchInput").value.toLowerCase();
-  
-  let filtered = allAdminRecords.filter(item => {
-    const name = (item[0] || "").toLowerCase();
-    const itemText = (item[1] || "").toLowerCase();
-    return name.includes(keyword) || itemText.includes(keyword);
-  });
+        if (!name) { showMsg("請輸入姓名", false); return; }
+        if (items.length === 0) { showMsg("請選擇項目", false); return; }
 
-  const totalItems = filtered.length;
-  countEl.textContent = `(${totalItems} 筆)`;
+        btn.disabled = true;
+        btn.innerText = "⏳ 提交中...";
 
-  const totalPages = Math.ceil(totalItems / recordsPerPage);
-  const startIndex = (currentRecordPage - 1) * recordsPerPage;
-  const endIndex = startIndex + recordsPerPage;
-  const paginatedList = filtered.slice(startIndex, endIndex);
+        try {
+            const form = new URLSearchParams();
+            form.append("name", name);
+            form.append("item", items.join("、"));
+            form.append("userId", currentUserId);
+            form.append("displayName", currentDisplayName);
+            form.append("signDate", getSignDate());
+            form.append("submitTime", getFullDateTime());
 
-  if (!paginatedList.length) {
-    container.innerHTML = `<div class="empty-state">查無報名資料</div>`;
-    paginationEl.style.display = 'none';
-    return;
-  }
+            const res = await fetch(WEB_APP_URL, { method: "POST", body: form });
+            const data = await res.json();
 
-  container.innerHTML = paginatedList.map((item, index) => {
-    const realIndex = startIndex + index;
-    return `
-    <div class="reservation-item">
-      <div class="reserve-header">
-        <div class="reserve-left">
-          <span class="reserve-num">${startIndex + index + 1}</span>
-          <input type="checkbox" class="reserve-check" value="${realIndex}" onchange="toggleSelect(${realIndex})">
-        </div>
-        <div class="reserve-btns">
-          <button class="edit-btn" onclick="editRecord(${realIndex})">修改</button>
-          <button class="del-btn" onclick="deleteRecord(${realIndex})">刪除</button>
-        </div>
-      </div>
-      <div style="font-size:14px; color:#9ca3af; margin-top:6px; padding-top:10px; border-top:1px dashed #374151;">
-        姓名：${item[0]}<br>
-        祭改項目：${item[1]}
-      </div>
-    </div>
-  `}).join('');
+            if (data.success) {
+                showMsg("✅ 報名成功", true);
+                document.getElementById("name").value = "";
+                document.getElementById("customItem").value = "";
+                document.querySelectorAll(".checkbox-group input").forEach(c => c.checked = false);
+                document.getElementById("customItem").style.display = "none";
+                loadList();
+            } else {
+                showMsg("❌ 失敗：" + (data.message || ""), false);
+            }
+        } catch (err) {
+            showMsg("❌ 連線異常", false);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "✅ 送出報名";
+        }
+    }
 
-  if (totalPages > 1) {
-    paginationEl.style.display = 'flex';
-    paginationEl.innerHTML = `
-      <button class="page-btn" onclick="changeRecordPage(-1)" ${currentRecordPage === 1 ? 'disabled' : ''}>‹</button>
-      <span class="page-info">${currentRecordPage} / ${totalPages}</span>
-      <button class="page-btn" onclick="changeRecordPage(1)" ${currentRecordPage === totalPages ? 'disabled' : ''}>›</button>
-    `;
-  } else {
-    paginationEl.style.display = 'none';
-  }
-}
+    function loadList() {
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            body: new URLSearchParams({ mode: "read" })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.success || data.records.length === 0) {
+                document.getElementById("list").innerHTML = "目前無報名資料";
+                allRecords = [];
+                return;
+            }
+            allRecords = data.records;
+            renderList(allRecords);
+        })
+        .catch(() => {
+            document.getElementById("list").innerHTML = "目前無報名資料";
+            allRecords = [];
+        });
+    }
 
-function toggleSelect(index) {
-  const i = selectedIds.indexOf(index);
-  i > -1 ? selectedIds.splice(i, 1) : selectedIds.push(index);
-}
+    // 渲染名單 + 管理員權限控制
+    function renderList(records) {
+        let html = "";
+        records.forEach(row => {
+            const name = row[0] || "";
+            const item = row[1] || "";
+            
+            html += `
+            <div class="item">
+                <span class="name">${name}</span>
+                <span class="itemText">：${item}</span>
+                ${isAdminUser ? `
+                <div class="admin-row">
+                    <button style="background:#003366" onclick="editItem('${name}')">修改</button>
+                    <button style="background:#cc0000" onclick="deleteItem('${name}')">刪除</button>
+                </div>
+                ` : ""}
+            </div>`;
+        });
+        document.getElementById("list").innerHTML = html;
+    }
 
-function editRecord(index) {
-  const item = allAdminRecords[index];
-  if (!item) return alert("找不到該筆資料");
-  
-  const oldName = item[0];
-  const oldItem = item[1];
+    function searchList() {
+        const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+        if (!keyword) { renderList(allRecords); return; }
+        const filtered = allRecords.filter(row => {
+            const name = (row[0] || "").toLowerCase();
+            const item = (row[1] || "").toLowerCase();
+            return name.includes(keyword) || item.includes(keyword);
+        });
+        renderList(filtered);
+    }
 
-  const newName = prompt("修改姓名", oldName);
-  if (newName === null || newName.trim() === "") return;
-  
-  const newItem = prompt("修改項目", oldItem);
-  if (newItem === null || newItem.trim() === "") return;
+    // 彈窗
+    function openModal() {
+        document.getElementById("adminModal").classList.add("show");
+    }
+    function closeModal() {
+        document.getElementById("adminModal").classList.remove("show");
+    }
 
-  fetch(`${scriptURL}?mode=adminEdit&userId=${userId}&oldName=${encodeURIComponent(oldName)}&name=${encodeURIComponent(newName)}&item=${encodeURIComponent(newItem)}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        alert("✅ 修改成功");
-        loadAdminRecords();
-      } else {
-        alert("❌ 修改失敗");
-      }
-    });
-}
+    function editItem(name) {
+        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
+        const newItem = prompt("修改項目：", "");
+        if(!newItem) return;
+        fetch(WEB_APP_URL,{
+            method:"POST",
+            body:new URLSearchParams({ 
+                name: name, 
+                item: newItem,
+                userId: currentUserId,
+                displayName: currentDisplayName,
+                signDate: getSignDate()
+            })
+        }).then(()=>{ 
+            showMsg("✅ 修改完成", true); 
+            loadList(); 
+        }).catch(()=>{
+            showMsg("❌ 修改失敗", false);
+        });
+    }
 
-function deleteRecord(index) {
-  const item = allAdminRecords[index];
-  if (!item) return alert("找不到該筆資料");
-  
-  const name = item[0];
-  if (!confirm(`確定刪除：${name}？`)) return;
-  
-  fetch(`${scriptURL}?mode=adminDelete&userId=${userId}&name=${encodeURIComponent(name)}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        alert("✅ 刪除成功");
-        loadAdminRecords();
-      } else {
-        alert("❌ 刪除失敗");
-      }
-    });
-}
+    function deleteItem(name){
+        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
+        if(!confirm("確定刪除？")) return;
+        fetch(WEB_APP_URL,{
+            method:"POST",
+            body:new URLSearchParams({ mode:"delete", name:name })
+        }).then(()=>{ 
+            showMsg("✅ 已刪除", true); 
+            loadList(); 
+        }).catch(()=>{
+            showMsg("❌ 刪除失敗", false);
+        });
+    }
 
-function batchDelete() {
-  if (!selectedIds.length) {
-    alert("請先勾選要刪除的資料");
-    return;
-  }
-  
-  const names = selectedIds.map(idx => allAdminRecords[idx][0]);
-  
-  if (!confirm(`確定刪除 ${names.length} 筆資料？`)) return;
+    // 更新工作表2日期 (格式：2026/4/13 不變)
+    function updateSheet2Date() {
+        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
+        const input = prompt("請輸入新日期（範例：3月16日）", "");
+        if (!input) return;
+        const year = new Date().getFullYear();
+        let month = input.match(/(\d+)月/)?.[1];
+        let day = input.match(/(\d+)日/)?.[1];
+        if (!month || !day) {
+            showMsg("❌ 格式錯誤，請輸入 3月16日", false);
+            return;
+        }
+        const newDate = `${year}/${month}/${day}`;
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            body: new URLSearchParams({ mode: "updateSheet2Date", newDate: newDate })
+        }).then(() => {
+            showMsg(`✅ 日期已更新：${newDate}`, true);
+            closeModal();
+        }).catch(() => {
+            showMsg("❌ 更新失敗", false);
+        });
+    }
 
-  const btn = document.getElementById("batchDeleteBtn");
-  btn.classList.add("loading");
-  btn.disabled = true;
+    // 清空工作表1
+    function clearSheet1() {
+        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
+        if (!confirm("⚠️ 確定清空工作表1？無法復原！")) return;
+        
+        const form = new URLSearchParams();
+        form.append("mode", "clearSheet1");
+        form.append("userId", currentUserId);
+        
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            body: form
+        }).then(() => {
+            showMsg("✅ 已清空", true);
+            loadList();
+            closeModal();
+        }).catch(()=>{
+            showMsg("❌ 清空失敗", false);
+        });
+    }
 
-  fetch(`${scriptURL}?mode=adminBatchDelete&userId=${userId}&names=${encodeURIComponent(JSON.stringify(names))}`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        alert("✅ 批次刪除成功");
-        selectedIds = [];
-        loadAdminRecords();
-      } else {
-        alert("❌ 批次刪除失敗");
-      }
-    })
-    .finally(() => {
-      btn.classList.remove("loading");
-      btn.disabled = false;
-    });
-}
+    function showMsg(text, success) {
+        const msg = document.getElementById("msg");
+        msg.innerText = text;
+        msg.className = "msg " + (success ? "success" : "error");
+        msg.style.display = "block";
+        setTimeout(() => msg.style.display = "none", 2600);
+    }
 </script>
-
 </body>
 </html>
