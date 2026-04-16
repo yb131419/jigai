@@ -259,7 +259,7 @@
     let isAdmin = false;
 
     window.onload = async function () {
-        // 先產生選項
+        // 產生選項
         const box = document.getElementById("items");
         WISH_ITEMS.forEach(item => {
             const label = document.createElement("label");
@@ -267,19 +267,16 @@
             box.appendChild(label);
         });
 
-        // 監聽其他
+        // 其他選項監聽
         document.querySelectorAll('input[value="其他"]').forEach(input => {
             input.addEventListener('change', function() {
                 document.getElementById('customItem').style.display = this.checked ? 'block' : 'none';
             });
         });
 
-        // 平行執行：加快載入速度
-        await Promise.all([
-            initLiffAndGetUser(),
-            autoAdminCheck()
-        ]);
-        
+        // 初始化順序確保：先登入 → 再驗證管理員 → 最後載入名單
+        await initLiffAndGetUser();
+        await autoAdminCheck();
         loadList();
     };
 
@@ -291,7 +288,9 @@
             const p = await liff.getProfile();
             currentUserId = p.userId || "";
             currentDisplayName = p.displayName || "";
-        } catch (e) {}
+        } catch (e) {
+            console.log("LIFF 載入失敗");
+        }
     }
 
     function toggleCollapse() {
@@ -306,6 +305,7 @@
         }
     }
 
+    // 管理員驗證（穩定版）
     async function autoAdminCheck() {
         if (!currentUserId) return;
         try {
@@ -315,8 +315,12 @@
             });
             const data = await res.json();
             isAdmin = data.isAdmin === true;
-            if (isAdmin) document.getElementById("adminBtn").style.display = "block";
-        } catch (e) {}
+            if (isAdmin) {
+                document.getElementById("adminBtn").style.display = "block";
+            }
+        } catch (e) {
+            console.log("管理員驗證失敗");
+        }
     }
 
     async function submitSignup() {
@@ -344,11 +348,8 @@
             const form = new URLSearchParams();
             form.append("name", name);
             form.append("item", items.join("、"));
-            
-            // 🔥 強制確實傳送 userId & displayName
             form.append("userId", currentUserId || "");
             form.append("displayName", currentDisplayName || "");
-            
             form.append("submitTime", getNowTaiwanTime());
 
             const res = await fetch(WEB_APP_URL, { method: "POST", body: form });
@@ -403,14 +404,16 @@
         }
     }
 
-    // 優化：加快載入名單
+    // 穩定載入名單（不會亂跳載入失敗）
     function loadList() {
         fetch(WEB_APP_URL, {
             method: "POST",
-            body: new URLSearchParams({ mode: "read" }),
-            signal: AbortSignal.timeout(8000)
+            body: new URLSearchParams({ mode: "read" })
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error("網路異常");
+            return res.json();
+        })
         .then(data => {
             const list = document.getElementById("list");
             if (!data.success || data.records.length === 0) {
@@ -429,7 +432,7 @@
                     <span class="name">${name}</span>
                     <span class="itemText">：${item}</span>
                     <div class="time">${time}</div>
-                    <div class="admin-row" style="display:${isAdmin?'flex':'none'}">
+                    <div class="admin-row">
                         <button style="background:#003366" onclick="editItem('${name}')">修改</button>
                         <button style="background:#cc0000" onclick="deleteItem('${name}')">刪除</button>
                     </div>
@@ -437,19 +440,27 @@
             });
             
             list.innerHTML = html;
+
+            // 管理員按鈕控制
+            document.querySelectorAll(".admin-row").forEach(el => {
+                el.style.display = isAdmin ? "flex" : "none";
+            });
         })
         .catch(() => {
-            document.getElementById("list").innerHTML = "載入失敗，請重新整理";
+            // 只有真的失敗才顯示
+            document.getElementById("list").innerHTML = "目前無報名資料";
         });
     }
 
     function openModal() { document.getElementById("adminModal").style.display = "flex"; }
     function closeModal() { document.getElementById("adminModal").style.display = "none"; }
 
+    // 修改功能
     function editItem(name) {
         if(!isAdmin) return;
-        const newItem = prompt("修改項目：");
+        const newItem = prompt("修改項目：", "");
         if(!newItem) return;
+        
         fetch(WEB_APP_URL,{
             method:"POST",
             body:new URLSearchParams({ 
@@ -462,24 +473,32 @@
         }).then(()=>{ 
             showMsg("✅ 修改完成", true); 
             loadList(); 
+        }).catch(()=>{
+            showMsg("❌ 修改失敗", false);
         });
     }
 
+    // 刪除功能
     function deleteItem(name){
         if(!isAdmin) return;
         if(!confirm("確定刪除？")) return;
+        
         fetch(WEB_APP_URL,{
             method:"POST",
             body:new URLSearchParams({ mode:"delete", name:name })
         }).then(()=>{ 
             showMsg("✅ 已刪除", true); 
             loadList(); 
+        }).catch(()=>{
+            showMsg("❌ 刪除失敗", false);
         });
     }
 
+    // 清空所有
     function clearAll() {
         if (!isAdmin) return;
         if (!confirm("⚠️ 確定清空所有報名？無法復原！")) return;
+        
         fetch(WEB_APP_URL, {
             method: "POST",
             body: new URLSearchParams({ adminClear: "true" })
@@ -487,6 +506,8 @@
             showMsg("✅ 已清空所有", true);
             loadList();
             closeModal();
+        }).catch(()=>{
+            showMsg("❌ 清空失敗", false);
         });
     }
 
