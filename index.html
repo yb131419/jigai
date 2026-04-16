@@ -344,7 +344,7 @@
             const res = await fetch(WEB_APP_URL, {
                 method: "POST",
                 body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId }),
-                signal: AbortSignal.timeout(3000) // 超時加速
+                signal: AbortSignal.timeout(3000)
             });
             const data = await res.json();
             isAdminUser = data.isAdmin || false;
@@ -412,6 +412,13 @@
 
         if (!name) { showMsg("請輸入姓名", false); return; }
         if (items.length === 0) { showMsg("請選擇項目", false); return; }
+        
+        // ========== 同名防呆 ==========
+        const isNameExist = allRecords.some(row => row[0]?.trim() === name);
+        if (isNameExist) {
+            showMsg("❌ 此姓名已報名過，無法重複報名", false);
+            return;
+        }
 
         btn.disabled = true;
         btn.innerText = "⏳ 提交中...";
@@ -427,9 +434,14 @@
 
             const res = await fetch(WEB_APP_URL, { 
                 method: "POST", 
-                body: form,
-                signal: AbortSignal.timeout(5000) // 超時加速
+                body: form
             });
+            
+            if (!res.ok) {
+                showMsg("❌ 伺服器回應異常", false);
+                return;
+            }
+            
             const data = await res.json();
 
             if (data.success) {
@@ -440,7 +452,7 @@
                 document.getElementById("customItem").style.display = "none";
                 loadList();
             } else {
-                showMsg("❌ 失敗：" + (data.message || ""), false);
+                showMsg("❌ 失敗：" + (data.message || "報名失敗"), false);
             }
         } catch (err) {
             showMsg("❌ 連線異常", false);
@@ -454,7 +466,7 @@
         fetch(WEB_APP_URL, {
             method: "POST",
             body: new URLSearchParams({ mode: "read" }),
-            signal: AbortSignal.timeout(5000) // 超時加速
+            signal: AbortSignal.timeout(5000)
         })
         .then(res => res.json())
         .then(data => {
