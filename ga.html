@@ -331,6 +331,7 @@
             formData.append("item", items.join("、"));
             formData.append("userId", currentUserId);
             formData.append("displayName", currentDisplayName);
+            formData.append("submitTime", getNowTaiwanTime());
 
             const res = await fetch(WEB_APP_URL, { method: "POST", body: formData });
             const data = await res.json();
@@ -352,21 +353,20 @@
         }
     }
 
+    // === ✅ 統一時間格式：YYYY-MM-DD HH:mm:ss 台灣時區 ===
+    function getNowTaiwanTime() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
     function formatTime(dateStr) {
-        try {
-            const d = new Date(dateStr);
-            const y = d.getFullYear();
-            const m = d.getMonth() + 1;
-            const day = d.getDate();
-            let h = d.getHours();
-            const min = String(d.getMinutes()).padStart(2, '0');
-            const sec = String(d.getSeconds()).padStart(2, '0');
-            const period = h >= 12 ? 'PM' : 'AM';
-            h = h % 12 || 12;
-            return `${y}/${m}/${day} ${period} ${h}:${min}:${sec}`;
-        } catch (e) {
-            return dateStr;
-        }
+        return dateStr || "";
     }
 
     function loadList() {
@@ -385,22 +385,19 @@
             data.records.forEach(row => {
                 const name = row[0] || "";
                 const item = row[1] || "";
-                const time = row[4] ? formatTime(row[4]) : "";
+                const time = row[4] || "";
                 html += `
                 <div class="item">
                     <span class="name">${name}</span>
                     <span class="itemText">：${item}</span>
                     <div class="time">${time}</div>
-                    <div class="admin-row">
+                    <div class="admin-row" style="display:${isAdmin ? 'flex' : 'none'};">
                         <button style="background:#003366" onclick="editItem('${name}')">修改</button>
                         <button style="background:#cc0000" onclick="deleteItem('${name}')">刪除</button>
                     </div>
                 </div>`;
             });
             list.innerHTML = html;
-            document.querySelectorAll(".admin-row").forEach(el => {
-                el.style.display = isAdmin ? "flex" : "none";
-            });
         });
     }
 
@@ -413,7 +410,7 @@
         if(!newItem) return;
         fetch(WEB_APP_URL,{
             method:"POST",
-            body:new URLSearchParams({ name:name, item:newItem })
+            body:new URLSearchParams({ name:name, item:newItem, submitTime: getNowTaiwanTime() })
         }).then(()=>{ 
             showMsg("✅ 修改完成", true); 
             loadList(); 
