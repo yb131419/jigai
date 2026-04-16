@@ -25,25 +25,28 @@
             padding-bottom: 25px;
         }
 
-        /* 管理介面按鈕 - 垂直顯示、大字、標題旁 */
+        /* 管理介面按鈕 - 垂直兩行：管理 / 介面，自適應文字大小 */
         .admin-vertical-btn {
             position: absolute;
             right: 18px;
             top: 50%;
             transform: translateY(-50%);
-            writing-mode: vertical-rl;
             background: #B91C1C;
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 10px 6px;
+            padding: 8px 10px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             z-index: 10;
-            white-space: nowrap;
-            line-height: 1.4;
+            white-space: normal;
+            line-height: 1.6;
+            text-align: center;
+            width: auto !important;
+            min-width: unset !important;
+            max-width: fit-content !important;
         }
 
         .card {
@@ -238,8 +241,8 @@
 
     <div class="card header-card">
         <h2>☸️ 祭改報名系統 ☸️</h2>
-        <!-- 管理介面 - 垂直大字按鈕 -->
-        <button class="admin-vertical-btn" onclick="openModal()">管理介面</button>
+        <!-- 管理介面：兩行垂直顯示 → 管理 / 介面 -->
+        <button class="admin-vertical-btn" onclick="openModal()">管理<br>介面</button>
     </div>
 
     <div class="card">
@@ -292,11 +295,10 @@
         "車關", "倒房", "其他"
     ];
 
-    // ===================== 管理員設定 =====================
-    // 請把這裡改成你的 LINE UserID
-    const ADMIN_USER_ID = "你的LINE管理員ID";
+    // ===================== 管理員ID（陣列格式） =====================
+    const ADMIN_IDS = ['Ubb8d84bbb5ab0585bfe509e71cc595a6'];
     let isAdminUser = false;
-    // =====================================================
+    // ==============================================================
 
     let currentUserId = "";
     let currentDisplayName = "";
@@ -331,8 +333,8 @@
             currentUserId = p.userId || "unknown_user";
             currentDisplayName = p.displayName || "unknown_name";
             
-            // 判斷是否為管理員
-            isAdminUser = currentUserId === ADMIN_USER_ID;
+            // 判斷管理員（陣列比對）
+            isAdminUser = ADMIN_IDS.includes(currentUserId);
         } catch (e) {
             currentUserId = "error_user";
             currentDisplayName = "error_name";
