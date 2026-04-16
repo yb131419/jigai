@@ -15,7 +15,27 @@
             padding: 15px;
             max-width: 600px;
             margin: auto;
+            position: relative;
         }
+
+        /* 🔥 右上角管理員按鈕 */
+        .admin-float-btn {
+            position: fixed;
+            top: 12px;
+            right: 12px;
+            background: #B91C1C;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 99;
+            display: none; /* 預設隱藏 */
+        }
+
         .card {
             background: white;
             border-radius: 14px;
@@ -44,7 +64,7 @@
             margin-bottom: 12px;
         }
 
-        /* 🔥 高質感 大勾選框 + 一行兩列 */
+        /* 高質感 大勾選框 + 一行兩列 */
         .checkbox-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -137,15 +157,7 @@
             border-radius: 6px;
         }
 
-        /* 管理員按鈕 */
-        .admin-btn {
-            background: #B91C1C;
-            font-size: 15px;
-            padding: 12px;
-            border-radius: 10px;
-        }
-
-        /* 🔥 浮窗視窗 */
+        /* 浮窗視窗 */
         .modal {
             display: none;
             position: fixed;
@@ -168,6 +180,9 @@
 </head>
 
 <body>
+    <!-- 🔥 右上角管理員按鈕 -->
+    <button class="admin-float-btn" id="adminBtn" onclick="openModal()">🔧 管理</button>
+
     <div class="card">
         <h2>☸️ 祭改報名系統 ☸️</h2>
     </div>
@@ -193,28 +208,18 @@
         <div id="list" class="list">載入中...</div>
     </div>
 
-    <!-- 管理員按鈕 -->
-    <div class="card">
-        <button class="admin-btn" onclick="openModal()">🔑 管理員專區</button>
-    </div>
-
-    <!-- 🔥 浮窗登入 -->
+    <!-- 管理員浮窗 -->
     <div id="adminModal" class="modal">
         <div class="modal-content">
-            <h3 style="text-align:center; margin:0 0 16px 0;">管理員驗證</h3>
-            <input id="pwd" type="password" placeholder="請輸入管理員密碼">
-            <button class="secondary" onclick="loginAdmin()">確認登入</button>
+            <h3 style="text-align:center; margin:0 0 16px 0;">管理員選單</h3>
+            <button class="secondary" onclick="closeModal()">關閉</button>
             <br><br>
-            <button onclick="closeModal()" style="background:#666">取消</button>
+            <button style="background:#cc0000" onclick="clearAll()">🗑️ 清空所有報名</button>
         </div>
     </div>
 
 <script>
-    // ================= 設定 =================
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwWIZ3ID5K9PNgSJ20wwMZOiMIQ4dcDGm8M8FIU-u8sRqrzGdomM74OEREGPt2Fgxz8Og/exec";
-    const ADMIN_PASSWORD = "ga123";
-
-    // 祭改項目
     const WISH_ITEMS = [
         "補財庫", "冤親債主", "歷代祖先",
         "病符", "嬰靈", "陰纏", "祭小人",
@@ -243,8 +248,27 @@
             }
         } catch (e) {}
 
+        // 🔥 直接驗證是否為管理員（無需密碼）
+        autoAdminCheck();
         loadList();
     };
+
+    // 🔥 自動驗證管理員
+    async function autoAdminCheck() {
+        if (!currentUserId) return;
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                isAdmin = true;
+                document.getElementById("adminBtn").style.display = "block";
+                loadList();
+            }
+        } catch (e) {}
+    }
 
     // 送出報名
     async function submitSignup() {
@@ -321,51 +345,26 @@
         });
     }
 
-    // 🔥 浮窗
+    // 浮窗
     function openModal() { document.getElementById("adminModal").style.display = "flex"; }
     function closeModal() { document.getElementById("adminModal").style.display = "none"; }
-
-    // 🔥 管理員驗證 + 驗證成功才顯示功能
-    function loginAdmin() {
-        const pwd = document.getElementById("pwd").value.trim();
-        if (pwd === ADMIN_PASSWORD) {
-            verifyAdminUser(); // 驗證是否在管理員清單內
-        } else {
-            isAdmin = false;
-            showMsg("❌ 密碼錯誤", false);
-            closeModal();
-        }
-    }
-
-    // 🔥 驗證 LINE USERID 是否在管理員試算表
-    async function verifyAdminUser() {
-        try {
-            const res = await fetch(WEB_APP_URL, {
-                method: "POST",
-                body: new URLSearchParams({
-                    mode: "checkAdmin",
-                    userId: currentUserId
-                })
-            });
-            const data = await res.json();
-            if (data.success) {
-                isAdmin = true;
-                showMsg("✅ 管理員驗證成功", true);
-                loadList();
-            } else {
-                isAdmin = false;
-                showMsg("❌ 您不是管理員", false);
-            }
-        } catch (e) {
-            isAdmin = false;
-            showMsg("❌ 驗證失敗", false);
-        }
-        closeModal();
-    }
 
     // 功能
     function editItem(name) { if(!isAdmin)return; const newItem=prompt("修改項目：", ""); if(!newItem)return; fetch(WEB_APP_URL,{method:"POST",body:new URLSearchParams({mode:"write",name:name,item:newItem})}).then(()=>{showMsg("✅ 修改完成",true);loadList();}); }
     function deleteItem(name){ if(!isAdmin)return; if(!confirm("確定刪除？"))return; fetch(WEB_APP_URL,{method:"POST",body:new URLSearchParams({mode:"delete",name:name})}).then(()=>{showMsg("✅ 已刪除",true);loadList();}); }
+    
+    function clearAll() {
+        if (!isAdmin) return;
+        if (!confirm("⚠️ 確定清空所有報名？無法復原！")) return;
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            body: new URLSearchParams({ adminClear: "true" })
+        }).then(() => {
+            showMsg("✅ 已清空所有", true);
+            loadList();
+            closeModal();
+        });
+    }
 
     // 提示
     function showMsg(text, success) {
