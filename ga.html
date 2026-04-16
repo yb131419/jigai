@@ -32,7 +32,7 @@
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             z-index: 99;
-            display: block; /* 🔥 硬編碼永遠顯示管理按鈕 */
+            display: block;
         }
 
         .card {
@@ -116,7 +116,6 @@
             display: none;
         }
 
-        /* 🔥 送出按鈕上方強制空一格 */
         #submitBtn {
             margin-top: 20px;
         }
@@ -173,13 +172,8 @@
         .itemText {
             color: #003366;
         }
-        .time {
-            font-size: 12px;
-            color: #64748B;
-            margin-top: 4px;
-        }
         .admin-row {
-            display: flex; /* 🔥 永遠顯示管理按鈕 */
+            display: flex;
             margin-top: 8px;
             gap: 6px;
         }
@@ -261,7 +255,7 @@
 
     let currentUserId = "";
     let currentDisplayName = "";
-    let isAdmin = true; /* 🔥 永遠是管理員 */
+    let isAdmin = true;
 
     window.onload = async function () {
         const box = document.getElementById("items");
@@ -281,7 +275,6 @@
         loadList();
     };
 
-    // 🔥 保證取得 userId & 暱稱
     async function initLiffAndGetUser() {
         try {
             await liff.init({ liffId: "2007416974-JzvPy6DZ" });
@@ -292,8 +285,6 @@
             const p = await liff.getProfile();
             currentUserId = p.userId || "unknown_user";
             currentDisplayName = p.displayName || "unknown_name";
-            console.log("🔥 使用者ID：", currentUserId);
-            console.log("🔥 使用者名稱：", currentDisplayName);
         } catch (e) {
             currentUserId = "error_user";
             currentDisplayName = "error_name";
@@ -312,7 +303,15 @@
         }
     }
 
-    // 🔥 100% 傳送 userId + displayName 到後端
+    // 取得 年/月/日 格式 2026/4/29
+    function getSignDate() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = now.getMonth() + 1;
+        const d = now.getDate();
+        return `${y}/${m}/${d}`;
+    }
+
     async function submitSignup() {
         const btn = document.getElementById("submitBtn");
         const name = document.getElementById("name").value.trim();
@@ -338,9 +337,10 @@
             const form = new URLSearchParams();
             form.append("name", name);
             form.append("item", items.join("、"));
-            form.append("userId", currentUserId);          /* 一定送 */
-            form.append("displayName", currentDisplayName);/* 一定送 */
-            form.append("submitTime", getNowTaiwanTime());
+            form.append("userId", currentUserId);
+            form.append("displayName", currentDisplayName);
+            form.append("signDate", getSignDate()); // 傳送日期到工作表
+            form.append("submitTime", getSignDate());
 
             const res = await fetch(WEB_APP_URL, { method: "POST", body: form });
             const data = await res.json();
@@ -363,6 +363,7 @@
         }
     }
 
+    // 名單只顯示 姓名 + 項目
     function loadList() {
         fetch(WEB_APP_URL, {
             method: "POST",
@@ -380,13 +381,11 @@
             data.records.forEach(row => {
                 const name = row[0] || "";
                 const item = row[1] || "";
-                const time = row[4] ? formatTime(row[4]) : "";
                 
                 html += `
                 <div class="item">
                     <span class="name">${name}</span>
                     <span class="itemText">：${item}</span>
-                    <div class="time">${time}</div>
                     <div class="admin-row">
                         <button style="background:#003366" onclick="editItem('${name}')">修改</button>
                         <button style="background:#cc0000" onclick="deleteItem('${name}')">刪除</button>
@@ -401,36 +400,8 @@
         });
     }
 
-    // 時間格式
     function getNowTaiwanTime() {
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = now.getMonth() + 1;
-        const d = now.getDate();
-        const h = now.getHours();
-        const min = String(now.getMinutes()).padStart(2, '0');
-        const sec = String(now.getSeconds()).padStart(2, '0');
-        const period = h >= 12 ? '下午' : '上午';
-        const hh = h % 12 || 12;
-        return `${y}/${m}/${d} ${period} ${hh}:${min}:${sec}`;
-    }
-
-    function formatTime(dateStr) {
-        if (!dateStr) return "";
-        try {
-            const d = new Date(dateStr);
-            const y = d.getFullYear();
-            const m = d.getMonth() + 1;
-            const day = d.getDate();
-            const hours = d.getHours();
-            const min = String(d.getMinutes()).padStart(2, '0');
-            const sec = String(d.getSeconds()).padStart(2, '0');
-            const period = hours >= 12 ? '下午' : '上午';
-            const hh = hours % 12 || 12;
-            return `${y}/${m}/${day} ${period} ${hh}:${min}:${sec}`;
-        } catch (e) {
-            return dateStr;
-        }
+        return getSignDate();
     }
 
     // 管理功能
@@ -448,7 +419,7 @@
                 item: newItem,
                 userId: currentUserId,
                 displayName: currentDisplayName,
-                submitTime: getNowTaiwanTime()
+                signDate: getSignDate()
             })
         }).then(()=>{ 
             showMsg("✅ 修改完成", true); 
@@ -472,12 +443,16 @@
         });
     }
 
+    // 修復清空所有報名
     function clearAll() {
         if (!confirm("⚠️ 確定清空所有報名？無法復原！")) return;
         
         fetch(WEB_APP_URL, {
             method: "POST",
-            body: new URLSearchParams({ adminClear: "true" })
+            body: new URLSearchParams({ 
+                mode: "clearAll",
+                adminClear: "true"
+            })
         }).then(() => {
             showMsg("✅ 已清空所有", true);
             loadList();
