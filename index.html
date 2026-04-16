@@ -311,6 +311,9 @@
     let allRecords = [];
     let isAdminUser = false;
 
+    // 全域防連點鎖
+    let isProcessing = false;
+
     window.onload = async function () {
         const box = document.getElementById("items");
         WISH_ITEMS.forEach(item => {
@@ -340,7 +343,6 @@
             currentUserId = p.userId || "unknown_user";
             currentDisplayName = p.displayName || "unknown_name";
             
-            // 從 GAS 後端驗證管理員，不暴露ID在前端
             const res = await fetch(WEB_APP_URL, {
                 method: "POST",
                 body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId }),
@@ -367,7 +369,6 @@
         }
     }
 
-    // 純日期格式 (給工作表2用)
     function getSignDate() {
         const now = new Date();
         const y = now.getFullYear();
@@ -376,7 +377,6 @@
         return `${y}/${m}/${d}`;
     }
 
-    // 完整日期時間格式 (給報名時間用：2026/4/13 上午 6:51:01)
     function getFullDateTime() {
         const now = new Date();
         const y = now.getFullYear();
@@ -396,6 +396,12 @@
     }
 
     async function submitSignup() {
+        // 防連點
+        if (isProcessing) {
+            showMsg("⚠️ 請等待上一個動作完成", false);
+            return;
+        }
+
         const btn = document.getElementById("submitBtn");
         const name = document.getElementById("name").value.trim();
         const custom = document.getElementById("customItem").value.trim();
@@ -413,13 +419,14 @@
         if (!name) { showMsg("請輸入姓名", false); return; }
         if (items.length === 0) { showMsg("請選擇項目", false); return; }
         
-        // ========== 同名防呆 ==========
         const isNameExist = allRecords.some(row => row[0]?.trim() === name);
         if (isNameExist) {
             showMsg("❌ 此姓名已報名過，無法重複報名", false);
             return;
         }
 
+        // 啟用鎖
+        isProcessing = true;
         btn.disabled = true;
         btn.innerText = "⏳ 提交中...";
 
@@ -457,6 +464,8 @@
         } catch (err) {
             showMsg("❌ 連線異常", false);
         } finally {
+            // 釋放鎖
+            isProcessing = false;
             btn.disabled = false;
             btn.innerText = "✅ 送出報名";
         }
@@ -484,7 +493,6 @@
         });
     }
 
-    // 渲染名單 + 管理員權限控制
     function renderList(records) {
         let html = "";
         records.forEach(row => {
@@ -517,7 +525,6 @@
         renderList(filtered);
     }
 
-    // 彈窗
     function openModal() {
         document.getElementById("adminModal").classList.add("show");
     }
@@ -525,44 +532,71 @@
         document.getElementById("adminModal").classList.remove("show");
     }
 
-    function editItem(name) {
+    async function editItem(name) {
+        if (isProcessing) {
+            showMsg("⚠️ 請等待上一個動作完成", false);
+            return;
+        }
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
+        
         const newItem = prompt("修改項目：", "");
         if(!newItem) return;
-        fetch(WEB_APP_URL,{
-            method:"POST",
-            body:new URLSearchParams({ 
-                name: name, 
-                item: newItem,
-                userId: currentUserId,
-                displayName: currentDisplayName,
-                signDate: getSignDate()
-            })
-        }).then(()=>{ 
+
+        isProcessing = true;
+        showMsg("⏳ 修改中...", false);
+
+        try {
+            await fetch(WEB_APP_URL,{
+                method:"POST",
+                body:new URLSearchParams({ 
+                    name: name, 
+                    item: newItem,
+                    userId: currentUserId,
+                    displayName: currentDisplayName,
+                    signDate: getSignDate()
+                })
+            });
             showMsg("✅ 修改完成", true); 
             loadList(); 
-        }).catch(()=>{
+        } catch(e) {
             showMsg("❌ 修改失敗", false);
-        });
+        } finally {
+            isProcessing = false;
+        }
     }
 
-    function deleteItem(name){
+    async function deleteItem(name){
+        if (isProcessing) {
+            showMsg("⚠️ 請等待上一個動作完成", false);
+            return;
+        }
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         if(!confirm("確定刪除？")) return;
-        fetch(WEB_APP_URL,{
-            method:"POST",
-            body:new URLSearchParams({ mode:"delete", name:name })
-        }).then(()=>{ 
+
+        isProcessing = true;
+        showMsg("⏳ 刪除中...", false);
+
+        try {
+            await fetch(WEB_APP_URL,{
+                method:"POST",
+                body:new URLSearchParams({ mode:"delete", name:name })
+            });
             showMsg("✅ 已刪除", true); 
             loadList(); 
-        }).catch(()=>{
+        } catch(e) {
             showMsg("❌ 刪除失敗", false);
-        });
+        } finally {
+            isProcessing = false;
+        }
     }
 
-    // 更新工作表2日期 (格式：2026/4/13 不變)
-    function updateSheet2Date() {
+    async function updateSheet2Date() {
+        if (isProcessing) {
+            showMsg("⚠️ 請等待上一個動作完成", false);
+            return;
+        }
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
+        
         const input = prompt("請輸入新日期（範例：3月16日）", "");
         if (!input) return;
         const year = new Date().getFullYear();
@@ -573,36 +607,52 @@
             return;
         }
         const newDate = `${year}/${month}/${day}`;
-        fetch(WEB_APP_URL, {
-            method: "POST",
-            body: new URLSearchParams({ mode: "updateSheet2Date", newDate: newDate })
-        }).then(() => {
+
+        isProcessing = true;
+        showMsg("⏳ 日期更新中...", false);
+
+        try {
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: new URLSearchParams({ mode: "updateSheet2Date", newDate: newDate })
+            });
             showMsg(`✅ 日期已更新：${newDate}`, true);
             closeModal();
-        }).catch(() => {
+        } catch(e) {
             showMsg("❌ 更新失敗", false);
-        });
+        } finally {
+            isProcessing = false;
+        }
     }
 
-    // 清空工作表1
-    function clearSheet1() {
+    async function clearSheet1() {
+        if (isProcessing) {
+            showMsg("⚠️ 請等待上一個動作完成", false);
+            return;
+        }
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         if (!confirm("⚠️ 確定清空工作表1？無法復原！")) return;
-        
-        const form = new URLSearchParams();
-        form.append("mode", "clearSheet1");
-        form.append("userId", currentUserId);
-        
-        fetch(WEB_APP_URL, {
-            method: "POST",
-            body: form
-        }).then(() => {
+
+        isProcessing = true;
+        showMsg("⏳ 清空中...", false);
+
+        try {
+            const form = new URLSearchParams();
+            form.append("mode", "clearSheet1");
+            form.append("userId", currentUserId);
+            
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: form
+            });
             showMsg("✅ 已清空", true);
             loadList();
             closeModal();
-        }).catch(()=>{
+        } catch(e) {
             showMsg("❌ 清空失敗", false);
-        });
+        } finally {
+            isProcessing = false;
+        }
     }
 
     function showMsg(text, success) {
@@ -610,7 +660,7 @@
         msg.innerText = text;
         msg.className = "msg " + (success ? "success" : "error");
         msg.style.display = "block";
-        setTimeout(() => msg.style.display = "none", 2600);
+        setTimeout(() => msg.style.display = "none", 2800);
     }
 </script>
 </body>
