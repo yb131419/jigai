@@ -238,9 +238,14 @@
     <div id="adminModal" class="modal">
         <div class="modal-content">
             <h3 style="text-align:center; margin:0 0 16px 0;">管理員選單</h3>
-            <button class="secondary" onclick="closeModal()">關閉</button>
+            
+            <button class="secondary" onclick="updateAllDate()">📅 更新全部報名日期</button>
             <br><br>
+            
             <button style="background:#cc0000" onclick="clearAll()">🗑️ 清空所有報名</button>
+            <br><br>
+            
+            <button class="secondary" onclick="closeModal()">關閉</button>
         </div>
     </div>
 
@@ -303,7 +308,6 @@
         }
     }
 
-    // 取得 年/月/日 格式 2026/4/29
     function getSignDate() {
         const now = new Date();
         const y = now.getFullYear();
@@ -339,7 +343,7 @@
             form.append("item", items.join("、"));
             form.append("userId", currentUserId);
             form.append("displayName", currentDisplayName);
-            form.append("signDate", getSignDate()); // 傳送日期到工作表
+            form.append("signDate", getSignDate());
             form.append("submitTime", getSignDate());
 
             const res = await fetch(WEB_APP_URL, { method: "POST", body: form });
@@ -363,7 +367,6 @@
         }
     }
 
-    // 名單只顯示 姓名 + 項目
     function loadList() {
         fetch(WEB_APP_URL, {
             method: "POST",
@@ -443,6 +446,36 @@
         });
     }
 
+    // 更新全部日期
+    function updateAllDate() {
+        const input = prompt("請輸入新日期（範例：3月16日）", "");
+        if (!input) return;
+
+        const year = new Date().getFullYear();
+        let month = input.match(/(\d+)月/)?.[1];
+        let day = input.match(/(\d+)日/)?.[1];
+        
+        if (!month || !day) {
+            showMsg("❌ 格式錯誤，請輸入 3月16日", false);
+            return;
+        }
+
+        const newDate = `${year}/${month}/${day}`;
+        
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            body: new URLSearchParams({
+                mode: "updateAllDate",
+                newDate: newDate
+            })
+        }).then(() => {
+            showMsg(`✅ 已更新為 ${newDate}`, true);
+            closeModal();
+        }).catch(() => {
+            showMsg("❌ 更新失敗", false);
+        });
+    }
+
     // 修復清空所有報名
     function clearAll() {
         if (!confirm("⚠️ 確定清空所有報名？無法復原！")) return;
@@ -450,8 +483,7 @@
         fetch(WEB_APP_URL, {
             method: "POST",
             body: new URLSearchParams({ 
-                mode: "clearAll",
-                adminClear: "true"
+                mode: "clearAll"
             })
         }).then(() => {
             showMsg("✅ 已清空所有", true);
