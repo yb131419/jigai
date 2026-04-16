@@ -18,7 +18,6 @@
             position: relative;
         }
 
-        /* 右上角管理員按鈕 */
         .admin-float-btn {
             position: fixed;
             top: 12px;
@@ -67,7 +66,6 @@
             margin-bottom: 12px;
         }
 
-        /* 折疊標題按鈕 */
         .collapse-btn {
             background: none;
             border: none;
@@ -77,14 +75,12 @@
             padding: 0;
         }
 
-        /* 折疊內容 */
         .collapse-content {
             overflow: hidden;
             max-height: 0;
             transition: max-height 0.3s ease;
         }
 
-        /* 高質感 大勾選框 + 一行兩列 */
         .checkbox-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -177,7 +173,6 @@
             border-radius: 6px;
         }
 
-        /* 浮窗視窗 */
         .modal {
             display: none;
             position: fixed;
@@ -206,12 +201,10 @@
         <h2>☸️ 祭改報名系統 ☸️</h2>
     </div>
 
-    <!-- 報名表單 -->
     <div class="card">
         <div class="title">報名者姓名</div>
         <input id="name" placeholder="請輸入姓名">
         
-        <!-- 折疊式 祭改項目 -->
         <div class="title">
             📜 祭改項目（可多選）
             <button class="collapse-btn" onclick="toggleCollapse()">展開</button>
@@ -227,13 +220,11 @@
         <div id="msg" class="msg"></div>
     </div>
 
-    <!-- 名單 -->
     <div class="card">
         <div class="title">📋 目前報名名單</div>
         <div id="list" class="list">載入中...</div>
     </div>
 
-    <!-- 管理員浮窗 -->
     <div id="adminModal" class="modal">
         <div class="modal-content">
             <h3 style="text-align:center; margin:0 0 16px 0;">管理員選單</h3>
@@ -256,9 +247,7 @@
     let currentDisplayName = "";
     let isAdmin = false;
 
-    // ✅ 完全修正：LIFF 初始化 + 取得資料「保證成功」
     window.onload = async function () {
-        // 先產生項目
         const box = document.getElementById("items");
         WISH_ITEMS.forEach(item => {
             const label = document.createElement("label");
@@ -266,16 +255,11 @@
             box.appendChild(label);
         });
 
-        // ✅ 核心修復：等待 LIFF 完全完成再執行後續
         await initLiffAndGetUser();
-
-        // ✅ 取得使用者後「再驗證管理員」
         await autoAdminCheck();
-        
         loadList();
     };
 
-    // ✅ 封裝穩定 LIFF 初始化
     async function initLiffAndGetUser() {
         try {
             await liff.init({ liffId: "2007416974-JzvPy6DZ" });
@@ -286,16 +270,13 @@
             }
 
             const profile = await liff.getProfile();
-            currentUserId = profile.userId;
-            currentDisplayName = profile.displayName;
-
-            console.log("✅ 使用者資訊取得成功：", currentUserId, currentDisplayName);
+            currentUserId = profile.userId || "";
+            currentDisplayName = profile.displayName || "";
         } catch (e) {
-            console.error("LIFF 錯誤", e);
+            console.error("LIFF 初始化失敗", e);
         }
     }
 
-    // 折疊
     function toggleCollapse() {
         const content = document.getElementById("collapseContent");
         const btn = document.querySelector(".collapse-btn");
@@ -308,17 +289,15 @@
         }
     }
 
-    // ✅ 管理員驗證（現在一定能抓到 userId）
     async function autoAdminCheck() {
         if (!currentUserId) return;
-
         try {
             const res = await fetch(WEB_APP_URL, {
                 method: "POST",
                 body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId })
             });
             const data = await res.json();
-            if (data.success) {
+            if (data.isAdmin) {
                 isAdmin = true;
                 document.getElementById("adminBtn").style.display = "block";
             }
@@ -327,7 +306,6 @@
         }
     }
 
-    // ✅ 送出報名（userId 永不空白）
     async function submitSignup() {
         const btn = document.getElementById("submitBtn");
         const name = document.getElementById("name").value.trim();
@@ -353,7 +331,6 @@
             formData.append("item", items.join("、"));
             formData.append("userId", currentUserId);
             formData.append("displayName", currentDisplayName);
-            formData.append("mode", "write");
 
             const res = await fetch(WEB_APP_URL, { method: "POST", body: formData });
             const data = await res.json();
@@ -375,7 +352,6 @@
         }
     }
 
-    // 讀取列表
     function loadList() {
         fetch(WEB_APP_URL, {
             method: "POST",
@@ -392,7 +368,7 @@
             data.records.forEach(row => {
                 const name = row[0] || "";
                 const item = row[1] || "";
-                const time = row[2] || "";
+                const time = row[4] || "";
                 html += `
                 <div class="item">
                     <span class="name">${name}</span>
@@ -411,18 +387,16 @@
         });
     }
 
-    // 浮窗
     function openModal() { document.getElementById("adminModal").style.display = "flex"; }
     function closeModal() { document.getElementById("adminModal").style.display = "none"; }
 
-    // 管理功能
     function editItem(name) {
         if(!isAdmin) return;
         const newItem = prompt("修改項目：", "");
         if(!newItem) return;
         fetch(WEB_APP_URL,{
             method:"POST",
-            body:new URLSearchParams({mode:"write", name:name, item:newItem})
+            body:new URLSearchParams({ name:name, item:newItem })
         }).then(()=>{ showMsg("✅ 修改完成", true); loadList(); });
     }
 
@@ -431,7 +405,7 @@
         if(!confirm("確定刪除？")) return;
         fetch(WEB_APP_URL,{
             method:"POST",
-            body:new URLSearchParams({mode:"delete", name:name})
+            body:new URLSearchParams({ mode:"delete", name:name })
         }).then(()=>{ showMsg("✅ 已刪除", true); loadList(); });
     }
 
@@ -448,7 +422,6 @@
         });
     }
 
-    // 提示訊息
     function showMsg(text, success) {
         const msg = document.getElementById("msg");
         msg.innerText = text;
