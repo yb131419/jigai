@@ -177,11 +177,15 @@
             margin-top: 8px;
             gap: 6px;
         }
+
+        /* 手機管理按鈕優化：只包覆文字 */
         .admin-row button {
-            padding: 6px;
-            font-size: 13px;
-            width: 50%;
+            padding: 6px 10px !important;
+            font-size: 13px !important;
+            width: auto !important;
+            flex: 1;
             border-radius: 6px;
+            white-space: nowrap;
         }
 
         .modal {
@@ -201,6 +205,12 @@
             border-radius: 16px;
             padding: 24px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        /* 搜尋框樣式 */
+        #searchInput {
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
         }
     </style>
 </head>
@@ -231,7 +241,10 @@
     </div>
 
     <div class="card">
-        <div class="title">📋 目前報名名單</div>
+        <div class="title">🔍 搜尋姓名 / 項目</div>
+        <input type="text" id="searchInput" placeholder="請輸入關鍵字搜尋..." oninput="searchList()">
+        
+        <div class="title" style="margin-top:5px;">📋 目前報名名單</div>
         <div id="list" class="list">載入中...</div>
     </div>
 
@@ -239,10 +252,10 @@
         <div class="modal-content">
             <h3 style="text-align:center; margin:0 0 16px 0;">管理員選單</h3>
             
-            <button class="secondary" onclick="updateAllDate()">📅 更新全部報名日期</button>
+            <button class="secondary" onclick="updateSheet2Date()">📅 更新工作表2祭改日期</button>
             <br><br>
             
-            <button style="background:#cc0000" onclick="clearAll()">🗑️ 清空所有報名</button>
+            <button style="background:#cc0000" onclick="clearSheet1()">🗑️ 清空工作表1報名</button>
             <br><br>
             
             <button class="secondary" onclick="closeModal()">關閉</button>
@@ -260,7 +273,7 @@
 
     let currentUserId = "";
     let currentDisplayName = "";
-    let isAdmin = true;
+    let allRecords = []; // 儲存全部名單（給搜尋用）
 
     window.onload = async function () {
         const box = document.getElementById("items");
@@ -367,6 +380,7 @@
         }
     }
 
+    // 讀取全部資料 + 快取給搜尋
     function loadList() {
         fetch(WEB_APP_URL, {
             method: "POST",
@@ -377,34 +391,54 @@
             const list = document.getElementById("list");
             if (!data.success || data.records.length === 0) {
                 list.innerHTML = "目前無報名資料";
+                allRecords = [];
                 return;
             }
 
-            let html = "";
-            data.records.forEach(row => {
-                const name = row[0] || "";
-                const item = row[1] || "";
-                
-                html += `
-                <div class="item">
-                    <span class="name">${name}</span>
-                    <span class="itemText">：${item}</span>
-                    <div class="admin-row">
-                        <button style="background:#003366" onclick="editItem('${name}')">修改</button>
-                        <button style="background:#cc0000" onclick="deleteItem('${name}')">刪除</button>
-                    </div>
-                </div>`;
-            });
-            
-            list.innerHTML = html;
+            allRecords = data.records;
+            renderList(allRecords);
         })
         .catch(() => {
             document.getElementById("list").innerHTML = "目前無報名資料";
+            allRecords = [];
         });
     }
 
-    function getNowTaiwanTime() {
-        return getSignDate();
+    // 渲染名單
+    function renderList(records) {
+        let html = "";
+        records.forEach(row => {
+            const name = row[0] || "";
+            const item = row[1] || "";
+            
+            html += `
+            <div class="item">
+                <span class="name">${name}</span>
+                <span class="itemText">：${item}</span>
+                <div class="admin-row">
+                    <button style="background:#003366" onclick="editItem('${name}')">修改</button>
+                    <button style="background:#cc0000" onclick="deleteItem('${name}')">刪除</button>
+                </div>
+            </div>`;
+        });
+        document.getElementById("list").innerHTML = html;
+    }
+
+    // 即時搜尋：姓名、項目
+    function searchList() {
+        const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+        if (!keyword) {
+            renderList(allRecords);
+            return;
+        }
+
+        const filtered = allRecords.filter(row => {
+            const name = (row[0] || "").toLowerCase();
+            const item = (row[1] || "").toLowerCase();
+            return name.includes(keyword) || item.includes(keyword);
+        });
+
+        renderList(filtered);
     }
 
     // 管理功能
@@ -446,8 +480,9 @@
         });
     }
 
-    // 更新全部日期
-    function updateAllDate() {
+    // ===================== 正確功能對應 =====================
+    // 1. 更新「工作表2」的祭改日期
+    function updateSheet2Date() {
         const input = prompt("請輸入新日期（範例：3月16日）", "");
         if (!input) return;
 
@@ -465,34 +500,35 @@
         fetch(WEB_APP_URL, {
             method: "POST",
             body: new URLSearchParams({
-                mode: "updateAllDate",
+                mode: "updateSheet2Date",
                 newDate: newDate
             })
         }).then(() => {
-            showMsg(`✅ 已更新為 ${newDate}`, true);
+            showMsg(`✅ 工作表2 日期已更新：${newDate}`, true);
             closeModal();
         }).catch(() => {
             showMsg("❌ 更新失敗", false);
         });
     }
 
-    // 修復清空所有報名
-    function clearAll() {
-        if (!confirm("⚠️ 確定清空所有報名？無法復原！")) return;
+    // 2. 清空「工作表1」所有報名資料
+    function clearSheet1() {
+        if (!confirm("⚠️ 確定清空「工作表1」所有報名？無法復原！")) return;
         
         fetch(WEB_APP_URL, {
             method: "POST",
             body: new URLSearchParams({ 
-                mode: "clearAll"
+                mode: "clearSheet1"
             })
         }).then(() => {
-            showMsg("✅ 已清空所有", true);
+            showMsg("✅ 工作表1 已清空", true);
             loadList();
             closeModal();
         }).catch(()=>{
             showMsg("❌ 清空失敗", false);
         });
     }
+    // ========================================================
 
     function showMsg(text, success) {
         const msg = document.getElementById("msg");
