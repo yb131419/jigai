@@ -183,6 +183,7 @@
             margin-top: 10px;
             max-height: 380px;
             overflow-y: auto;
+            color: #ffffff; /* 載入中文字白色 */
         }
         .item {
             padding: 10px;
@@ -342,7 +343,8 @@
             // 從 GAS 後端驗證管理員，不暴露ID在前端
             const res = await fetch(WEB_APP_URL, {
                 method: "POST",
-                body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId })
+                body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId }),
+                signal: AbortSignal.timeout(3000) // 超時加速
             });
             const data = await res.json();
             isAdminUser = data.isAdmin || false;
@@ -423,7 +425,11 @@
             form.append("signDate", getSignDate());
             form.append("submitTime", getFullDateTime());
 
-            const res = await fetch(WEB_APP_URL, { method: "POST", body: form });
+            const res = await fetch(WEB_APP_URL, { 
+                method: "POST", 
+                body: form,
+                signal: AbortSignal.timeout(5000) // 超時加速
+            });
             const data = await res.json();
 
             if (data.success) {
@@ -447,7 +453,8 @@
     function loadList() {
         fetch(WEB_APP_URL, {
             method: "POST",
-            body: new URLSearchParams({ mode: "read" })
+            body: new URLSearchParams({ mode: "read" }),
+            signal: AbortSignal.timeout(5000) // 超時加速
         })
         .then(res => res.json())
         .then(data => {
