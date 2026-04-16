@@ -65,6 +65,11 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
+            transition: 0.2s;
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         button.secondary {
             background: #003366;
@@ -93,6 +98,7 @@
             padding: 10px;
             border-bottom: 1px solid #f0f0f0;
             font-size: 15px;
+            position: relative;
         }
         .name {
             color: #8B0000;
@@ -106,6 +112,16 @@
             color: #666;
             margin-top: 4px;
         }
+        .admin-row {
+            display: none;
+            margin-top: 6px;
+            gap: 5px;
+        }
+        .admin-row button {
+            padding: 5px;
+            font-size: 12px;
+            width: 50%;
+        }
         .admin-btn {
             background: #b80000;
             font-size: 14px;
@@ -116,7 +132,8 @@
             display: none;
         }
         .admin-clear {
-            display: none; /* 預設隱藏，登入才顯示 */
+            display: none;
+            background:#cc0000 !important;
         }
     </style>
 </head>
@@ -134,7 +151,7 @@
         <div class="title">勾選祭改項目（可多選）</div>
         <div class="checkbox-group" id="items"></div>
         
-        <button onclick="submitSignup()">✅ 送出報名</button>
+        <button id="submitBtn" onclick="submitSignup()">✅ 送出報名</button>
         <div id="msg" class="msg"></div>
     </div>
 
@@ -151,7 +168,7 @@
             <input id="pwd" type="password" placeholder="請輸入管理員密碼">
             <button class="secondary" onclick="loginAdmin()">登入管理</button>
             <br><br>
-            <button id="adminClearBtn" class="admin-clear" style="background:#cc0000" onclick="clearAll()">🗑️ 清空所有報名</button>
+            <button id="adminClearBtn" class="admin-clear" onclick="clearAll()">🗑️ 清空所有報名</button>
         </div>
     </div>
 
@@ -166,19 +183,36 @@
         "病符", "嬰靈", "陰纏", "祭小人", "車關"
     ];
 
+    // 從 LINE LIFF 取得使用者資料（自動抓 userId & 暱稱）
+    let currentUserId = "";
+    let currentDisplayName = "";
+
     // 初始化
-    window.onload = function () {
+    window.onload = async function () {
+        // 初始化項目
         const box = document.getElementById("items");
-        WISH_ITEMS.forEach(item => {
+        WISH_ETS.forEach(item => {
             const label = document.createElement("label");
             label.innerHTML = `<input type="checkbox" value="${item}"> ${item}`;
             box.appendChild(label);
         });
+
+        // 取得 LINE 使用者資訊（自動傳送後端）
+        try {
+            await liff.init({ liffId: "2007416974-JzvPy6DZ" });
+            if (liff.isLoggedIn()) {
+                const profile = await liff.getProfile();
+                currentUserId = profile.userId;
+                currentDisplayName = profile.displayName;
+            }
+        } catch (e) {}
+
         loadList();
     };
 
-    // 送出報名
-    function submitSignup() {
+    // 送出報名（自動帶入 userId + displayName，按鈕特效）
+    async function submitSignup() {
+        const btn = document.getElementById("submitBtn");
         const name = document.getElementById("name").value.trim();
         const checks = document.querySelectorAll(".checkbox-group input:checked");
         const items = Array.from(checks).map(c => c.value);
@@ -192,17 +226,21 @@
             return;
         }
 
-        const formData = new URLSearchParams();
-        formData.append("name", name);
-        formData.append("item", items.join("、"));
-        formData.append("mode", "write");
+        // 按鈕禁用 + 特效
+        btn.disabled = true;
+        btn.innerText = "⏳ 提交中...";
 
-        fetch(WEB_APP_URL, {
-            method: "POST",
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
+        try {
+            const formData = new URLSearchParams();
+            formData.append("name", name);
+            formData.append("item", items.join("、"));
+            formData.append("userId", currentUserId);
+            formData.append("displayName", currentDisplayName);
+            formData.append("mode", "write");
+
+            const res = await fetch(WEB_APP_URL, { method: "POST", body: formData });
+            const data = await res.json();
+
             if (data.success) {
                 showMsg(data.message, true);
                 document.getElementById("name").value = "";
@@ -211,19 +249,20 @@
             } else {
                 showMsg(data.message, false);
             }
-        })
-        .catch(() => showMsg("連線失敗", false));
+        } catch (err) {
+            showMsg("連線失敗，請重試", false);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "✅ 送出報名";
+        }
     }
 
-    // 讀取報名列表（只顯示 姓名、項目、時間，隱藏ID）
+    // 讀取列表（管理員顯示修改/刪除）
     function loadList() {
         const formData = new URLSearchParams();
         formData.append("mode", "read");
 
-        fetch(WEB_APP_URL, {
-            method: "POST",
-            body: formData
-        })
+        fetch(WEB_APP_URL, { method: "POST", body: formData })
         .then(res => res.json())
         .then(data => {
             const list = document.getElementById("list");
@@ -231,19 +270,30 @@
                 list.innerHTML = "目前無報名資料";
                 return;
             }
+
             let html = "";
             data.records.forEach(row => {
                 const name = row[0] || "";
                 const item = row[1] || "";
                 const time = row[2] || "";
+                
                 html += `
                 <div class="item">
                     <span class="name">${name}</span>
                     <span class="itemText">：${item}</span>
                     <div class="time">${time}</div>
+                    <div class="admin-row">
+                        <button style="background:#003366" onclick="editItem('${name}')">修改</button>
+                        <button style="background:#cc0000" onclick="deleteItem('${name}')">刪除</button>
+                    </div>
                 </div>`;
             });
             list.innerHTML = html;
+
+            // 管理員才顯示按鈕
+            document.querySelectorAll(".admin-row").forEach(el => {
+                el.style.display = isAdmin ? "flex" : "none";
+            });
         })
         .catch(() => {
             document.getElementById("list").innerHTML = "讀取失敗";
@@ -258,40 +308,68 @@
         area.style.display = area.style.display === "block" ? "none" : "block";
     }
 
-    // 登入驗證：成功才顯示清空按鈕
+    // 登入驗證
     function loginAdmin() {
         const pwd = document.getElementById("pwd").value.trim();
         if (pwd === ADMIN_PASSWORD) {
             isAdmin = true;
             document.getElementById("adminClearBtn").style.display = "block";
             showMsg("✅ 管理員登入成功", true);
+            loadList(); // 重新整理顯示管理按鈕
         } else {
             isAdmin = false;
             document.getElementById("adminClearBtn").style.display = "none";
             showMsg("❌ 密碼錯誤", false);
+            loadList();
         }
     }
 
-    // 清空報名（只有驗證成功才能用）
-    function clearAll() {
-        if (!isAdmin) {
-            showMsg("❌ 未登入管理員", false);
-            return;
-        }
-        if (!confirm("確定要清空所有報名？")) return;
-
-        const formData = new URLSearchParams();
-        formData.append("adminClear", "true");
+    // 單筆修改
+    function editItem(name) {
+        const newItem = prompt("修改「"+name+"」的項目：\n請用「、」分隔", "");
+        if (!newItem) return;
 
         fetch(WEB_APP_URL, {
             method: "POST",
-            body: formData
-        })
-        .then(() => {
+            body: new URLSearchParams({
+                mode: "write",
+                name: name,
+                item: newItem
+            })
+        }).then(() => {
+            showMsg("✅ 修改完成", true);
+            loadList();
+        });
+    }
+
+    // 單筆刪除
+    function deleteItem(name) {
+        if (!confirm("確定刪除：" + name + "？")) return;
+        
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            body: new URLSearchParams({
+                mode: "delete",
+                name: name
+            })
+        }).then(() => {
+            showMsg("✅ 已刪除", true);
+            loadList();
+        });
+    }
+
+    // 清空所有
+    function clearAll() {
+        if (!isAdmin) return;
+        if (!confirm("⚠️ 確定清空所有報名？此操作無法復原！")) return;
+
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            body: new URLSearchParams({ adminClear: "true" })
+        }).then(() => {
             showMsg("✅ 已清空所有報名", true);
             loadList();
-        })
-        .catch(() => showMsg("❌ 清空失敗", false));
+        }).catch(() => showMsg("❌ 失敗", false));
     }
 
     // 訊息提示
@@ -300,8 +378,10 @@
         msg.innerText = text;
         msg.className = "msg " + (success ? "success" : "error");
         msg.style.display = "block";
-        setTimeout(() => msg.style.display = "none", 2500);
+        setTimeout(() => msg.style.display = "none", 2800);
     }
 </script>
+<!-- LIFF SDK -->
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </body>
 </html>
