@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>祭改報名系統</title>
+    <title>彥彬📿 祭改系統</title>
     <style>
         * {
             box-sizing: border-box;
@@ -305,14 +305,10 @@
         "車關", "倒房", "其他"
     ];
 
-    // ===================== 管理員ID（陣列格式） =====================
-    const ADMIN_IDS = ['Ubb8d84bbb5ab0585bfe509e71cc595a6'];
-    let isAdminUser = false;
-    // ==============================================================
-
     let currentUserId = "";
     let currentDisplayName = "";
     let allRecords = [];
+    let isAdminUser = false;
 
     window.onload = async function () {
         const box = document.getElementById("items");
@@ -343,11 +339,17 @@
             currentUserId = p.userId || "unknown_user";
             currentDisplayName = p.displayName || "unknown_name";
             
-            // 判斷管理員（陣列比對）
-            isAdminUser = ADMIN_IDS.includes(currentUserId);
+            // 從 GAS 後端驗證管理員，不暴露ID在前端
+            const res = await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId })
+            });
+            const data = await res.json();
+            isAdminUser = data.isAdmin || false;
         } catch (e) {
             currentUserId = "error_user";
             currentDisplayName = "error_name";
+            isAdminUser = false;
         }
     }
 
@@ -367,8 +369,8 @@
     function getSignDate() {
         const now = new Date();
         const y = now.getFullYear();
-        const m = now.getMonth() + 1;
-        const d = now.getDate();
+        m = now.getMonth() + 1;
+        d = now.getDate();
         return `${y}/${m}/${d}`;
     }
 
@@ -376,8 +378,8 @@
     function getFullDateTime() {
         const now = new Date();
         const y = now.getFullYear();
-        const m = now.getMonth() + 1;
-        const d = now.getDate();
+        m = now.getMonth() + 1;
+        d = now.getDate();
         
         let hours = now.getHours();
         const minutes = now.getMinutes();
@@ -419,7 +421,6 @@
             form.append("userId", currentUserId);
             form.append("displayName", currentDisplayName);
             form.append("signDate", getSignDate());
-            // 修正：提交時間改用完整格式
             form.append("submitTime", getFullDateTime());
 
             const res = await fetch(WEB_APP_URL, { method: "POST", body: form });
@@ -564,7 +565,7 @@
         });
     }
 
-    // 清空工作表1 (修正：確保後端能接收清空指令)
+    // 清空工作表1
     function clearSheet1() {
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         if (!confirm("⚠️ 確定清空工作表1？無法復原！")) return;
