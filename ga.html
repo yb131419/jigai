@@ -353,12 +353,32 @@
         }
     }
 
+    // 純日期格式 (給工作表2用)
     function getSignDate() {
         const now = new Date();
         const y = now.getFullYear();
         const m = now.getMonth() + 1;
         const d = now.getDate();
         return `${y}/${m}/${d}`;
+    }
+
+    // 完整日期時間格式 (給報名時間用：2026/4/13 上午 6:51:01)
+    function getFullDateTime() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = now.getMonth() + 1;
+        const d = now.getDate();
+        
+        let hours = now.getHours();
+        const minutes = now.getMinutes();
+        const seconds = now.getSeconds();
+        const period = hours >= 12 ? "下午" : "上午";
+        
+        if (hours > 12) hours -= 12;
+        if (hours === 0) hours = 12;
+        
+        const timeStr = `${period} ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        return `${y}/${m}/${d} ${timeStr}`;
     }
 
     async function submitSignup() {
@@ -389,7 +409,8 @@
             form.append("userId", currentUserId);
             form.append("displayName", currentDisplayName);
             form.append("signDate", getSignDate());
-            form.append("submitTime", getSignDate());
+            // 修正：提交時間改用完整格式
+            form.append("submitTime", getFullDateTime());
 
             const res = await fetch(WEB_APP_URL, { method: "POST", body: form });
             const data = await res.json();
@@ -509,7 +530,7 @@
         });
     }
 
-    // 更新工作表2日期
+    // 更新工作表2日期 (格式：2026/4/13 不變)
     function updateSheet2Date() {
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         const input = prompt("請輸入新日期（範例：3月16日）", "");
@@ -533,13 +554,18 @@
         });
     }
 
-    // 清空工作表1
+    // 清空工作表1 (修正：確保後端能接收清空指令)
     function clearSheet1() {
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         if (!confirm("⚠️ 確定清空工作表1？無法復原！")) return;
+        
+        const form = new URLSearchParams();
+        form.append("mode", "clearSheet1");
+        form.append("userId", currentUserId);
+        
         fetch(WEB_APP_URL, {
             method: "POST",
-            body: new URLSearchParams({ mode: "clearSheet1" })
+            body: form
         }).then(() => {
             showMsg("✅ 已清空", true);
             loadList();
