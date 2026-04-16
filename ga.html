@@ -18,24 +18,32 @@
             position: relative;
         }
 
-        /* 右上角管理按鈕 – 只包住文字，超小不擋畫面 */
-        .admin-float-btn {
-            position: fixed;
-            top: 8px;
-            right: 8px;
+        /* 標題區塊 + 管理按鈕 */
+        .header-card {
+            position: relative;
+            padding-top: 25px;
+            padding-bottom: 25px;
+        }
+
+        /* 管理介面按鈕 - 垂直顯示、大字、標題旁 */
+        .admin-vertical-btn {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            writing-mode: vertical-rl;
             background: #B91C1C;
             color: white;
             border: none;
-            border-radius: 6px;
-            padding: 4px 8px;
-            font-size: 12px;
+            border-radius: 8px;
+            padding: 10px 6px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-            z-index: 9999;
-            width: auto !important;
-            min-width: unset !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            z-index: 10;
             white-space: nowrap;
+            line-height: 1.4;
         }
 
         .card {
@@ -44,6 +52,7 @@
             padding: 20px;
             margin-bottom: 16px;
             box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            position: relative;
         }
         h2 {
             color: #8B0000;
@@ -227,11 +236,10 @@
 
 <body>
 
-    <!-- 超小管理按鈕，只包住文字 -->
-    <button class="admin-float-btn" onclick="openModal()">管理</button>
-
-    <div class="card">
+    <div class="card header-card">
         <h2>☸️ 祭改報名系統 ☸️</h2>
+        <!-- 管理介面 - 垂直大字按鈕 -->
+        <button class="admin-vertical-btn" onclick="openModal()">管理介面</button>
     </div>
 
     <div class="card">
@@ -284,6 +292,12 @@
         "車關", "倒房", "其他"
     ];
 
+    // ===================== 管理員設定 =====================
+    // 請把這裡改成你的 LINE UserID
+    const ADMIN_USER_ID = "你的LINE管理員ID";
+    let isAdminUser = false;
+    // =====================================================
+
     let currentUserId = "";
     let currentDisplayName = "";
     let allRecords = [];
@@ -316,6 +330,9 @@
             const p = await liff.getProfile();
             currentUserId = p.userId || "unknown_user";
             currentDisplayName = p.displayName || "unknown_name";
+            
+            // 判斷是否為管理員
+            isAdminUser = currentUserId === ADMIN_USER_ID;
         } catch (e) {
             currentUserId = "error_user";
             currentDisplayName = "error_name";
@@ -414,19 +431,23 @@
         });
     }
 
+    // 渲染名單 + 管理員權限控制
     function renderList(records) {
         let html = "";
         records.forEach(row => {
             const name = row[0] || "";
             const item = row[1] || "";
+            
             html += `
             <div class="item">
                 <span class="name">${name}</span>
                 <span class="itemText">：${item}</span>
+                ${isAdminUser ? `
                 <div class="admin-row">
                     <button style="background:#003366" onclick="editItem('${name}')">修改</button>
                     <button style="background:#cc0000" onclick="deleteItem('${name}')">刪除</button>
                 </div>
+                ` : ""}
             </div>`;
         });
         document.getElementById("list").innerHTML = html;
@@ -452,6 +473,7 @@
     }
 
     function editItem(name) {
+        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         const newItem = prompt("修改項目：", "");
         if(!newItem) return;
         fetch(WEB_APP_URL,{
@@ -472,6 +494,7 @@
     }
 
     function deleteItem(name){
+        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         if(!confirm("確定刪除？")) return;
         fetch(WEB_APP_URL,{
             method:"POST",
@@ -486,6 +509,7 @@
 
     // 更新工作表2日期
     function updateSheet2Date() {
+        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         const input = prompt("請輸入新日期（範例：3月16日）", "");
         if (!input) return;
         const year = new Date().getFullYear();
@@ -509,6 +533,7 @@
 
     // 清空工作表1
     function clearSheet1() {
+        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         if (!confirm("⚠️ 確定清空工作表1？無法復原！")) return;
         fetch(WEB_APP_URL, {
             method: "POST",
