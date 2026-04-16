@@ -52,7 +52,7 @@
             padding: 6px 10px;
             border-radius: 6px;
             border: 1px solid #00336633;
-            font-size: 14px;
+            font Recognize: 14px;
             cursor: pointer;
         }
         button {
@@ -115,13 +115,6 @@
         .admin-area {
             display: none;
         }
-        .del-btn {
-            background: #ff4444;
-            font-size: 12px;
-            padding: 4px 8px;
-            float: right;
-            width: auto;
-        }
     </style>
 </head>
 
@@ -162,16 +155,16 @@
 <script>
     // ================= 設定 =================
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwWIZ3ID5K9PNgSJ20wwMZOiMIQ4dcDGm8M8FIU-u8sRqrzGdomM74OEREGPt2Fgxz8Og/exec";
-    const ADMIN_PASSWORD = "ga123"; // 自行修改
+    const ADMIN_PASSWORD = "ga123";
 
-    // 祭改項目（完全對齊你的後端）
+    // 祭改項目
     const WISH_ITEMS = [
         "補財庫", "冤親債主", "歷代祖先",
         "病符", "嬰靈", "陰纏", "祭小人", "車關"
     ];
 
-    // 初始化項目勾選框
-    window.onload = function() {
+    // 初始化
+    window.onload = function () {
         const box = document.getElementById("items");
         WISH_ITEMS.forEach(item => {
             const label = document.createElement("label");
@@ -186,7 +179,7 @@
         const name = document.getElementById("name").value.trim();
         const checks = document.querySelectorAll(".checkbox-group input:checked");
         const items = Array.from(checks).map(c => c.value);
-        
+
         if (!name) {
             showMsg("請輸入姓名", false);
             return;
@@ -199,6 +192,7 @@
         const formData = new URLSearchParams();
         formData.append("name", name);
         formData.append("item", items.join("、"));
+        formData.append("mode", "write");
 
         fetch(WEB_APP_URL, {
             method: "POST",
@@ -214,12 +208,19 @@
             } else {
                 showMsg(data.message, false);
             }
-        });
+        })
+        .catch(() => showMsg("連線失敗", false));
     }
 
-    // 讀取報名列表
+    // 讀取報名列表（修正：對齊你的GAS）
     function loadList() {
-        fetch(WEB_APP_URL + "?mode=read", { method: "POST" })
+        const formData = new URLSearchParams();
+        formData.append("mode", "read");
+
+        fetch(WEB_APP_URL, {
+            method: "POST",
+            body: formData
+        })
         .then(res => res.json())
         .then(data => {
             const list = document.getElementById("list");
@@ -240,10 +241,13 @@
                 </div>`;
             });
             list.innerHTML = html;
+        })
+        .catch(() => {
+            document.getElementById("list").innerHTML = "讀取失敗";
         });
     }
 
-    // 管理員功能
+    // 管理員
     let isAdmin = false;
     function toggleAdmin() {
         const area = document.getElementById("adminArea");
@@ -254,27 +258,32 @@
         const pwd = document.getElementById("pwd").value;
         if (pwd === ADMIN_PASSWORD) {
             isAdmin = true;
-            showMsg("管理員登入成功", true);
+            showMsg("管理員登入成功 ✅", true);
         } else {
-            showMsg("密碼錯誤", false);
+            showMsg("密碼錯誤 ❌", false);
         }
     }
 
+    // 清空報名（對齊你的GAS後端）
     function clearAll() {
         if (!isAdmin) {
             showMsg("請先登入管理員", false);
             return;
         }
         if (!confirm("確定要清空所有報名？")) return;
-        
+
+        const formData = new URLSearchParams();
+        formData.append("adminClear", "true");
+
         fetch(WEB_APP_URL, {
             method: "POST",
-            body: new URLSearchParams({ clear: "all" })
+            body: formData
         })
         .then(() => {
-            showMsg("已清空所有報名", true);
+            showMsg("已清空所有報名 ✅", true);
             loadList();
-        });
+        })
+        .catch(() => showMsg("清空失敗", false));
     }
 
     function showMsg(text, success) {
