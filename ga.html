@@ -78,30 +78,40 @@
         .collapse-content {
             overflow: hidden;
             max-height: 0;
-            transition: max-height 0.3s ease;
+            transition: max-height 0.4s ease;
         }
 
         .checkbox-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
             margin-top: 10px;
         }
         .checkbox-group label {
             background: #F8FAFC;
-            padding: 12px 10px;
+            padding: 10px 8px;
             border-radius: 8px;
             border: 1px solid #CBD5E1;
             font-size: 15px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .checkbox-group label:hover {
+            background: #f0f7ff;
+            border-color: #8B0000;
         }
         .checkbox-group input[type="checkbox"] {
             width: 20px;
             height: 20px;
             margin: 0;
+        }
+
+        #customItem {
+            margin-top: 12px;
+            display: none;
         }
 
         button {
@@ -209,12 +219,11 @@
             📜 祭改項目（可多選）
             <button class="collapse-btn" onclick="toggleCollapse()">展開</button>
         </div>
+
         <div class="collapse-content" id="collapseContent">
             <div class="checkbox-group" id="items"></div>
+            <input id="customItem" placeholder="✍️ 請輸入其他項目說明">
         </div>
-        
-        <div class="title">✍️ 自行輸入項目（其他備註）</div>
-        <input id="customItem" placeholder="請輸入其他項目說明">
 
         <button id="submitBtn" onclick="submitSignup()"> 送出報名 </button>
         <div id="msg" class="msg"></div>
@@ -255,6 +264,14 @@
             box.appendChild(label);
         });
 
+        // 監聽 其他 勾選
+        document.querySelectorAll('input[value="其他"]').forEach(input => {
+            input.addEventListener('change', function() {
+                const customInput = document.getElementById('customItem');
+                customInput.style.display = this.checked ? 'block' : 'none';
+            });
+        });
+
         await initLiffAndGetUser();
         await autoAdminCheck();
         loadList();
@@ -284,7 +301,7 @@
             content.style.maxHeight = null;
             btn.innerText = "展開";
         } else {
-            content.style.maxHeight = "600px";
+            content.style.maxHeight = "800px";
             btn.innerText = "收合";
         }
     }
@@ -314,9 +331,16 @@
         const checks = document.querySelectorAll(".checkbox-group input:checked");
         let items = Array.from(checks).map(c => c.value);
 
-        if (items.includes("其他") && custom) {
+        // 勾其他 → 直接用備註當項目
+        const hasOther = items.includes("其他");
+        if (hasOther) {
             items = items.filter(i => i !== "其他");
-            items.push("其他：" + custom);
+            if (custom) {
+                items.push(custom);
+            } else {
+                showMsg("請輸入其他項目內容", false);
+                return;
+            }
         }
 
         if (!name) { showMsg("請輸入姓名", false); return; }
@@ -341,6 +365,7 @@
                 document.getElementById("name").value = "";
                 document.getElementById("customItem").value = "";
                 document.querySelectorAll(".checkbox-group input").forEach(c => c.checked = false);
+                document.getElementById("customItem").style.display = "none";
                 loadList();
             } else {
                 showMsg("❌ 報名失敗：" + (data.message || ""), false);
@@ -353,20 +378,35 @@
         }
     }
 
-    // === ✅ 統一時間格式：YYYY-MM-DD HH:mm:ss 台灣時區 ===
     function getNowTaiwanTime() {
         const now = new Date();
         const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        const hours = String(now.getHours()).padStart(2, '0');
+        const month = now.getMonth() + 1;
+        const day = now.getDate();
+        const hours = now.getHours();
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const seconds = String(now.getSeconds()).padStart(2, '0');
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        const period = hours >= 12 ? '下午' : '上午';
+        const h = hours % 12 || 12;
+        return `${year}/${month}/${day} ${period} ${h}:${minutes}:${seconds}`;
     }
 
     function formatTime(dateStr) {
-        return dateStr || "";
+        if (!dateStr) return "";
+        try {
+            const d = new Date(dateStr);
+            const y = d.getFullYear();
+            const m = d.getMonth() + 1;
+            const day = d.getDate();
+            const hours = d.getHours();
+            const min = String(d.getMinutes()).padStart(2, '0');
+            const sec = String(d.getSeconds()).padStart(2, '0');
+            const period = hours >= 12 ? '下午' : '上午';
+            const h = hours % 12 || 12;
+            return `${y}/${m}/${day} ${period} ${h}:${min}:${sec}`;
+        } catch (e) {
+            return dateStr;
+        }
     }
 
     function loadList() {
@@ -385,19 +425,24 @@
             data.records.forEach(row => {
                 const name = row[0] || "";
                 const item = row[1] || "";
-                const time = row[4] || "";
+                const time = row[4] ? formatTime(row[4]) : "";
                 html += `
                 <div class="item">
                     <span class="name">${name}</span>
                     <span class="itemText">：${item}</span>
                     <div class="time">${time}</div>
-                    <div class="admin-row" style="display:${isAdmin ? 'flex' : 'none'};">
+                    <div class="admin-row">
                         <button style="background:#003366" onclick="editItem('${name}')">修改</button>
                         <button style="background:#cc0000" onclick="deleteItem('${name}')">刪除</button>
                     </div>
                 </div>`;
             });
             list.innerHTML = html;
+
+            // 管理員顯示按鈕
+            document.querySelectorAll(".admin-row").forEach(el => {
+                el.style.display = isAdmin ? "flex" : "none";
+            });
         });
     }
 
@@ -410,7 +455,11 @@
         if(!newItem) return;
         fetch(WEB_APP_URL,{
             method:"POST",
-            body:new URLSearchParams({ name:name, item:newItem, submitTime: getNowTaiwanTime() })
+            body:new URLSearchParams({ 
+                name: name, 
+                item: newItem, 
+                submitTime: getNowTaiwanTime() 
+            })
         }).then(()=>{ 
             showMsg("✅ 修改完成", true); 
             loadList(); 
