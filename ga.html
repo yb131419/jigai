@@ -52,7 +52,7 @@
             padding: 6px 10px;
             border-radius: 6px;
             border: 1px solid #00336633;
-            font Recognize: 14px;
+            font-size: 14px;
             cursor: pointer;
         }
         button {
@@ -115,6 +115,9 @@
         .admin-area {
             display: none;
         }
+        .admin-clear {
+            display: none; /* 預設隱藏，登入才顯示 */
+        }
     </style>
 </head>
 
@@ -148,7 +151,7 @@
             <input id="pwd" type="password" placeholder="請輸入管理員密碼">
             <button class="secondary" onclick="loginAdmin()">登入管理</button>
             <br><br>
-            <button style="background:#cc0000" onclick="clearAll()">🗑️ 清空所有報名</button>
+            <button id="adminClearBtn" class="admin-clear" style="background:#cc0000" onclick="clearAll()">🗑️ 清空所有報名</button>
         </div>
     </div>
 
@@ -212,7 +215,7 @@
         .catch(() => showMsg("連線失敗", false));
     }
 
-    // 讀取報名列表（修正：對齊你的GAS）
+    // 讀取報名列表（只顯示 姓名、項目、時間，隱藏ID）
     function loadList() {
         const formData = new URLSearchParams();
         formData.append("mode", "read");
@@ -247,27 +250,32 @@
         });
     }
 
-    // 管理員
+    // ================= 管理員功能 =================
     let isAdmin = false;
+
     function toggleAdmin() {
         const area = document.getElementById("adminArea");
         area.style.display = area.style.display === "block" ? "none" : "block";
     }
 
+    // 登入驗證：成功才顯示清空按鈕
     function loginAdmin() {
-        const pwd = document.getElementById("pwd").value;
+        const pwd = document.getElementById("pwd").value.trim();
         if (pwd === ADMIN_PASSWORD) {
             isAdmin = true;
-            showMsg("管理員登入成功 ✅", true);
+            document.getElementById("adminClearBtn").style.display = "block";
+            showMsg("✅ 管理員登入成功", true);
         } else {
-            showMsg("密碼錯誤 ❌", false);
+            isAdmin = false;
+            document.getElementById("adminClearBtn").style.display = "none";
+            showMsg("❌ 密碼錯誤", false);
         }
     }
 
-    // 清空報名（對齊你的GAS後端）
+    // 清空報名（只有驗證成功才能用）
     function clearAll() {
         if (!isAdmin) {
-            showMsg("請先登入管理員", false);
+            showMsg("❌ 未登入管理員", false);
             return;
         }
         if (!confirm("確定要清空所有報名？")) return;
@@ -280,12 +288,13 @@
             body: formData
         })
         .then(() => {
-            showMsg("已清空所有報名 ✅", true);
+            showMsg("✅ 已清空所有報名", true);
             loadList();
         })
-        .catch(() => showMsg("清空失敗", false));
+        .catch(() => showMsg("❌ 清空失敗", false));
     }
 
+    // 訊息提示
     function showMsg(text, success) {
         const msg = document.getElementById("msg");
         msg.innerText = text;
