@@ -218,6 +218,7 @@
         </div>
     </div>
 
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwWIZ3ID5K9PNgSJ20wwMZOiMIQ4dcDGm8M8FIU-u8sRqrzGdomM74OEREGPt2Fgxz8Og/exec";
     const WISH_ITEMS = [
@@ -230,8 +231,9 @@
     let currentDisplayName = "";
     let isAdmin = false;
 
-    // 初始化
+    // 🔥 穩定版 LIFF 初始化 + 取得使用者資訊
     window.onload = async function () {
+        // 先產生選項
         const box = document.getElementById("items");
         WISH_ITEMS.forEach(item => {
             const label = document.createElement("label");
@@ -239,38 +241,60 @@
             box.appendChild(label);
         });
 
+        // 穩定初始化 LIFF
         try {
             await liff.init({ liffId: "2007416974-JzvPy6DZ" });
-            if (liff.isLoggedIn()) {
-                const profile = await liff.getProfile();
-                currentUserId = profile.userId;
-                currentDisplayName = profile.displayName;
+            
+            // 未登入則導向登入
+            if (!liff.isLoggedIn()) {
+                liff.login();
+                return;
             }
-        } catch (e) {}
 
-        // 🔥 直接驗證是否為管理員（無需密碼）
+            // 取得使用者資料
+            const profile = await liff.getProfile();
+            currentUserId = profile.userId;
+            currentDisplayName = profile.displayName;
+            
+        } catch (e) {
+            console.log("LIFF 初始化失敗", e);
+        }
+
+        // 驗證管理員 + 讀取資料
         autoAdminCheck();
         loadList();
     };
 
-    // 🔥 自動驗證管理員
+    // 🔥 自動驗證管理員（完全免密碼）
     async function autoAdminCheck() {
-        if (!currentUserId) return;
+        if (!currentUserId) {
+            console.log("無 userId，無法驗證管理員");
+            loadList();
+            return;
+        }
+
         try {
             const res = await fetch(WEB_APP_URL, {
                 method: "POST",
-                body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId })
+                body: new URLSearchParams({
+                    mode: "checkAdmin",
+                    userId: currentUserId
+                })
             });
             const data = await res.json();
+            
             if (data.success) {
                 isAdmin = true;
                 document.getElementById("adminBtn").style.display = "block";
-                loadList();
             }
-        } catch (e) {}
+        } catch (e) {
+            console.log("管理員驗證失敗", e);
+        }
+        
+        loadList();
     }
 
-    // 送出報名
+    // 送出報名（userId & 暱稱 正常傳送）
     async function submitSignup() {
         const btn = document.getElementById("submitBtn");
         const name = document.getElementById("name").value.trim();
@@ -282,30 +306,34 @@
         if (!name) { showMsg("請輸入姓名", false); return; }
         if (items.length === 0) { showMsg("請至少選擇一個項目", false); return; }
 
-        btn.disabled = true; btn.innerText = "⏳ 提交中...";
+        btn.disabled = true;
+        btn.innerText = "⏳ 提交中...";
+        
         try {
             const formData = new URLSearchParams();
             formData.append("name", name);
             formData.append("item", items.join("、"));
-            formData.append("userId", currentUserId);
-            formData.append("displayName", currentDisplayName);
+            formData.append("userId", currentUserId || "");
+            formData.append("displayName", currentDisplayName || "");
             formData.append("mode", "write");
 
             const res = await fetch(WEB_APP_URL, { method: "POST", body: formData });
             const data = await res.json();
+            
             if (data.success) {
-                showMsg(data.message, true);
+                showMsg("✅ 報名成功", true);
                 document.getElementById("name").value = "";
                 document.getElementById("customItem").value = "";
                 document.querySelectorAll(".checkbox-group input").forEach(c => c.checked = false);
                 loadList();
             } else {
-                showMsg(data.message, false);
+                showMsg(data.message || "❌ 報名失敗", false);
             }
         } catch (err) {
-            showMsg("連線失敗，請重試", false);
+            showMsg("❌ 連線異常，請重試", false);
         } finally {
-            btn.disabled = false; btn.innerText = "✅ 送出報名";
+            btn.disabled = false;
+            btn.innerText = "✅ 送出報名";
         }
     }
 
@@ -342,6 +370,8 @@
             document.querySelectorAll(".admin-row").forEach(el => {
                 el.style.display = isAdmin ? "flex" : "none";
             });
+        }).catch(() => {
+            document.getElementById("list").innerHTML = "讀取失敗";
         });
     }
 
@@ -349,13 +379,38 @@
     function openModal() { document.getElementById("adminModal").style.display = "flex"; }
     function closeModal() { document.getElementById("adminModal").style.display = "none"; }
 
-    // 功能
-    function editItem(name) { if(!isAdmin)return; const newItem=prompt("修改項目：", ""); if(!newItem)return; fetch(WEB_APP_URL,{method:"POST",body:new URLSearchParams({mode:"write",name:name,item:newItem})}).then(()=>{showMsg("✅ 修改完成",true);loadList();}); }
-    function deleteItem(name){ if(!isAdmin)return; if(!confirm("確定刪除？"))return; fetch(WEB_APP_URL,{method:"POST",body:new URLSearchParams({mode:"delete",name:name})}).then(()=>{showMsg("✅ 已刪除",true);loadList();}); }
-    
+    // 管理功能
+    function editItem(name) {
+        if(!isAdmin) return;
+        const newItem = prompt("修改項目：", "");
+        if(!newItem) return;
+        
+        fetch(WEB_APP_URL,{
+            method:"POST",
+            body:new URLSearchParams({mode:"write", name:name, item:newItem})
+        }).then(()=>{
+            showMsg("✅ 修改完成", true);
+            loadList();
+        });
+    }
+
+    function deleteItem(name){
+        if(!isAdmin) return;
+        if(!confirm("確定刪除？")) return;
+        
+        fetch(WEB_APP_URL,{
+            method:"POST",
+            body:new URLSearchParams({mode:"delete", name:name})
+        }).then(()=>{
+            showMsg("✅ 已刪除", true);
+            loadList();
+        });
+    }
+
     function clearAll() {
         if (!isAdmin) return;
         if (!confirm("⚠️ 確定清空所有報名？無法復原！")) return;
+        
         fetch(WEB_APP_URL, {
             method: "POST",
             body: new URLSearchParams({ adminClear: "true" })
@@ -366,7 +421,7 @@
         });
     }
 
-    // 提示
+    // 提示訊息
     function showMsg(text, success) {
         const msg = document.getElementById("msg");
         msg.innerText = text;
@@ -375,6 +430,5 @@
         setTimeout(() => msg.style.display = "none", 2800);
     }
 </script>
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </body>
 </html>
