@@ -56,6 +56,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            white-space: nowrap;
         }
         input {
             width: 100%;
@@ -70,29 +71,30 @@
             background: none;
             border: none;
             color: #8B0000;
-            font-size: 16px;
+            font-size: 15px;
             cursor: pointer;
-            padding: 0;
+            padding: 4px 8px;
+            white-space: nowrap;
         }
 
         .collapse-content {
             overflow: hidden;
             max-height: 0;
-            transition: max-height 0.4s ease;
+            transition: max-height 0.4s ease-out;
         }
 
         .checkbox-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 10px;
+            gap: 6px;
+            margin-top: 8px;
         }
         .checkbox-group label {
             background: #F8FAFC;
-            padding: 10px 8px;
+            padding: 9px 6px;
             border-radius: 8px;
             border: 1px solid #CBD5E1;
-            font-size: 15px;
+            font-size: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -104,13 +106,13 @@
             border-color: #8B0000;
         }
         .checkbox-group input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             margin: 0;
         }
 
         #customItem {
-            margin-top: 12px;
+            margin-top: 10px;
             display: none;
         }
 
@@ -155,7 +157,7 @@
             overflow-y: auto;
         }
         .item {
-            padding: 12px 10px;
+            padding: 10px;
             border-bottom: 1px solid #F1F5F9;
             font-size: 15px;
         }
@@ -257,6 +259,7 @@
     let isAdmin = false;
 
     window.onload = async function () {
+        // 先產生選項
         const box = document.getElementById("items");
         WISH_ITEMS.forEach(item => {
             const label = document.createElement("label");
@@ -264,34 +267,31 @@
             box.appendChild(label);
         });
 
-        // 監聽 其他 勾選
+        // 監聽其他
         document.querySelectorAll('input[value="其他"]').forEach(input => {
             input.addEventListener('change', function() {
-                const customInput = document.getElementById('customItem');
-                customInput.style.display = this.checked ? 'block' : 'none';
+                document.getElementById('customItem').style.display = this.checked ? 'block' : 'none';
             });
         });
 
-        await initLiffAndGetUser();
-        await autoAdminCheck();
+        // 平行執行：加快載入速度
+        await Promise.all([
+            initLiffAndGetUser(),
+            autoAdminCheck()
+        ]);
+        
         loadList();
     };
 
     async function initLiffAndGetUser() {
         try {
             await liff.init({ liffId: "2007416974-JzvPy6DZ" });
-
-            if (!liff.isLoggedIn()) {
-                liff.login();
-                return;
-            }
-
-            const profile = await liff.getProfile();
-            currentUserId = profile.userId || "";
-            currentDisplayName = profile.displayName || "";
-        } catch (e) {
-            console.error("LIFF 初始化失敗", e);
-        }
+            if (!liff.isLoggedIn()) liff.login();
+            
+            const p = await liff.getProfile();
+            currentUserId = p.userId || "";
+            currentDisplayName = p.displayName || "";
+        } catch (e) {}
     }
 
     function toggleCollapse() {
@@ -314,52 +314,46 @@
                 body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId })
             });
             const data = await res.json();
-            if (data.isAdmin === true) {
-                isAdmin = true;
-                document.getElementById("adminBtn").style.display = "block";
-            }
-        } catch (e) {
-            console.log("管理員驗證失敗");
-        }
+            isAdmin = data.isAdmin === true;
+            if (isAdmin) document.getElementById("adminBtn").style.display = "block";
+        } catch (e) {}
     }
 
     async function submitSignup() {
         const btn = document.getElementById("submitBtn");
         const name = document.getElementById("name").value.trim();
         const custom = document.getElementById("customItem").value.trim();
-        
         const checks = document.querySelectorAll(".checkbox-group input:checked");
+        
         let items = Array.from(checks).map(c => c.value);
-
-        // 勾其他 → 直接用備註當項目
         const hasOther = items.includes("其他");
+
         if (hasOther) {
             items = items.filter(i => i !== "其他");
-            if (custom) {
-                items.push(custom);
-            } else {
-                showMsg("請輸入其他項目內容", false);
-                return;
-            }
+            if (!custom) { showMsg("請輸入其他項目", false); return; }
+            items.push(custom);
         }
 
         if (!name) { showMsg("請輸入姓名", false); return; }
-        if (items.length === 0) { showMsg("請至少選擇一個項目", false); return; }
+        if (items.length === 0) { showMsg("請選擇項目", false); return; }
 
         btn.disabled = true;
         btn.innerText = "⏳ 提交中...";
-        
-        try {
-            const formData = new URLSearchParams();
-            formData.append("name", name);
-            formData.append("item", items.join("、"));
-            formData.append("userId", currentUserId);
-            formData.append("displayName", currentDisplayName);
-            formData.append("submitTime", getNowTaiwanTime());
 
-            const res = await fetch(WEB_APP_URL, { method: "POST", body: formData });
-            const data = await res.json();
+        try {
+            const form = new URLSearchParams();
+            form.append("name", name);
+            form.append("item", items.join("、"));
             
+            // 🔥 強制確實傳送 userId & displayName
+            form.append("userId", currentUserId || "");
+            form.append("displayName", currentDisplayName || "");
+            
+            form.append("submitTime", getNowTaiwanTime());
+
+            const res = await fetch(WEB_APP_URL, { method: "POST", body: form });
+            const data = await res.json();
+
             if (data.success) {
                 showMsg("✅ 報名成功", true);
                 document.getElementById("name").value = "";
@@ -368,7 +362,7 @@
                 document.getElementById("customItem").style.display = "none";
                 loadList();
             } else {
-                showMsg("❌ 報名失敗：" + (data.message || ""), false);
+                showMsg("❌ 失敗：" + (data.message || ""), false);
             }
         } catch (err) {
             showMsg("❌ 連線異常", false);
@@ -380,15 +374,15 @@
 
     function getNowTaiwanTime() {
         const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth() + 1;
-        const day = now.getDate();
-        const hours = now.getHours();
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        const period = hours >= 12 ? '下午' : '上午';
-        const h = hours % 12 || 12;
-        return `${year}/${month}/${day} ${period} ${h}:${minutes}:${seconds}`;
+        const y = now.getFullYear();
+        const m = now.getMonth() + 1;
+        const d = now.getDate();
+        const h = now.getHours();
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const sec = String(now.getSeconds()).padStart(2, '0');
+        const period = h >= 12 ? '下午' : '上午';
+        const hh = h % 12 || 12;
+        return `${y}/${m}/${d} ${period} ${hh}:${min}:${sec}`;
     }
 
     function formatTime(dateStr) {
@@ -402,17 +396,19 @@
             const min = String(d.getMinutes()).padStart(2, '0');
             const sec = String(d.getSeconds()).padStart(2, '0');
             const period = hours >= 12 ? '下午' : '上午';
-            const h = hours % 12 || 12;
-            return `${y}/${m}/${day} ${period} ${h}:${min}:${sec}`;
+            const hh = hours % 12 || 12;
+            return `${y}/${m}/${day} ${period} ${hh}:${min}:${sec}`;
         } catch (e) {
             return dateStr;
         }
     }
 
+    // 優化：加快載入名單
     function loadList() {
         fetch(WEB_APP_URL, {
             method: "POST",
-            body: new URLSearchParams({ mode: "read" })
+            body: new URLSearchParams({ mode: "read" }),
+            signal: AbortSignal.timeout(8000)
         })
         .then(res => res.json())
         .then(data => {
@@ -421,28 +417,29 @@
                 list.innerHTML = "目前無報名資料";
                 return;
             }
+
             let html = "";
             data.records.forEach(row => {
                 const name = row[0] || "";
                 const item = row[1] || "";
                 const time = row[4] ? formatTime(row[4]) : "";
+                
                 html += `
                 <div class="item">
                     <span class="name">${name}</span>
                     <span class="itemText">：${item}</span>
                     <div class="time">${time}</div>
-                    <div class="admin-row">
+                    <div class="admin-row" style="display:${isAdmin?'flex':'none'}">
                         <button style="background:#003366" onclick="editItem('${name}')">修改</button>
                         <button style="background:#cc0000" onclick="deleteItem('${name}')">刪除</button>
                     </div>
                 </div>`;
             });
+            
             list.innerHTML = html;
-
-            // 管理員顯示按鈕
-            document.querySelectorAll(".admin-row").forEach(el => {
-                el.style.display = isAdmin ? "flex" : "none";
-            });
+        })
+        .catch(() => {
+            document.getElementById("list").innerHTML = "載入失敗，請重新整理";
         });
     }
 
@@ -451,14 +448,16 @@
 
     function editItem(name) {
         if(!isAdmin) return;
-        const newItem = prompt("修改項目：", "");
+        const newItem = prompt("修改項目：");
         if(!newItem) return;
         fetch(WEB_APP_URL,{
             method:"POST",
             body:new URLSearchParams({ 
                 name: name, 
-                item: newItem, 
-                submitTime: getNowTaiwanTime() 
+                item: newItem,
+                userId: currentUserId,
+                displayName: currentDisplayName,
+                submitTime: getNowTaiwanTime()
             })
         }).then(()=>{ 
             showMsg("✅ 修改完成", true); 
@@ -496,7 +495,7 @@
         msg.innerText = text;
         msg.className = "msg " + (success ? "success" : "error");
         msg.style.display = "block";
-        setTimeout(() => msg.style.display = "none", 2800);
+        setTimeout(() => msg.style.display = "none", 2600);
     }
 </script>
 </body>
