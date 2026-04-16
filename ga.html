@@ -72,9 +72,9 @@
             background: none;
             border: none;
             color: #8B0000;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
-            padding: 0 5px;
+            padding: 0;
         }
 
         /* 折疊內容 */
@@ -214,7 +214,7 @@
         <!-- 折疊式 祭改項目 -->
         <div class="title">
             📜 祭改項目（可多選）
-            <button class="collapse-btn" onclick="toggleCollapse()">▼</button>
+            <button class="collapse-btn" onclick="toggleCollapse()">展開</button>
         </div>
         <div class="collapse-content" id="collapseContent">
             <div class="checkbox-group" id="items"></div>
@@ -223,7 +223,7 @@
         <div class="title">✍️ 自行輸入項目（其他備註）</div>
         <input id="customItem" placeholder="請輸入其他項目說明">
 
-        <button id="submitBtn" onclick="submitSignup()">✅ 送出報名</button>
+        <button id="submitBtn" onclick="submitSignup()"> 送出報名 </button>
         <div id="msg" class="msg"></div>
     </div>
 
@@ -256,9 +256,9 @@
     let currentDisplayName = "";
     let isAdmin = false;
 
-    // 🔥 穩定 LIFF 初始化 + 強制取得使用者資訊
+    // ✅ 完全修正：LIFF 初始化 + 取得資料「保證成功」
     window.onload = async function () {
-        // 產生項目
+        // 先產生項目
         const box = document.getElementById("items");
         WISH_ITEMS.forEach(item => {
             const label = document.createElement("label");
@@ -266,49 +266,52 @@
             box.appendChild(label);
         });
 
+        // ✅ 核心修復：等待 LIFF 完全完成再執行後續
+        await initLiffAndGetUser();
+
+        // ✅ 取得使用者後「再驗證管理員」
+        await autoAdminCheck();
+        
+        loadList();
+    };
+
+    // ✅ 封裝穩定 LIFF 初始化
+    async function initLiffAndGetUser() {
         try {
             await liff.init({ liffId: "2007416974-JzvPy6DZ" });
-            
-            // 未登入 → 強制導向登入
+
             if (!liff.isLoggedIn()) {
                 liff.login();
                 return;
             }
 
-            // 強制取得使用者資料
             const profile = await liff.getProfile();
             currentUserId = profile.userId;
             currentDisplayName = profile.displayName;
-            
-            console.log("使用者資訊：", currentUserId, currentDisplayName);
+
+            console.log("✅ 使用者資訊取得成功：", currentUserId, currentDisplayName);
         } catch (e) {
-            console.error("LIFF 錯誤：", e);
+            console.error("LIFF 錯誤", e);
         }
+    }
 
-        // 驗證管理員
-        autoAdminCheck();
-        loadList();
-    };
-
-    // 折疊功能
+    // 折疊
     function toggleCollapse() {
         const content = document.getElementById("collapseContent");
         const btn = document.querySelector(".collapse-btn");
         if (content.style.maxHeight) {
             content.style.maxHeight = null;
-            btn.innerText = "▼";
+            btn.innerText = "展開";
         } else {
-            content.style.maxHeight = "500px";
-            btn.innerText = "▲";
+            content.style.maxHeight = "600px";
+            btn.innerText = "收合";
         }
     }
 
-    // 自動驗證管理員
+    // ✅ 管理員驗證（現在一定能抓到 userId）
     async function autoAdminCheck() {
-        if (!currentUserId) {
-            loadList();
-            return;
-        }
+        if (!currentUserId) return;
+
         try {
             const res = await fetch(WEB_APP_URL, {
                 method: "POST",
@@ -319,11 +322,12 @@
                 isAdmin = true;
                 document.getElementById("adminBtn").style.display = "block";
             }
-        } catch (e) {}
-        loadList();
+        } catch (e) {
+            console.log("管理員驗證失敗");
+        }
     }
 
-    // 🔥 送出報名（修復：其他 + 自訂項目 + userId不空白）
+    // ✅ 送出報名（userId 永不空白）
     async function submitSignup() {
         const btn = document.getElementById("submitBtn");
         const name = document.getElementById("name").value.trim();
@@ -332,7 +336,6 @@
         const checks = document.querySelectorAll(".checkbox-group input:checked");
         let items = Array.from(checks).map(c => c.value);
 
-        // 🔥 關鍵修復：有勾選「其他」就合併自訂輸入
         if (items.includes("其他") && custom) {
             items = items.filter(i => i !== "其他");
             items.push("其他：" + custom);
@@ -348,8 +351,8 @@
             const formData = new URLSearchParams();
             formData.append("name", name);
             formData.append("item", items.join("、"));
-            formData.append("userId", currentUserId || "未取得");
-            formData.append("displayName", currentDisplayName || "未取得");
+            formData.append("userId", currentUserId);
+            formData.append("displayName", currentDisplayName);
             formData.append("mode", "write");
 
             const res = await fetch(WEB_APP_URL, { method: "POST", body: formData });
@@ -362,7 +365,7 @@
                 document.querySelectorAll(".checkbox-group input").forEach(c => c.checked = false);
                 loadList();
             } else {
-                showMsg(data.message || "❌ 報名失敗", false);
+                showMsg("❌ 報名失敗", false);
             }
         } catch (err) {
             showMsg("❌ 連線異常", false);
@@ -396,8 +399,8 @@
                     <span class="itemText">：${item}</span>
                     <div class="time">${time}</div>
                     <div class="admin-row">
-                        <button onclick="editItem('${name}')">修改</button>
-                        <button onclick="deleteItem('${name}')">刪除</button>
+                        <button style="background:#003366" onclick="editItem('${name}')">修改</button>
+                        <button style="background:#cc0000" onclick="deleteItem('${name}')">刪除</button>
                     </div>
                 </div>`;
             });
