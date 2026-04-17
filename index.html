@@ -39,7 +39,7 @@
             background: linear-gradient(90deg, transparent, rgba(224,207,192,0.2), transparent);
         }
 
-        /* 管理按鈕 - 文字更小、框剛好包住文字 */
+        /* 管理按鈕 - 文字更小、框剛好包住文字 + 尊貴發光 */
         .admin-vertical-btn {
             position: absolute;
             right: 20px;
@@ -66,7 +66,7 @@
         }
         .admin-vertical-btn:hover {
             transform: translateY(-50%) scale(1.03);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.35);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.35), 0 0 12px rgba(224, 207, 192, 0.6);
         }
 
         /* 頂級質感卡片 */
@@ -186,7 +186,7 @@
             margin-top: 24px;
         }
 
-        /* 頂級按鈕 */
+        /* 頂級按鈕 + 尊貴發光 */
         button {
             width: 100%;
             padding: 17px;
@@ -203,19 +203,20 @@
         }
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(160,82,77,0.35);
+            box-shadow: 0 6px 20px rgba(160,82,77,0.35), 0 0 15px rgba(184, 107, 95, 0.6);
         }
         button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
         button.secondary {
             background: linear-gradient(135deg, #4A6A8C, #3D5A73);
             box-shadow: 0 4px 15px rgba(61,90,115,0.2);
         }
         button.secondary:hover {
-            box-shadow: 0 6px 20px rgba(61,90,115,0.28);
+            box-shadow: 0 6px 20px rgba(61,90,115,0.28), 0 0 12px rgba(74, 106, 140, 0.5);
         }
 
         /* 訊息提示 */
@@ -401,7 +402,7 @@
     <!-- 名單管理彈窗（新增） -->
     <div id="listManagerModal" class="modal">
         <div class="modal-content">
-			<button class="refresh-top-btn" onclick="refreshManagerList()">🔄<br>載入<br>名單</button>
+			<button class="refresh-top-btn" onclick="refreshManagerList()">載入<br>名單</button>
             <h3 style="text-align:center; margin:0 0 16px 0; color:#E0CFC0;">📋 名單管理</h3>
             
             <input type="text" id="managerSearch" placeholder="🔍 搜尋姓名/項目" oninput="searchManagerList()">
@@ -511,7 +512,7 @@
         return `${y}/${m}/${d} ${timeStr}`;
     }
 
-    // 檢查姓名是否重複
+    // 檢查姓名是否重複（加強版）
     function isNameExists(name) {
         return allRecords.some(row => row[0]?.trim() === name.trim());
     }
@@ -534,7 +535,7 @@
         if (!name) { showMsg("請輸入姓名", false); return; }
         if (items.length === 0) { showMsg("請選擇項目", false); return; }
         
-        // 防重複報名
+        // 🔥 強制禁止重複報名
         if (isNameExists(name)) {
             showMsg("❌ 此姓名已報名過，無法重複報名", false);
             return;
