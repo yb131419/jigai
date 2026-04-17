@@ -1,798 +1,802 @@
-<!DOCTYPE html> 
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>彥彬📿 祭改系統</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
-        }
-        body {
-            background: #0F0F0F;
-            background-image: radial-gradient(circle at 50% 10%, rgba(44,28,20,0.3) 0%, transparent 35%),
-                              radial-gradient(circle at 80% 80%, rgba(30,20,15,0.4) 0%, transparent 40%);
-            margin: 0;
-            padding: 18px;
-            max-width: 600px;
-            margin: auto;
-            position: relative;
-            min-height: 100vh;
-        }
+const CHANNEL_ACCESS_TOKEN = 'pyx2C98vaMZP8r9nzEJGJpgT+vB8Oe4YgGuWGlzn8Q7vywClr0DdR2VEBERNNUUfyr4BsfDv5BdxF3ndwnki8uoTh/Eom/SxBWt0UTgIKiYQ7RDiwIIYr/NoiRAjQAOs+GwNwCoPJX+YwUFOnwGfPwdB04t89/1O/w1cDnyilFU=';
+const ADMIN_IDS = ['Ubb8d84bbb5ab0585bfe509e71cc595a6'];
 
-        /* 頂級質感標題區 */
-        .header-card {
-            position: relative;
-            padding: 32px 20px;
-            background: linear-gradient(155deg, #2D2420, #1C1612);
-            color: #E0CFC0;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06);
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-        .header-card::before {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(224,207,192,0.2), transparent);
-        }
+// 核心：強制確保工作表1/2存在 + 欄位標題（包含報名時間） + 至少1列（解決列數不足根本問題）
+function ensureSheetStructure() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) return false;
 
-        /* 管理按鈕 - 文字更小、框剛好包住文字 + 尊貴發光 */
-        .admin-vertical-btn {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: linear-gradient(135deg, #5C3A37, #4A2C2A);
-            color: #E0CFC0;
-            border: none;
-            border-radius: 10px;
-            padding: 6px 8px;
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.06), 0 0 12px rgba(224, 207, 192, 0.6);
-            z-index: 10;
-            white-space: normal;
-            line-height: 1.3;
-            text-align: center;
-            width: auto !important;
-            min-width: unset !important;
-            max-width: fit-content !important;
-            display: none;
-            transition: all 0.25s ease;
-        }
-        .admin-vertical-btn:hover {
-            transform: translateY(-50%) scale(1.03);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.35), 0 0 12px rgba(224, 207, 192, 0.6);
-        }
+  // 強制創建工作表1（不存在則新建，刪除後自動重建）
+  let sheet1 = ss.getSheetByName('工作表1');
+  if (!sheet1) {
+    sheet1 = ss.insertSheet('工作表1');
+    Logger.log('工作表1不存在，已自動重建');
+  }
+  // 強制創建工作表2（不存在則新建，用於日期設定）
+  let sheet2 = ss.getSheetByName('工作表2');
+  if (!sheet2) {
+    sheet2 = ss.insertSheet('工作表2');
+    Logger.log('工作表2不存在，已自動重建');
+  }
 
-        /* 頂級質感卡片 */
-        .card {
-            background: linear-gradient(140deg, #1E1A18, #181411);
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05);
-            position: relative;
-            border: none;
-        }
-        h2 {
-            color: #E0CFC0;
-            text-align: center;
-            margin: 0;
-            font-size: 26px;
-            letter-spacing: 1px;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
-        .title {
-            color: #D4B59E;
-            font-weight: bold;
-            margin-bottom: 14px;
-            font-size: 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            white-space: nowrap;
-            letter-spacing: 0.3px;
-        }
+  // 【關鍵修正1】強制確保工作表1至少1列（底層解決列數不足1的異常）
+  if (sheet1.getMaxColumns() < 1) {
+    sheet1.insertColumns(1, 1); // 直接插入第1列，確保列數≥1
+  }
 
-        /* 頂級輸入框 */
-        input {
-            width: 100%;
-            padding: 15px 16px;
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 14px;
-            font-size: 16px;
-            margin-bottom: 14px;
-            background: rgba(30,26,24,0.6);
-            color: #E0E0E0;
-            transition: all 0.25s ease;
-            backdrop-filter: blur(4px);
-        }
-        input:focus {
-            outline: none;
-            border-color: rgba(160,82,77,0.4);
-            background: rgba(36,30,28,0.8);
-            box-shadow: 0 0 0 3px rgba(160,82,77,0.15);
-        }
-        input::placeholder {
-            color: #777777;
-        }
+  // 強制保留至少5列（對應前端5個欄位：姓名、項目、用戶ID、填表者、報名時間），增強兼容性
+  const targetCols = 5;
+  const currentCols = sheet1.getMaxColumns();
+  if (currentCols < targetCols) {
+    sheet1.insertColumnsAfter(currentCols, targetCols - currentCols);
+  }
 
-        /* 折疊按鈕 */
-        .collapse-btn {
-            background: none;
-            border: none;
-            color: #D4B59E;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 4px 8px;
-            white-space: nowrap;
-            transition: 0.2s;
-        }
-        .collapse-btn:hover {
-            color: #E0CFC0;
-        }
+  // 工作表1自動添加標題行（包含報名時間，空白頁/重建後自動創建）
+  if (sheet1.getLastRow() === 0) {
+    sheet1.appendRow(['祭改者', '祭改項目', '用戶ID', '填表者', '報名時間']);
+  }
+  return true;
+}
 
-        .collapse-content {
-            overflow: hidden;
-            max-height: 800px;
-            transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+// 安全獲取工作表：先重建結構，再返回（確保工作表必存在）
+function getSheet(name) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) return null;
+  ensureSheetStructure(); // 先保障結構，解決工作表不存在問題
+  return ss.getSheetByName(name);
+}
 
-        /* 頂級核取方塊群組 + 字體放大 */
-        .checkbox-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        .checkbox-group label {
-            background: rgba(30,26,24,0.7);
-            padding: 14px 10px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.06);
-            font-size: 17px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.25s ease;
-            color: #E0E0E0;
-            backdrop-filter: blur(4px);
-        }
-        .checkbox-group label:hover {
-            background: rgba(44,32,30,0.8);
-            border-color: rgba(160,82,77,0.35);
-            transform: translateY(-1px);
-        }
-        .checkbox-group input[type="checkbox"] {
-            width: 22px;
-            height: 22px;
-            margin: 0;
-            accent-color: #A0524D;
-        }
+// 統一處理所有POST請求（前端表單 + LINE機器人）
+function doPost(e) {
+  try {
+    // 優先處理前端LIFF表單提交（專用邏輯，防範列數異常，兼容時間欄位）
+    if (e && e.parameter && (e.parameter.name || e.parameter.mode === 'read' || e.parameter.mode === 'delete' || e.parameter.mode === 'clearSheet1' || e.parameter.mode === 'updateSheet2Date' || e.parameter.mode === 'checkAdmin')) {
+      return handleFormRequest(e);
+    }
 
-        #customItem {
-            margin-top: 12px;
-            display: none;
-        }
+    // 原有LINE機器人事件處理邏輯
+    if (!e || !e.postData || !e.postData.contents) {
+      return ContentService.createTextOutput(JSON.stringify({status:'ok'})).setMimeType(ContentService.MimeType.JSON);
+    }
+    const json = JSON.parse(e.postData.contents);
+    const events = json.events;
+    if (!events || !Array.isArray(events)) {
+      return ContentService.createTextOutput(JSON.stringify({status:'ok'})).setMimeType(ContentService.MimeType.JSON);
+    }
 
-        #submitBtn {
-            margin-top: 24px;
-        }
+    // 強制初始化表格結構（即使工作表被刪除，也先重建）
+    if (!ensureSheetStructure()) {
+      return ContentService.createTextOutput(JSON.stringify({status:'error', message:'工作表初始化失敗，請稍後再試'})).setMimeType(ContentService.MimeType.JSON);
+    }
 
-        /* 頂級按鈕 + 尊貴發光（不用點擊也發光） */
-        button {
-            width: 100%;
-            padding: 17px;
-            background: linear-gradient(135deg, #B86B5F, #A0524D);
-            color: #FFF;
-            border: none;
-            border-radius: 16px;
-            font-size: 17px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 15px rgba(160,82,77,0.25), 0 0 15px rgba(184, 107, 95, 0.6);
-            letter-spacing: 0.5px;
-        }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(160,82,77,0.35), 0 0 15px rgba(184, 107, 95, 0.6);
-        }
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        button.secondary {
-            background: linear-gradient(135deg, #4A6A8C, #3D5A73);
-            box-shadow: 0 4px 15px rgba(61,90,115,0.2), 0 0 12px rgba(74, 106, 140, 0.5);
-        }
-        button.secondary:hover {
-            box-shadow: 0 6px 20px rgba(61,90,115,0.28), 0 0 12px rgba(74, 106, 140, 0.5);
-        }
+    // 處理LINE事件
+    events.forEach(event => {
+      handleEvent(event);
+      if (event.type === 'memberJoined') handleMemberJoined(event);
+    });
+    return ContentService.createTextOutput(JSON.stringify({status:'ok'})).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    Logger.log('doPost Error: ' + err.message);
+    // 統一返回友好錯誤信息，避免前端顯示異常
+    return ContentService.createTextOutput(JSON.stringify({
+      status:'error', 
+      message:'系統異常，已自動恢復，請重試'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
 
-        /* 訊息提示 */
-        .msg {
-            text-align: center;
-            padding: 14px;
-            border-radius: 12px;
-            margin: 14px 0;
-            display: none;
-            font-weight: bold;
-            backdrop-filter: blur(6px);
-        }
-        .msg.success {
-            background: rgba(27,59,41,0.8);
-            color: #A8E6CF;
-            border: 1px solid rgba(168,230,207,0.15);
-        }
-        .msg.error {
-            background: rgba(59,33,33,0.8);
-            color: #FFB3B3;
-            border: 1px solid rgba(255,179,179,0.15);
-        }
+// 專門處理前端表單請求（查詢/提交），完全對齊前端5個欄位，針對無資料場景做防護
+function handleFormRequest(e) {
+  // 第一步先強制重建工作表（解決刪除後的問題）
+  const isStructureValid = ensureSheetStructure();
+  if (!isStructureValid) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      message: '工作表初始化失敗，已自動嘗試重建，請重試'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
 
-        /* 名單區塊 */
-        .list {
-            margin-top: 12px;
-            max-height: 420px;
-            overflow-y: auto;
-            color: #ffffff;
-            padding-right: 4px;
+  // 安全獲取工作表（此時必存在，因為上面已重建）
+  const sheet = getSheet('工作表1');
+  const sheet2 = getSheet('工作表2');
+  
+  if (!sheet) { // 萬一重建失敗，返回友好提示
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      message: '工作表不存在，已自動重建，請刷新頁面重試'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // 管理員驗證接口
+  if (e.parameter.mode === 'checkAdmin' && e.parameter.userId) {
+    const isAdmin = ADMIN_IDS.includes(e.parameter.userId);
+    return ContentService.createTextOutput(JSON.stringify({ isAdmin: isAdmin }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // 處理查詢請求（mode=read）：返回3列數據（姓名、項目、報名時間），對齊前端表格展示
+  if (e.parameter.mode === 'read') {
+    try {
+      const lastRow = sheet.getLastRow();
+      let records = [];
+      // 【關鍵修正2】無有效數據（僅標題行或空表），直接返回空數組，不執行getRange
+      if (lastRow > 1) {
+        // 強制指定列數為3（姓名、項目、報名時間），對齊前端展示需求，避免動態列數導致的異常
+        const dataRange = sheet.getRange(2, 1, lastRow - 1, 5);
+        records = dataRange.getValues();
+      }
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        records: records
+      })).setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      Logger.log('Form Read Error: ' + err.message);
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        message: '讀取數據失敗，已自動恢復，請重試'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+
+  // 單筆刪除功能
+  if (e.parameter.mode === 'delete' && e.parameter.name) {
+    try {
+      const lastRow = sheet.getLastRow();
+      if (lastRow < 2) {
+        return ContentService.createTextOutput(JSON.stringify({ success: true, message: '無資料' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      const nameValues = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+      for (let i = 0; i < nameValues.length; i++) {
+        if (nameValues[i][0] === e.parameter.name.trim()) {
+          sheet.deleteRow(i + 2);
+          break;
         }
-        .list::-webkit-scrollbar {
-            width: 6px;
+      }
+      return ContentService.createTextOutput(JSON.stringify({ success: true, message: '刪除成功' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, message: '刪除失敗' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+
+  // 管理員清空所有（對齊前端）
+  if (e.parameter.mode === 'clearSheet1') {
+    try {
+      const lastRow = sheet.getLastRow();
+      if (lastRow > 1) sheet.deleteRows(2, lastRow - 1);
+      ensureSheetStructure();
+      return ContentService.createTextOutput(JSON.stringify({ success: true }))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+
+  // 更新工作表2日期（對齊前端）
+  if (e.parameter.mode === 'updateSheet2Date' && e.parameter.newDate) {
+    try {
+      sheet2.getRange('A1').setValue(e.parameter.newDate);
+      return ContentService.createTextOutput(JSON.stringify({ success: true }))
+        .setMimeType(ContentService.MimeType.JSON);
+    } catch (err) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+
+  // 處理提交請求（新增/更新報名）：完全接收前端5個欄位
+  try {
+    // 接收前端傳輸的所有5個欄位，與前端完全對齊
+    const name = e.parameter.name || '';
+    const item = e.parameter.item || '';
+    const userId = e.parameter.userId || '';
+    const displayName = e.parameter.displayName || '';
+    const submitTime = e.parameter.submitTime || ''; // 接收前端傳來的自定義時間
+
+    // 表單校驗
+    if (!name.trim() || !item.trim()) {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        message: '姓名和項目不得為空'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    const lastRow = sheet.getLastRow();
+    let isUpdate = false;
+
+    // 【關鍵修正3】無有效數據時，跳過更新邏輯（不執行getRange）
+    if (lastRow > 1) {
+      // 強制指定列數為1，避免列數不足異常
+      const nameRange = sheet.getRange(2, 1, lastRow - 1, 1);
+      const nameValues = nameRange.getValues();
+      // 遍歷查找同名記錄
+      for (let i = 0; i < nameValues.length; i++) {
+        if (nameValues[i][0] === name.trim()) {
+          // 確保第2列（項目）存在（萬一被刪除，自動新增）
+          if (sheet.getMaxColumns() < 2) {
+            sheet.insertColumnsAfter(1, 1);
+          }
+          // 更新項目列
+          sheet.getRange(i + 2, 2).setValue(item.trim());
+          // 若前端傳了時間，同步更新時間列（第5列）
+          if (submitTime.trim() && sheet.getMaxColumns() >= 5) {
+            sheet.getRange(i + 2, 5).setValue(submitTime.trim());
+          }
+          // 更新用戶ID與暱稱
+          if (userId && sheet.getMaxColumns() >= 3) {
+            sheet.getRange(i + 2, 3).setValue(userId);
+          }
+          if (displayName && sheet.getMaxColumns() >= 4) {
+            sheet.getRange(i + 2, 4).setValue(displayName);
+          }
+          isUpdate = true;
+          break;
         }
-        .list::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.12);
-            border-radius: 10px;
-        }
-        .item {
-            padding: 14px 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            font-size: 16px;
-            color: #E0E0E0;
-            transition: 0.2s;
-        }
-        .item:hover {
-            background: rgba(255,255,255,0.03);
-        }
-        .name {
-            color: #D4B59E;
-            font-weight: bold;
-            font-size: 17px;
-        }
-        .itemText {
-            color: #A9B4D8;
-        }
+      }
+    }
 
-        /* 管理按鈕列 */
-        .admin-row {
-            display: flex;
-            margin-top: 10px;
-            gap: 8px;
-        }
-        .admin-row button {
-            padding: 10px 12px !important;
-            font-size: 15px !important;
-            width: auto !important;
-            flex: 1;
-            border-radius: 10px;
-            white-space: nowrap;
-            font-weight: normal;
-            transition: all 0.2s ease;
-        }
-		.admin-row button:hover {
-			transform: scale(1.03);
-		}
+    // 不存在則新增記錄：寫入5個欄位，優先使用前端傳來的submitTime，無則後端生成
+    if (!isUpdate) {
+      // 優先使用前端傳輸的時間，無則後端生成台灣本地時間
+      const finalSubmitTime = submitTime.trim() || Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM-dd HH:mm:ss');
+      // 嚴格對齊前端5個欄位：[祭改者, 祭改項目, 用戶ID, 填表者, 報名時間]
+      sheet.appendRow([
+        name.trim(),
+        item.trim(),
+        userId,
+        displayName,
+        finalSubmitTime
+      ]);
+    }
 
-        /* 頂級彈窗 */
-        .modal {
-            display: none !important;
-            position: fixed !important;
-            z-index: 9999 !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            background-color: rgba(0,0,0,0.85) !important;
-            align-items: center !important;
-            justify-content: center !important;
-            backdrop-filter: blur(6px) !important;
-        }
-        .modal.show {
-            display: flex !important;
-        }
-        .modal-content {
-            background: linear-gradient(140deg, #24201D, #1A1613) !important;
-            color: #E0E0E0 !important;
-            margin: auto !important;
-            padding: 32px 28px !important;
-            border-radius: 24px !important;
-            width: 90% !important;
-            max-width: 420px !important;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6) !important;
-            border: 1px solid rgba(255,255,255,0.08) !important;
-            position: relative;
-        }
+    return ContentService.createTextOutput(JSON.stringify({
+      success: true,
+      message: isUpdate ? '更新成功' : '報名成功'
+    })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    Logger.log('Form Submit Error: ' + err.message);
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      message: '提交數據失敗，已自動恢復，請重試'
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
 
-        /* 搜尋框 */
-        #searchInput {
-            margin-bottom: 12px;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-		
-		/* 載入名單按鈕：剛好包住文字大小 */
-		.refresh-top-btn {
-			position: absolute;
-			right: 24px;
-			top: 24px;
-			background: linear-gradient(135deg, #3D735C, #2D5A43);
-			color: #fff;
-			border: none;
-			border-radius: 8px;
-			padding: 5px 9px;
-			font-size: 13px;
-			cursor: pointer;
-            white-space: nowrap;
-            width: fit-content;
-		}
-    </style>
-</head>
+function handleEvent(event) {
+  // 安全獲取工作表（自動重建刪除的工作表）
+  const sheet = getSheet('工作表1');
+  const settingSheet = getSheet('工作表2');
+  if (!sheet) { // 工作表不存在時，直接返回友好提示
+    const {replyToken} = event;
+    if (replyToken) {
+      sendReply(replyToken, [{type:'text', text:'✅ 工作表不存在，已自動重建，請重新執行指令'}]);
+    }
+    return;
+  }
 
-<body>
+  const {replyToken, source, type, message} = event;
+  const userId = source?.userId;
+  const wrapText = msg => [{type:'text', text:msg||'🐾', quickReply:getQuickReply()}];
 
-    <div class="card header-card">
-        <h2>☸️ 祭改報名系統 ☸️</h2>
-        <button class="admin-vertical-btn" id="adminBtn" onclick="openModal()">管<br>理</button>
-    </div>
+  // 被邀請入群組
+  if (type === 'join' && source?.type === 'group') {
+    const botProfile = getUserProfile(userId);
+    const botName = botProfile?.displayName || '『彥彬_祭改系統』';
+    return sendReply(replyToken, [getWelcomeFlexTemplate(botName, 'group')]);
+  }
 
-    <div class="card">
-        <div class="title">報名者姓名</div>
-        <input id="name" placeholder="請輸入姓名">
-        
-        <div class="title">
-            📜 祭改項目（可多選）
-            <button class="collapse-btn" onclick="toggleCollapse()">收合：▼</button>
-        </div>
+  // 使用者加好友
+  if (type === 'follow' && source?.type === 'user') {
+    const userProfile = getUserProfile(userId);
+    const userName = userProfile?.displayName || '『新朋友』';
+    return sendReply(replyToken, [getWelcomeFlexTemplate(userName, 'user')]);
+  }
 
-        <div class="collapse-content" id="collapseContent">
-            <div class="checkbox-group" id="items"></div>
-            <input id="customItem" placeholder="✍️ 請輸入其他項目說明">
-        </div>
+  // 文字訊息處理
+  if (type === 'message' && message?.type === 'text') {
+    const text = message.text.trim();
+    if (!text) return sendReply(replyToken, wrapText());
 
-        <button id="submitBtn" onclick="submitSignup()"> 送出報名 </button>
-        <div id="msg" class="msg"></div>
-    </div>
+    // 包含「歡迎」
+    if (text.includes('歡迎')) {
+      const userProfile = getUserProfile(userId);
+      const userName = userProfile?.displayName || '『群成員』';
+      return sendReply(replyToken, [getWelcomeFlexTemplate(userName, 'welcome')]);
+    }
 
-    <div class="card">
-        <div class="title">🔍 搜尋姓名 / 項目</div>
-        <input type="text" id="searchInput" placeholder="請輸入關鍵字搜尋..." oninput="searchList()">
-        
-        <div class="title" style="margin-top:5px;">📋 目前報名名單</div>
-        <div id="list" class="list">載入中...</div>
-    </div>
+    // 管理員設定日期（兼容工作表2不存在，此時已自動重建）
+    if (ADMIN_IDS.includes(userId) && text.startsWith('日期：')) {
+      if (!settingSheet) return sendReply(replyToken, wrapText('✅ 設定工作表不存在，已自動創建，請重新輸入日期'));
+      const dateStr = text.slice(3).trim();
+      let m, d;
+      if (/^(\d{1,2})月(\d{1,2})日$/.test(dateStr)) {
+        [, m, d] = dateStr.match(/^(\d{1,2})月(\d{1,2})日$/);
+      } else if (/^(\d{1,2})月$/.test(dateStr)) {
+        [, m] = dateStr.match(/^(\d{1,2})月$/);
+        d = 1;
+      } else {
+        return sendReply(replyToken, wrapText('⚠️ 請輸入格式：日期：3月 或 日期：3月16日'));
+      }
+      settingSheet.getRange('A1').setValue(new Date(`${new Date().getFullYear()}/${m}/${d}`));
+      return sendReply(replyToken, wrapText(`✅ 祭改日期已設定為 ${m}月${d === 1 ? '' : d + '日'}`));
+    }
 
-    <!-- 管理員彈窗 -->
-    <div id="adminModal" class="modal">
-        <div class="modal-content">
-            <h3 style="text-align:center; margin:0 0 20px 0; color:#E0CFC0;">管理員選單</h3>
-            
-            <button class="secondary" onclick="openListManager()">📋 名單管理</button>
-            <br><br>
-            
-            <button class="secondary" onclick="updateSheet2Date()">📅 修改『祭改日期』</button>
-            <br><br>
-            
-            <button style="background:linear-gradient(135deg,#D83A56,#cc0000)" onclick="clearSheet1()">🗑️ 清空『祭改名單』</button>
-            <br><br>
-            
-            <button class="secondary" onclick="closeModal()">關閉</button>
-        </div>
-    </div>
+// 🔥 唯一修改：所有報名 無資料時 只回傳純文字，不呼叫UI
+if (text === '所有報名') {
+  try {
+    const lastRow = sheet.getLastRow();
+    const datePrefix = settingSheet ? getDatePrefix(settingSheet) : '';
 
-    <!-- 名單管理彈窗（新增） -->
-    <div id="listManagerModal" class="modal">
-        <div class="modal-content">
-			<button class="refresh-top-btn" onclick="refreshManagerList()">🔄 載入名單</button>
-            <h3 style="text-align:center; margin:0 0 16px 0; color:#E0CFC0;">📋 名單管理</h3>
-            
-            <input type="text" id="managerSearch" placeholder="🔍 搜尋姓名/項目" oninput="searchManagerList()">
-            <div id="managerList" class="list" style="max-height:380px; margin-top:10px;">載入中...</div>
-            
-            <br>
-            <button class="secondary" onclick="closeListManager()">關閉</button>
-        </div>
-    </div>
+    // 🔥 無資料：只回傳純文字，不呼叫任何Flex UI
+    if (lastRow <= 1) {
+      return sendReply(replyToken, wrapText(datePrefix + '目前無報名資料。'));
+    }
 
-<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwWIZ3ID5K9PNgSJ20wwMZOiMIQ4dcDGm8M8FIU-u8sRqrzGdomM74OEREGPt2Fgxz8Og/exec";
-    const WISH_ITEMS = [
-        "補財庫", "冤親債主", "歷代祖先",
-        "病符", "嬰靈", "陰纏", "祭小人",
-        "車關", "倒房", "其他"
-    ];
+    // 👇 以下「有資料」的邏輯完全不動
+    const rows = sheet.getRange(2, 1, lastRow - 1, 2).getValues();
+    const stats = getWishStats(sheet);
 
-    let currentUserId = "";
-    let currentDisplayName = "";
-    let allRecords = [];
-    let isAdminUser = false;
-
-    window.onload = async function () {
-        const box = document.getElementById("items");
-        WISH_ITEMS.forEach(item => {
-            const label = document.createElement("label");
-            label.innerHTML = `<input type="checkbox" value="${item}"> ${item}`;
-            box.appendChild(label);
+    const listContents = [];
+    rows.forEach(r => {
+      const name = r[0] || '';
+      const item = r[1] || '';
+      if (name || item) {
+        listContents.push({
+          type: "text",
+          text: `${name}：${item}`,
+          size: "md",
+          contents: [
+            { type: "span", text: name, color: "#8B0000", weight: "bold" },
+            { type: "span", text: "：", color: "#003366" },
+            { type: "span", text: item, color: "#003366" }
+          ]
         });
+      }
+    });
 
-        document.querySelectorAll('input[value="其他"]').forEach(input => {
-            input.addEventListener('change', function() {
-                document.getElementById('customItem').style.display = this.checked ? 'block' : 'none';
-            });
-        });
+    return sendReply(replyToken, [
+      {
+        type: "flex",
+        altText: "📋 祭改名單",
+        contents: {
+          type: "bubble",
+          size: "mega",
+          body: {
+            type: "box",
+            layout: "vertical",
+            paddingAll: "15px",
+            spacing: "lg",
+            contents: [
+              { type: "text", text: "☸️ 祭改名單 ☸️", weight: "bold", size: "xl", color: "#8B0000", align: "center" },
+              { type: "separator", margin: "md" },
 
-        await initLiffAndGetUser();
-        // 🔥 強制先載入最新後端資料，再驗證報名，徹底解決重開網頁重複報名
-        await loadList();
-    };
+              {
+                type: "box",
+                layout: "vertical",
+                backgroundColor: "#FF88A3",
+                paddingAll: "8px",
+                cornerRadius: "8px",
+                contents: [
+                  { type: "text", text: datePrefix, weight: "bold", size: "md", color: "#FFFFFF", align: "start" }
+                ]
+              },
 
-    async function initLiffAndGetUser() {
-        try {
-            await liff.init({ liffId: "2007416974-JzvPy6DZ" });
-            if (!liff.isLoggedIn()) {
-                liff.login();
-                return;
-            }
-            const p = await liff.getProfile();
-            currentUserId = p.userId || "unknown_user";
-            currentDisplayName = p.displayName || "unknown_name";
-            
-            const res = await fetch(WEB_APP_URL, {
-                method: "POST",
-                body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId })
-            });
-            const data = await res.json();
-            isAdminUser = data.isAdmin || false;
+              {
+                type: "box",
+                layout: "vertical",
+                backgroundColor: "#F0F8FF",
+                paddingAll: "10px",
+                cornerRadius: "8px",
+                spacing: "sm",
+                contents: [
+                  { type: "text", text: "⬇ 報名列表", weight: "bold", size: "md", color: "#003366", align: "start" },
+                  { type: "text", text: " ", size: "xs", color: "#666666", margin: "xs" },
+                  ...listContents
+                ]
+              },
 
-            if(isAdminUser){
-                document.getElementById("adminBtn").style.display = "block";
-            }
-        } catch (e) {
-            currentUserId = "error_user";
-            currentDisplayName = "error_name";
-            isAdminUser = false;
+              { type: "separator", margin: "md" },
+
+              {
+                type: "box",
+                layout: "vertical",
+                backgroundColor: "#F0FFF0",
+                paddingAll: "8px",
+                cornerRadius: "8px",
+                contents: [
+                  { type: "text", text: "📊 祭改統計", weight: "bold", size: "md", color: "#006633", align: "start" },
+                  { type: "text", text: " ", size: "xs", color: "#666666", margin: "xs" },
+                  { type: "text", text: stats, wrap: true, size: "xs", color: "#005533", align: "start" }
+                ]
+              }
+
+            ]
+          },
+          footer: {
+            type: "box",
+            layout: "horizontal",
+            spacing: "sm",
+            contents: [
+              { type: "button", style: "primary", color: "#8B0000", action: { type: "uri", label: "📝報名", uri: "https://liff.line.me/2007416974-JzvPy6DZ" }},
+              { type: "button", style: "secondary", action: { type: "uri", label: "💰金紙", uri: "https://yb131419.github.io/jigai/jigai07.jpg?v=1" }},
+              { type: "button", style: "secondary", action: { type: "message", label: "📿名單", text: "所有報名" }}
+            ]
+          }
+        },
+        quickReply: getQuickReply()
+      }
+    ]);
+  } catch (e) {
+    return sendReply(replyToken, wrapText("系統忙碌中，請稍後再試"));
+  }
+}
+
+
+    // 祭改項目
+    if (text === '祭改項目') {
+      return sendReply(replyToken, wrapText('補財庫\n冤親債主\n歷代祖先\n病符\n嬰靈\n陰纏\n祭小人\n車關'));
+    }
+
+    // 項目統計
+    if (text === '項目統計') {
+      return sendReply(replyToken, wrapText(getWishStats(sheet)));
+    }
+
+    // 管理員清除報名：清除後強制重建標題行（包含5列結構）
+    if (ADMIN_IDS.includes(userId) && text === '清除報名') {
+      try {
+        const lastRow = sheet.getLastRow();
+        if (lastRow <= 1) return sendReply(replyToken, wrapText('⚠️ 沒有資料可清除。'));
+        const numRowsToDelete = lastRow - 1;
+        if (numRowsToDelete > 0) sheet.deleteRows(2, numRowsToDelete);
+        ensureSheetStructure(); // 清除後強制確保標題行和5列結構存在
+        return sendReply(replyToken, wrapText('✅ 報名資料已全部清除。'));
+      } catch (err) {
+        Logger.log("❌ 清除報名失敗：" + err.message);
+        return sendReply(replyToken, wrapText('❌ 清除資料時發生錯誤，請稍後再試'));
+      }
+    }
+
+    // 幫助指令
+    if (['指令', 'help'].includes(text.toLowerCase())) {
+      return sendReply(replyToken, wrapText([
+        '主選單：', '所有報名', '報名 姓名：項目、', '修改 姓名：新項目、',
+        '刪除 姓名、姓名、', '祭改項目', '日期：X月', '日期：X月X日',
+        '清除報名', '『管理員指令』'
+      ].join('\n')));
+    }
+
+    // 新增報名：【關鍵修正5】無資料時跳過重複判斷，不執行getRange，寫入5列數據
+    if (text.startsWith('報名')) {
+      const entries = text.slice(2).trim().split('。');
+      const lastRow = sheet.getLastRow();
+      const validLastRow = Math.max(lastRow, 1);
+      let exist = new Set();
+
+      // 只有存在有效數據時，才讀取姓名列判斷重複
+      if (validLastRow > 1) {
+        // 強制指定列數為1，避免列數不足異常
+        const existValues = sheet.getRange(1, 1, validLastRow, 1).getValues().slice(1);
+        exist = new Set(existValues.map(r => r[0]));
+      }
+
+      let success = [], dup = [];
+      entries.forEach(e => {
+        const [n, ...ws] = e.split('：');
+        if (!n || ws.length === 0) return;
+        const name = n.trim(), wish = ws.join('：').trim();
+        if (exist.has(name)) dup.push(name);
+        else {
+          appendSignup(name, wish, userId); // 內部已兼容5列寫入
+          success.push(`${name}：${wish}`);
+          exist.add(name);
         }
+      });
+      const msg = (success.length ? `成功報名 ${success.length} 筆\n` : '') + (dup.length ? `已報名過：${dup.join('、')}` : '');
+      const detail = success.length ? '\n' + success.map(s => '✅ ' + s).join('\n') : '';
+      return sendReply(replyToken, wrapText((msg + detail).trim()));
     }
 
-    // 修復：折疊展開功能
-    function toggleCollapse() {
-        const content = document.getElementById("collapseContent");
-        const btn = document.querySelector(".collapse-btn");
-        if (!content.style.maxHeight || content.style.maxHeight === "0px") {
-            content.style.maxHeight = "800px";
-            btn.innerText = "收合：▼";
-        } else {
-            content.style.maxHeight = "0px";
-            btn.innerText = "展開：▶";
+    // 修改報名：【關鍵修正6】無資料時直接提示，不執行getRange
+    if (text.startsWith('修改')) {
+      const [n, ...nw] = text.slice(2).trim().split('：');
+      if (!n || nw.length === 0) return sendReply(replyToken, wrapText('格式錯誤'));
+      const newWish = nw.join('：').trim();
+      const lastRow = sheet.getLastRow();
+      if (lastRow < 2) return sendReply(replyToken, wrapText('沒有報名資料可修改'));
+
+      // 強制指定列數為2，避免列數不足異常
+      const lastCol = 2;
+      const validLastRow = Math.max(lastRow, 1);
+      const data = sheet.getRange(1, 1, validLastRow, lastCol).getValues();
+      let ok = false;
+      for (let i = 1; i < data.length; i++) {
+        if (data[i][0] === n.trim()) {
+          // 確保第2列存在
+          if (sheet.getMaxColumns() < 2) sheet.insertColumnsAfter(1, 1);
+          sheet.getRange(i + 1, 2).setValue(newWish);
+          ok = true;
+          break;
         }
+      }
+      return sendReply(replyToken, wrapText(ok ? `✅ 修改成功\n${n.trim()}：${newWish}` : `找不到姓名：${n}`));
     }
 
-    function getSignDate() {
-        const now = new Date();
-        const y = now.getFullYear();
-        m = now.getMonth() + 1;
-        d = now.getDate();
-        return `${y}/${m}/${d}`;
-    }
+    // 刪除報名：【關鍵修正7】無資料時直接提示，不執行getRange
+    if (text.startsWith('刪除')) {
+      const names = text.slice(2).split('。').map(x => x.trim()).filter(Boolean);
+      if (names.length === 0) return sendReply(replyToken, wrapText('請輸入要刪除的姓名'));
+      const lastRow = sheet.getLastRow();
+      if (lastRow < 2) return sendReply(replyToken, wrapText('沒有報名資料可刪除'));
 
-    function getFullDateTime() {
-        const now = new Date();
-        const y = now.getFullYear();
-        m = now.getMonth() + 1;
-        d = now.getDate();
-        
-        let hours = now.getHours();
-        const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
-        const period = hours >= 12 ? "下午" : "上午";
-        
-        if (hours > 12) hours -= 12;
-        if (hours === 0) hours = 12;
-        
-        const timeStr = `${period} ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        return `${y}/${m}/${d} ${timeStr}`;
-    }
-
-    // 🔥 核心規則：同一用戶ID 同名只能報一次，不同用戶可同名
-    function isUserAlreadySigned(name) {
-        return allRecords.some(row => 
-            row[0]?.trim() === name.trim() && 
-            row[2] === currentUserId
-        );
-    }
-
-    async function submitSignup() {
-        // 🔥 提交前強制刷新最新後端資料，徹底杜絕重複報名
-        await loadList();
-        
-        const btn = document.getElementById("submitBtn");
-        const name = document.getElementById("name").value.trim();
-        const custom = document.getElementById("customItem").value.trim();
-        const checks = document.querySelectorAll(".checkbox-group input:checked");
-        
-        let items = Array.from(checks).map(c => c.value);
-        const hasOther = items.includes("其他");
-
-        if (hasOther) {
-            items = items.filter(i => i !== "其他");
-            if (!custom) { showMsg("請輸入其他項目", false); return; }
-            items.push(custom);
+      // 強制指定列數為1，避免列數不足異常
+      const validLastRow = Math.max(lastRow, 1);
+      const data = sheet.getRange(1, 1, validLastRow, 1).getValues();
+      let del = 0;
+      for (let i = data.length - 1; i > 0; i--) {
+        if (data[i][0] === names[0]) {
+          sheet.deleteRow(i + 1);
+          del++;
+          break;
         }
+      }
+      const deletedNames = names.join('\n✅ ');
+      return sendReply(replyToken, wrapText(`✅ 已刪除 ${del} 筆：\n✅ ${deletedNames}`));
+    }
 
-        if (!name) { showMsg("請輸入姓名", false); return; }
-        if (items.length === 0) { showMsg("請選擇項目", false); return; }
-        
-        // 🔥 嚴格驗證
-        if (isUserAlreadySigned(name)) {
-            showMsg("❌\n你已經用此姓名報名過,\n無法重複報名", false);
-            return;
+    // 主選單
+    if (text === '主選單') {
+      return sendReply(replyToken, [
+        {type:'text', text:'☸️ 祭改系統 ☸️', quickReply:getQuickReply()},
+        getMainMenuFlexTemplate()
+      ]);
+    }
+  }
+}
+
+// 處理成員加入群聊
+function handleMemberJoined(event) {
+  const {replyToken, source, joined} = event;
+  if (source?.type === 'group' && joined?.members) {
+    joined.members.forEach(member => {
+      const memberProfile = getUserProfile(member.userId);
+      const memberName = memberProfile?.displayName || '新朋友';
+      sendReply(replyToken, [
+        {type:'text', text:'☸️ 忌改系統 ☸️', quickReply:getQuickReply()},
+        getWelcomeFlexTemplate(memberName, 'join')
+      ]);
+    });
+  }
+}
+
+// 新增報名數據：先確保工作表存在，再寫入5列完整數據（與前端對齊）
+function appendSignup(name, wish, userId) {
+  ensureSheetStructure(); // 先重建工作表（防止寫入時不存在）
+  const sheet = getSheet('工作表1');
+  if (!sheet) return;
+
+  var profile = null;
+  var displayName = "";
+  if (userId) {
+    profile = getUserProfile(userId);
+    displayName = profile ? (profile.displayName || "") : "";
+  }
+
+  // 後端生成台灣本地時間（當LINE機器人提交時，補充時間欄位）
+  const finalSubmitTime = Utilities.formatDate(new Date(), 'Asia/Taipei', 'yyyy-MM-dd HH:mm:ss');
+  // 嚴格對齊5列結構：[祭改者, 祭改項目, 用戶ID, 填表者, 報名時間]
+  sheet.appendRow([
+    name,
+    wish,
+    userId || "",
+    displayName,
+    finalSubmitTime
+  ]);
+}
+
+// 獲取用戶資料
+function getUserProfile(userId) {
+  try {
+    const response = UrlFetchApp.fetch(`https://api.line.me/v2/bot/profile/${userId}`, {
+      method:'get',
+      headers:{'Authorization':'Bearer ' + CHANNEL_ACCESS_TOKEN},
+      timeout:5000
+    });
+    return JSON.parse(response.getContentText());
+  } catch (error) {
+    Logger.log(`Get Profile Error (userId: ${userId}): ` + error.message);
+    return null;
+  }
+}
+
+// 發送回覆
+function sendReply(token, messages) {
+  if (!token || !messages || !Array.isArray(messages)) return;
+  try {
+    UrlFetchApp.fetch('https://api.line.me/v2/bot/message/reply', {
+      method:'post',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer ' + CHANNEL_ACCESS_TOKEN},
+      payload:JSON.stringify({replyToken:token, messages})
+    });
+  } catch (err) {
+    Logger.log('Send Reply Error: ' + err.message);
+  }
+}
+
+// 歡迎彈性訊息模板
+function getWelcomeFlexTemplate(userName, type) {
+  const titles = {group:'🎉 歡迎加入群組',user:'✨ 歡迎成為好友',welcome:'👋 歡迎新夥伴',join:'👥 新成員加入'};
+  const descriptions = {group:'請使用祭改系統進行報名',user:'請使用祭改系統進行報名',welcome:'請使用祭改系統進行報名',join:'請使用祭改系統進行報名'};
+  return {
+    type:'flex',altText:`${titles[type]} | 祭改系統`,
+    contents:{
+      type:'bubble',size:'mega',
+      hero:{type:'image',url:'https://yb131419.github.io/jigai/jigai02.jpg',size:'full',aspectRatio:'20:13',aspectMode:'cover'},
+      body:{
+        type:'box',layout:'vertical',
+        contents:[
+          {type:'text',text:'☸️ 祭改系統 ☸️',weight:'bold',size:'xl',color:'#8B0000',align:'center'},
+          {type:'text',text:titles[type],weight:'bold',size:'lg',margin:'md',align:'center'},
+          {type:'text',text:`👋 歡迎${userName}！`,size:'md',margin:'sm',align:'center'},
+          {type:'separator',margin:'md'},
+          {type:'text',text:descriptions[type],size:'md',margin:'md',wrap:true,align:'center'},
+          {type:'box',layout:'vertical',margin:'lg',spacing:'sm',contents:[
+            {type:'text',text:'📝 祭改報名：報名按鈕',size:'sm'},
+            {type:'text',text:'📿 祭改名單：查詢名單',size:'sm'},
+            {type:'text',text:'🔄 主選單：功能說明',size:'sm'}
+          ]}
+        ]
+      },
+      footer:{
+        type:'box',layout:'vertical',spacing:'sm',
+        contents:[
+          {type:'button',style:'primary',color:'#8B0000',action:{type:'uri',label:'📝 祭改報名',uri:'https://liff.line.me/2007416974-JzvPy6DZ'}},
+          {type:'button',action:{type:'message',label:'📿 祭改名單',text:'所有報名'},style:'secondary'},
+          {type:'button',action:{type:'message',label:'🔄 主選單',text:'主選單'},style:'secondary'}
+        ]
+      },
+      styles:{body:{backgroundColor:'#F5F5F5'},footer:{backgroundColor:'#F8F8F8'}}
+    },
+    quickReply:getQuickReply()
+  };
+}
+
+// 主選單彈性訊息模板
+function getMainMenuFlexTemplate() {
+  const links = {
+    signup:'https://liff.line.me/2007416974-JzvPy6DZ',
+    location:'https://reurl.cc/2Kyg94',
+    lecture:'https://liff.line.me/2007416974-DB4jEQ3y?v=1',
+    ceremony:'https://liff.line.me/2007416974-Qp2pqPeR?v=2',
+    exorcism:'https://liff.line.me/2007416974-yZxgoM0W?v=2',
+    fees:'https://yb131419.github.io/jigai/jigai07.jpg?v=1',
+    instructions:'https://liff.line.me/2007416974-ANNDvBKl'
+  };
+  return {
+    type:'flex',altText:'祭改系統 - 主選單',
+    contents:{
+      type:'carousel',
+      contents:[
+        {
+          type:'bubble',
+          hero:{type:'image',url:'https://yb131419.github.io/jigai/jigai02.jpg',size:'full',aspectRatio:'20:13',aspectMode:'cover'},
+          body:{type:'box',layout:'vertical',contents:[
+            {type:'text',text:'☸️ 祭改系統 ☸️',weight:'bold',size:'xl',color:'#8B0000',align:'center',margin:'md'},
+            {type:'text',text:'📝 核心功能選單',weight:'bold',size:'lg',align:'center',margin:'sm'},
+            {type:'text',text:'報名 | 查詢 | 地點 | 金紙',size:'sm',margin:'sm',color:'#666666',align:'center'}
+          ]},
+          footer:{type:'box',layout:'vertical',spacing:'sm',contents:[
+            {type:'button',action:{type:'uri',label:'📝 祭改報名',uri:links.signup},style:'primary',color:'#8B0000'},
+            {type:'button',action:{type:'message',label:'📿 祭改名單',text:'所有報名'},style:'secondary'},
+            {type:'button',action:{type:'uri',label:'🛵 祭改地點',uri:links.location},style:'secondary'},
+            {type:'button',action:{type:'uri',label:'💰 金紙費用',uri:links.fees},style:'secondary'}
+          ]},
+          styles:{body:{backgroundColor:'#F5F5F5'},footer:{backgroundColor:'#F8F8F8'}}
+        },
+        {
+          type:'bubble',
+          hero:{type:'image',url:'https://yb131419.github.io/jigai/jigai06_01.jpg?v=1',size:'full',aspectRatio:'20:13',aspectMode:'cover'},
+          body:{type:'box',layout:'vertical',contents:[
+            {type:'text',text:'☸️ 祭改系統 ☸️',weight:'bold',size:'xl',color:'#8B0000',align:'center',margin:'md'},
+            {type:'text',text:'🔄 輔助功能選單',weight:'bold',size:'lg',align:'center',margin:'sm'},
+            {type:'text',text:'盛況 | 斬符 | 開示 | 指引 | 選單',size:'sm',margin:'sm',color:'#666666',align:'center'}
+          ]},
+          footer:{type:'box',layout:'vertical',spacing:'sm',contents:[
+            {type:'button',action:{type:'uri',label:'🎬 祭改盛況',uri:links.ceremony},style:'primary',color:'#8B0000'},
+            {type:'button',action:{type:'uri',label:'🎬 斬病符',uri:links.exorcism},style:'secondary'},
+            {type:'button',action:{type:'uri',label:'🎬 帝君開示',uri:links.lecture},style:'secondary'},
+            {type:'button',action:{type:'uri',label:'📖 指令說明',uri:links.instructions},style:'secondary'},
+            {type:'button',action:{type:'message',label:'🔄 主選單',text:'主選單'},style:'secondary'}
+          ]},
+          styles:{body:{backgroundColor:'#F5F5F5'},footer:{backgroundColor:'#F8F8F8'}}
         }
+      ]
+    },
+    quickReply:getQuickReply()
+  };
+}
 
-        btn.disabled = true;
-        btn.innerText = "⏳ 提交中...";
+// 快速回覆
+function getQuickReply() {
+  return {
+    items:[
+      {type:'action',action:{type:'uri',label:'📝 報名',uri:'https://liff.line.me/2007416974-JzvPy6DZ'}},
+      {type:'action',action:{type:'uri',label:'💰 金紙',uri:'https://yb131419.github.io/jigai/jigai07.jpg?v=1'}},
+      {type:'action',action:{type:'message',label:'📿 名單',text:'所有報名'}},
+      {type:'action',action:{type:'uri',label:'🛵 地點',uri:'https://reurl.cc/2Kyg94'}},
+      {type:'action',action:{type:'uri',label:'📖 指令',uri:'https://liff.line.me/2007416974-ANNDvBKl'}},
+      {type:'action',action:{type:'message',label:'🔄 主頁',text:'主選單'}}
+    ]
+  };
+}
 
-        try {
-            const form = new URLSearchParams();
-            form.append("name", name);
-            form.append("item", items.join("、"));
-            form.append("userId", currentUserId);
-            form.append("displayName", currentDisplayName);
-            form.append("signDate", getSignDate());
-            form.append("submitTime", getFullDateTime());
+// 獲取日期前綴
+function getDatePrefix(settingSheet) {
+  if (!settingSheet) return '';
+  const v = settingSheet.getRange('A1').getValue();
+  if (!v || isNaN(new Date(v))) return '';
+  const d = new Date(v);
+  return `祭改日期：${d.getMonth() + 1}月${d.getDate() === 1 ? '' : d.getDate() + '日'}\n`;
+}
 
-            const res = await fetch(WEB_APP_URL, { method: "POST", body: form });
-            const data = await res.json();
+// 🔥 修正：祭改統計 排版 + 配色 + 一行兩列
+function getWishStats(sheet) {
+  if (!sheet) {
+    return '👥 祭改人數：0 ｜ 🧧 祭改份數：0\n\n📿 祭改項目統計：\n工作表未就緒';
+  }
+  
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) {
+    return '👥 祭改人數：0 ｜ 🧧 祭改份數：0\n\n📿 祭改項目統計：\n暫無報名資料';
+  }
 
-            if (data.success) {
-                showMsg("✅ 報名成功", true);
-                document.getElementById("name").value = "";
-                document.getElementById("customItem").value = "";
-                document.querySelectorAll(".checkbox-group input").forEach(c => c.checked = false);
-                document.getElementById("customItem").style.display = "none";
-                await loadList();
-            } else {
-                showMsg("❌ 失敗：" + (data.message || ""), false);
-            }
-        } catch (err) {
-            showMsg("❌ 連線異常", false);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "✅ 送出報名";
-        }
-    }
+  const lastCol = 2;
+  const validLastRow = Math.max(lastRow, 1);
+  const values = sheet.getRange(1, 1, validLastRow, lastCol).getValues().slice(1);
+  
+  const counter = {};
+  const nameSet = new Set();
+  let totalWishes = 0;
 
-    // 包裝為 async 確保等待完成
-    async function loadList() {
-        try {
-            const res = await fetch(WEB_APP_URL, {
-                method: "POST",
-                body: new URLSearchParams({ mode: "read" })
-            });
-            const data = await res.json();
-            if (!data.success || data.records.length === 0) {
-                document.getElementById("list").innerHTML = "目前無報名資料";
-                allRecords = [];
-                return;
-            }
-            allRecords = data.records;
-            renderList(allRecords);
-        } catch (err) {
-            document.getElementById("list").innerHTML = "目前無報名資料";
-            allRecords = [];
-        }
-    }
+  values.forEach(([name, wishes]) => {
+    const pureName = String(name || '').trim();
+    const pureWishes = String(wishes || '').trim();
+    if (!pureName || !pureWishes) return;
+    
+    nameSet.add(pureName);
+    pureWishes.split('、').forEach(item => {
+      const trimItem = item.trim();
+      if (trimItem) {
+        counter[trimItem] = (counter[trimItem] || 0) + 1;
+        totalWishes++;
+      }
+    });
+  });
 
-	// 首頁名單：隱藏修改刪除
-    function renderList(records) {
-        let html = "";
-        records.forEach(row => {
-            const name = row[0] || "";
-            const item = row[1] || "";
-            
-            html += `
-            <div class="item">
-                <span class="name">${name}</span>
-                <span class="itemText">：${item}</span>
-            </div>`;
-        });
-        document.getElementById("list").innerHTML = html;
-    }
+  const sorted = Object.entries(counter).sort((a, b) => b[1] - a[1]);
+  
+  // 一行兩列排版
+  let statsText = "";
+  for (let i = 0; i < sorted.length; i += 2) {
+    const left = sorted[i];
+    const right = i + 1 < sorted.length ? sorted[i + 1] : null;
+    
+    const leftItem = `${left[0]}：${left[1]}`;
+    const rightItem = right ? `${right[0]}：${right[1]}` : "";
+    
+    statsText += `${leftItem.padEnd(12)} ${rightItem}\n`;
+  }
 
-    function searchList() {
-        const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
-        if (!keyword) { renderList(allRecords); return; }
-        const filtered = allRecords.filter(row => {
-            const name = (row[0] || "").toLowerCase();
-            const item = (row[1] || "").toLowerCase();
-            return name.includes(keyword) || item.includes(keyword);
-        });
-        renderList(filtered);
-    }
+  const finalStats = statsText.trim() || "暫無項目";
 
-    // 基礎彈窗
-    function openModal() {
-        document.getElementById("adminModal").classList.add("show");
-    }
-    function closeModal() {
-        document.getElementById("adminModal").classList.remove("show");
-    }
+  return `👥 祭改人數：${nameSet.size} ｜ 🧧 祭改份數：${totalWishes}
 
-    // === 名單管理功能 ===
-    function openListManager() {
-        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
-        closeModal();
-        document.getElementById("listManagerModal").classList.add("show");
-        renderManagerList(allRecords);
-    }
-    function closeListManager() {
-        document.getElementById("listManagerModal").classList.remove("show");
-    }
-	
-	// 載入名單 + 點擊等待特效
-	function refreshManagerList(){
-		let btn = document.querySelector(".refresh-top-btn");
-		btn.innerText = "⏳ 載入中...";
-		btn.disabled = true;
-		
-		loadList();
-		setTimeout(()=>{
-			renderManagerList(allRecords);
-			btn.innerText = "🔄 載入名單";
-			btn.disabled = false;
-			showMsg("✅ 名單已重新載入",true);
-		},600)
-	}
-	
-    function renderManagerList(records) {
-        let html = "";
-        records.forEach(row => {
-            const name = row[0] || "";
-            const item = row[1] || "";
-            html += `
-            <div class="item">
-                <span class="name">${name}</span>
-                <span class="itemText">：${item}</span>
-                <div class="admin-row">
-                    <button style="background:linear-gradient(135deg,#2D6A99,#003366)" onclick="managerEdit('${name}')">修改</button>
-                    <button style="background:linear-gradient(135deg,#D83A56,#cc0000)" onclick="managerDelete('${name}')">刪除</button>
-                </div>
-            </div>`;
-        });
-        document.getElementById("managerList").innerHTML = html || "無資料";
-    }
-    function searchManagerList() {
-        const keyword = document.getElementById("managerSearch").value.trim().toLowerCase();
-        if (!keyword) { renderManagerList(allRecords); return; }
-        const filtered = allRecords.filter(row => {
-            const name = (row[0] || "").toLowerCase();
-            const item = (row[1] || "").toLowerCase();
-            return name.includes(keyword) || item.includes(keyword);
-        });
-        renderManagerList(filtered);
-    }
+📿 祭改項目統計：
+${finalStats}
 
-	// 🔥 管理修改：顯示修改中 + 強制重新載入最新名單
-    async function managerEdit(name) {
-		if(!confirm("⚠️ 確定要修改這筆資料嗎？")) return;
-        const newItem = prompt("修改項目：", "");
-        if(!newItem) return;
-		
-		showMsg("⏳ 修改中...", true);
-        try {
-            await fetch(WEB_APP_URL,{
-                method:"POST",
-                body:new URLSearchParams({ name, item: newItem, userId: currentUserId, displayName: currentDisplayName, signDate: getSignDate() })
-            });
-            showMsg("✅ 修改完成", true);
-            await loadList();
-            renderManagerList(allRecords);
-        } catch (e) {
-            showMsg("❌ 修改失敗", false);
-        }
-    }
-
-	// 🔥 管理刪除：顯示刪除中 + 強制重新載入最新名單
-    async function managerDelete(name){
-		if(!confirm("⚠️ 確定永久刪除？此動作無法復原！")) return;
-		
-		showMsg("⏳ 刪除中...", true);
-        try {
-            await fetch(WEB_APP_URL,{ method:"POST", body:new URLSearchParams({ mode:"delete", name }) });
-            showMsg("✅ 刪除成功", true);
-            await loadList();
-            renderManagerList(allRecords);
-        } catch (e) {
-            showMsg("❌ 刪除失敗", false);
-        }
-    }
-    // === 名單管理結束 ===
-
-    function editItem(name) {
-        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
-        const newItem = prompt("修改項目：", "");
-        if(!newItem) return;
-        fetch(WEB_APP_URL,{
-            method:"POST",
-            body:new URLSearchParams({ name, item: newItem, userId: currentUserId, displayName: currentDisplayName, signDate: getSignDate() })
-        }).then(()=>{ 
-            showMsg("✅ 修改完成", true); 
-            loadList(); 
-        }).catch(()=>showMsg("❌ 修改失敗", false));
-    }
-
-    function deleteItem(name) {
-        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
-        if(!confirm("確定刪除？")) return;
-        fetch(WEB_APP_URL,{ method:"POST", body:new URLSearchParams({ mode:"delete", name }) })
-        .then(()=>{ 
-            showMsg("✅ 已刪除", true); 
-            loadList(); 
-        }).catch(()=>showMsg("❌ 刪除失敗", false));
-    }
-
-    function updateSheet2Date() {
-        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
-        const input = prompt("請輸入新日期（範例：3月16日）", "");
-        if (!input) return;
-        const year = new Date().getFullYear();
-        let month = input.match(/(\d+)月/)?.[1];
-        let day = input.match(/(\d+)日/)?.[1];
-        if (!month || !day) {
-            showMsg("❌ 格式錯誤，請輸入 3月16日", false);
-            return;
-        }
-        const newDate = `${year}/${month}/${day}`;
-        fetch(WEB_APP_URL, {
-            method: "POST",
-            body: new URLSearchParams({ mode: "updateSheet2Date", newDate: newDate })
-        }).then(() => {
-            showMsg(`✅ 日期已更新：${newDate}`, true);
-            closeModal();
-        }).catch(() => showMsg("❌ 更新失敗", false));
-    }
-
-    function clearSheet1() {
-        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
-        if (!confirm("⚠️ 確定清空『祭改名單』？無法復原！")) return;
-        
-        fetch(WEB_APP_URL, {
-            method: "POST",
-            body: new URLSearchParams({ mode: "clearSheet1", userId: currentUserId })
-        }).then(() => {
-            showMsg("✅ 已清空", true);
-            loadList();
-            closeModal();
-        }).catch(()=>showMsg("❌ 清空失敗", false));
-    }
-
-    function showMsg(text, success) {
-        const msg = document.getElementById("msg");
-        msg.innerText = text;
-        msg.className = "msg " + (success ? "success" : "error");
-        msg.style.display = "block";
-        setTimeout(() => msg.style.display = "none", 2800);
-    }
-</script>
-	
-</body>
-</html>
+❗️協助報名請務必通知：
+項目、費用、地點、時間`;
+}
