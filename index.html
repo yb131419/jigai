@@ -401,7 +401,7 @@
     <!-- 名單管理彈窗（新增） -->
     <div id="listManagerModal" class="modal">
         <div class="modal-content">
-			<button class="refresh-top-btn" onclick="refreshManagerList()">🔄 載入名單</button>
+			<button class="refresh-top-btn" onclick="refreshManagerList()">🔄<br>載入<br>名單</button>
             <h3 style="text-align:center; margin:0 0 16px 0; color:#E0CFC0;">📋 名單管理</h3>
             
             <input type="text" id="managerSearch" placeholder="🔍 搜尋姓名/項目" oninput="searchManagerList()">
@@ -758,7 +758,7 @@
 
     function clearSheet1() {
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
-        if (!confirm("⚠️ 確定清空工作表1？無法復原！")) return;
+        if (!confirm("⚠️ 確定清空『祭改名單』？無法復原！")) return;
         
         fetch(WEB_APP_URL, {
             method: "POST",
