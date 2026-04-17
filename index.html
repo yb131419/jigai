@@ -442,7 +442,6 @@
         });
 
         await initLiffAndGetUser();
-        // 🔥 強制先載入最新後端資料，再驗證報名，徹底解決重開網頁重複報名
         await loadList();
     };
 
@@ -522,7 +521,6 @@
     }
 
     async function submitSignup() {
-        // 🔥 提交前強制刷新最新後端資料，徹底杜絕重複報名
         await loadList();
         
         const btn = document.getElementById("submitBtn");
@@ -542,7 +540,6 @@
         if (!name) { showMsg("請輸入姓名", false); return; }
         if (items.length === 0) { showMsg("請選擇項目", false); return; }
         
-        // 🔥 嚴格驗證
         if (isUserAlreadySigned(name)) {
             showMsg("❌\n你已經用此姓名報名過，\n無法重複報名", false);
             return;
@@ -581,7 +578,6 @@
         }
     }
 
-    // 包裝為 async 確保等待完成
     async function loadList() {
         try {
             const res = await fetch(WEB_APP_URL, {
@@ -629,23 +625,39 @@
         renderList(filtered);
     }
 
-    // 基礎彈窗
+    // === 彈窗按鈕 加入特效 + 防呆 ===
     function openModal() {
-        document.getElementById("adminModal").classList.add("show");
+        showMsg("⏳ 開啟管理選單...", true);
+        setTimeout(()=>{
+            document.getElementById("adminModal").classList.add("show");
+            showMsg("✅ 已開啟管理選單", true);
+        },300);
     }
     function closeModal() {
-        document.getElementById("adminModal").classList.remove("show");
+        showMsg("⏳ 關閉選單中...", true);
+        setTimeout(()=>{
+            document.getElementById("adminModal").classList.remove("show");
+            showMsg("✅ 已關閉", true);
+        },300);
     }
 
-    // === 名單管理功能 ===
+    // === 名單管理功能 全部加入防呆 + 特效 ===
     function openListManager() {
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
-        closeModal();
-        document.getElementById("listManagerModal").classList.add("show");
-        renderManagerList(allRecords);
+        showMsg("⏳ 開啟名單管理...", true);
+        setTimeout(()=>{
+            closeModal();
+            document.getElementById("listManagerModal").classList.add("show");
+            renderManagerList(allRecords);
+            showMsg("✅ 已開啟名單管理", true);
+        },300);
     }
     function closeListManager() {
-        document.getElementById("listManagerModal").classList.remove("show");
+        showMsg("⏳ 關閉中...", true);
+        setTimeout(()=>{
+            document.getElementById("listManagerModal").classList.remove("show");
+            showMsg("✅ 已關閉", true);
+        },300);
     }
 	
 	// 載入名單 + 點擊等待特效
@@ -653,6 +665,7 @@
 		let btn = document.querySelector(".refresh-top-btn");
 		btn.innerText = "⏳ 載入中...";
 		btn.disabled = true;
+        showMsg("⏳ 重新載入名單中...", true);
 		
 		loadList();
 		setTimeout(()=>{
@@ -697,7 +710,11 @@
         const newItem = prompt("修改項目：", "");
         if(!newItem) return;
 		
+        let btns = event.currentTarget;
+        btns.disabled = true;
+        btns.innerText = "⏳ 修改中...";
 		showMsg("⏳ 修改中...", true);
+        
         try {
             await fetch(WEB_APP_URL,{
                 method:"POST",
@@ -708,6 +725,9 @@
             renderManagerList(allRecords);
         } catch (e) {
             showMsg("❌ 修改失敗", false);
+        } finally {
+            btns.disabled = false;
+            btns.innerText = "修改";
         }
     }
 
@@ -715,7 +735,11 @@
     async function managerDelete(name){
 		if(!confirm("⚠️ 確定永久刪除？此動作無法復原！")) return;
 		
+        let btns = event.currentTarget;
+        btns.disabled = true;
+        btns.innerText = "⏳ 刪除中...";
 		showMsg("⏳ 刪除中...", true);
+        
         try {
             await fetch(WEB_APP_URL,{ method:"POST", body:new URLSearchParams({ mode:"delete", name }) });
             showMsg("✅ 刪除成功", true);
@@ -723,34 +747,13 @@
             renderManagerList(allRecords);
         } catch (e) {
             showMsg("❌ 刪除失敗", false);
+        } finally {
+            btns.disabled = false;
+            btns.innerText = "刪除";
         }
     }
-    // === 名單管理結束 ===
 
-    function editItem(name) {
-        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
-        const newItem = prompt("修改項目：", "");
-        if(!newItem) return;
-        fetch(WEB_APP_URL,{
-            method:"POST",
-            body:new URLSearchParams({ name, item: newItem, userId: currentUserId, displayName: currentDisplayName, signDate: getSignDate() })
-        }).then(()=>{ 
-            showMsg("✅ 修改完成", true); 
-            loadList(); 
-        }).catch(()=>showMsg("❌ 修改失敗", false));
-    }
-
-    function deleteItem(name) {
-        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
-        if(!confirm("確定刪除？")) return;
-        fetch(WEB_APP_URL,{ method:"POST", body:new URLSearchParams({ mode:"delete", name }) })
-        .then(()=>{ 
-            showMsg("✅ 已刪除", true); 
-            loadList(); 
-        }).catch(()=>showMsg("❌ 刪除失敗", false));
-    }
-
-    function updateSheet2Date() {
+    async function updateSheet2Date() {
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         const input = prompt("請輸入新日期（範例：3月16日）", "");
         if (!input) return;
@@ -762,27 +765,50 @@
             return;
         }
         const newDate = `${year}/${month}/${day}`;
-        fetch(WEB_APP_URL, {
-            method: "POST",
-            body: new URLSearchParams({ mode: "updateSheet2Date", newDate: newDate })
-        }).then(() => {
+        
+        let btn = event.currentTarget;
+        btn.disabled = true;
+        btn.innerText = "⏳ 更新中...";
+        showMsg("⏳ 更新日期中...", true);
+
+        try {
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: new URLSearchParams({ mode: "updateSheet2Date", newDate: newDate })
+            });
             showMsg(`✅ 日期已更新：${newDate}`, true);
             closeModal();
-        }).catch(() => showMsg("❌ 更新失敗", false));
+        } catch (e) {
+            showMsg("❌ 更新失敗", false);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "📅 修改『祭改日期』";
+        }
     }
 
-    function clearSheet1() {
+    async function clearSheet1() {
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         if (!confirm("⚠️ 確定清空『祭改名單』？無法復原！")) return;
         
-        fetch(WEB_APP_URL, {
-            method: "POST",
-            body: new URLSearchParams({ mode: "clearSheet1", userId: currentUserId })
-        }).then(() => {
-            showMsg("✅ 已清空", true);
-            loadList();
+        let btn = event.currentTarget;
+        btn.disabled = true;
+        btn.innerText = "⏳ 清空中...";
+        showMsg("⏳ 正在清空所有資料...", true);
+
+        try {
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: new URLSearchParams({ mode: "clearSheet1", userId: currentUserId })
+            });
+            showMsg("✅ 已清空所有資料", true);
+            await loadList();
             closeModal();
-        }).catch(()=>showMsg("❌ 清空失敗", false));
+        } catch (e) {
+            showMsg("❌ 清空失敗", false);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "🗑️ 清空『祭改名單』";
+        }
     }
 
     function showMsg(text, success) {
