@@ -10,212 +10,290 @@
             font-family: "Microsoft JhengHei", "Noto Sans TC", sans-serif;
         }
         body {
-            background: #121212;
+            background: #0F0F0F;
+            background-image: radial-gradient(circle at 50% 10%, rgba(44,28,20,0.3) 0%, transparent 35%),
+                              radial-gradient(circle at 80% 80%, rgba(30,20,15,0.4) 0%, transparent 40%);
             margin: 0;
-            padding: 15px;
+            padding: 18px;
             max-width: 600px;
             margin: auto;
             position: relative;
+            min-height: 100vh;
         }
 
-        /* 標題區塊 + 管理按鈕 */
+        /* 頂級質感標題區 */
         .header-card {
             position: relative;
-            padding-top: 25px;
-            padding-bottom: 25px;
-            background: linear-gradient(135deg, #2D2D2D, #1A1A1A);
+            padding: 32px 20px;
+            background: linear-gradient(155deg, #2D2420, #1C1612);
             color: #E0CFC0;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.06);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .header-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(224,207,192,0.2), transparent);
         }
 
-        /* 管理介面按鈕 - 預設隱藏 */
+        /* 管理按鈕 - 文字更小、框剛好包住文字 */
         .admin-vertical-btn {
             position: absolute;
-            right: 18px;
+            right: 20px;
             top: 50%;
             transform: translateY(-50%);
-            background: #4A2C2A;
+            background: linear-gradient(135deg, #5C3A37, #4A2C2A);
             color: #E0CFC0;
             border: none;
-            border-radius: 8px;
-            padding: 8px 10px;
-            font-size: 18px;
+            border-radius: 10px;
+            padding: 6px 8px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.06);
             z-index: 10;
             white-space: normal;
-            line-height: 1.6;
+            line-height: 1.3;
             text-align: center;
             width: auto !important;
             min-width: unset !important;
             max-width: fit-content !important;
-            display: none; /* 預設隱藏 */
+            display: none;
+            transition: all 0.25s ease;
+        }
+        .admin-vertical-btn:hover {
+            transform: translateY(-50%) scale(1.03);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.35);
         }
 
+        /* 頂級質感卡片 */
         .card {
-            background: #1E1E1E;
-            border-radius: 14px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+            background: linear-gradient(140deg, #1E1A18, #181411);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05);
             position: relative;
-            border: 1px solid #333333;
+            border: none;
         }
         h2 {
             color: #E0CFC0;
             text-align: center;
-            margin-top: 0;
-            font-size: 22px;
+            margin: 0;
+            font-size: 26px;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
         .title {
             color: #D4B59E;
             font-weight: bold;
-            margin-bottom: 10px;
-            font-size: 16px;
+            margin-bottom: 14px;
+            font-size: 18px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             white-space: nowrap;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #444444;
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 12px;
-            background: #2A2A2A;
-            color: #E0E0E0;
-        }
-        input::placeholder {
-            color: #888888;
+            letter-spacing: 0.3px;
         }
 
+        /* 頂級輸入框 */
+        input {
+            width: 100%;
+            padding: 15px 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px;
+            font-size: 16px;
+            margin-bottom: 14px;
+            background: rgba(30,26,24,0.6);
+            color: #E0E0E0;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(4px);
+        }
+        input:focus {
+            outline: none;
+            border-color: rgba(160,82,77,0.4);
+            background: rgba(36,30,28,0.8);
+            box-shadow: 0 0 0 3px rgba(160,82,77,0.15);
+        }
+        input::placeholder {
+            color: #777777;
+        }
+
+        /* 折疊按鈕 */
         .collapse-btn {
             background: none;
             border: none;
             color: #D4B59E;
-            font-size: 15px;
+            font-size: 16px;
             cursor: pointer;
             padding: 4px 8px;
             white-space: nowrap;
+            transition: 0.2s;
+        }
+        .collapse-btn:hover {
+            color: #E0CFC0;
         }
 
         .collapse-content {
             overflow: hidden;
-            max-height: 800px; /* 預設展開 */
-            transition: max-height 0.4s ease-out;
+            max-height: 800px;
+            transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* 頂級核取方塊群組 + 字體放大 */
         .checkbox-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin-top: 8px;
+            gap: 8px;
+            margin-top: 10px;
         }
         .checkbox-group label {
-            background: #252525;
-            padding: 9px 6px;
-            border-radius: 8px;
-            border: 1px solid #444444;
-            font-size: 14px;
+            background: rgba(30,26,24,0.7);
+            padding: 14px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+            font-size: 17px;
+            font-weight: 500;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
+            gap: 8px;
+            transition: all 0.25s ease;
             color: #E0E0E0;
+            backdrop-filter: blur(4px);
         }
         .checkbox-group label:hover {
-            background: #352523;
-            border-color: #A0524D;
+            background: rgba(44,32,30,0.8);
+            border-color: rgba(160,82,77,0.35);
+            transform: translateY(-1px);
         }
         .checkbox-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
+            width: 22px;
+            height: 22px;
             margin: 0;
+            accent-color: #A0524D;
         }
 
         #customItem {
-            margin-top: 10px;
+            margin-top: 12px;
             display: none;
         }
 
         #submitBtn {
-            margin-top: 20px;
+            margin-top: 24px;
         }
 
+        /* 頂級按鈕 */
         button {
             width: 100%;
-            padding: 14px;
-            background: #A0524D;
+            padding: 17px;
+            background: linear-gradient(135deg, #B86B5F, #A0524D);
             color: #FFF;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 16px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 15px rgba(160,82,77,0.25);
+            letter-spacing: 0.5px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(160,82,77,0.35);
         }
         button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
         button.secondary {
-            background: #3D5A73;
+            background: linear-gradient(135deg, #4A6A8C, #3D5A73);
+            box-shadow: 0 4px 15px rgba(61,90,115,0.2);
         }
+        button.secondary:hover {
+            box-shadow: 0 6px 20px rgba(61,90,115,0.28);
+        }
+
+        /* 訊息提示 */
         .msg {
             text-align: center;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 12px 0;
+            padding: 14px;
+            border-radius: 12px;
+            margin: 14px 0;
             display: none;
             font-weight: bold;
+            backdrop-filter: blur(6px);
         }
         .msg.success {
-            background: #1B3B29;
+            background: rgba(27,59,41,0.8);
             color: #A8E6CF;
+            border: 1px solid rgba(168,230,207,0.15);
         }
         .msg.error {
-            background: #3B2121;
+            background: rgba(59,33,33,0.8);
             color: #FFB3B3;
+            border: 1px solid rgba(255,179,179,0.15);
         }
+
+        /* 名單區塊 */
         .list {
-            margin-top: 10px;
-            max-height: 380px;
+            margin-top: 12px;
+            max-height: 420px;
             overflow-y: auto;
-            color: #ffffff; /* 載入中文字白色 */
+            color: #ffffff;
+            padding-right: 4px;
+        }
+        .list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .list::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.12);
+            border-radius: 10px;
         }
         .item {
-            padding: 10px;
-            border-bottom: 1px solid #333333;
-            font-size: 15px;
+            padding: 14px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-size: 16px;
             color: #E0E0E0;
+            transition: 0.2s;
+        }
+        .item:hover {
+            background: rgba(255,255,255,0.03);
         }
         .name {
             color: #D4B59E;
             font-weight: bold;
+            font-size: 17px;
         }
         .itemText {
             color: #A9B4D8;
         }
+
+        /* 管理按鈕列 */
         .admin-row {
             display: flex;
-            margin-top: 8px;
-            gap: 6px;
+            margin-top: 10px;
+            gap: 8px;
         }
-
-        /* 手機按鈕 */
         .admin-row button {
-            padding: 6px 10px !important;
-            font-size: 13px !important;
+            padding: 10px 12px !important;
+            font-size: 15px !important;
             width: auto !important;
             flex: 1;
-            border-radius: 6px;
+            border-radius: 10px;
             white-space: nowrap;
+            font-weight: normal;
+            transition: all 0.2s ease;
         }
+		.admin-row button:hover {
+			transform: scale(1.03);
+		}
 
-        /* 彈窗 */
+        /* 頂級彈窗 */
         .modal {
             display: none !important;
             position: fixed !important;
@@ -224,29 +302,48 @@
             top: 0 !important;
             width: 100% !important;
             height: 100% !important;
-            background-color: rgba(0,0,0,0.7) !important;
+            background-color: rgba(0,0,0,0.85) !important;
             align-items: center !important;
             justify-content: center !important;
+            backdrop-filter: blur(6px) !important;
         }
         .modal.show {
             display: flex !important;
         }
         .modal-content {
-            background-color: #222222 !important;
+            background: linear-gradient(140deg, #24201D, #1A1613) !important;
             color: #E0E0E0 !important;
             margin: auto !important;
-            padding: 24px !important;
-            border-radius: 16px !important;
+            padding: 32px 28px !important;
+            border-radius: 24px !important;
             width: 90% !important;
-            max-width: 400px !important;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+            max-width: 420px !important;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6) !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+            position: relative;
         }
 
         /* 搜尋框 */
         #searchInput {
-            margin-bottom: 10px;
-            border: 1px solid #444444;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.08);
         }
+		
+		/* 載入名單按鈕：剛好包住文字大小 */
+		.refresh-top-btn {
+			position: absolute;
+			right: 24px;
+			top: 24px;
+			background: linear-gradient(135deg, #3D735C, #2D5A43);
+			color: #fff;
+			border: none;
+			border-radius: 8px;
+			padding: 5px 9px;
+			font-size: 13px;
+			cursor: pointer;
+            white-space: nowrap;
+            width: fit-content;
+		}
     </style>
 </head>
 
@@ -254,7 +351,7 @@
 
     <div class="card header-card">
         <h2>☸️ 祭改報名系統 ☸️</h2>
-        <button class="admin-vertical-btn" id="adminBtn" onclick="openModal()">管理<br>介面</button>
+        <button class="admin-vertical-btn" id="adminBtn" onclick="openModal()">管<br>理</button>
     </div>
 
     <div class="card">
@@ -286,15 +383,32 @@
     <!-- 管理員彈窗 -->
     <div id="adminModal" class="modal">
         <div class="modal-content">
-            <h3 style="text-align:center; margin:0 0 16px 0;">管理員選單</h3>
+            <h3 style="text-align:center; margin:0 0 20px 0; color:#E0CFC0;">管理員選單</h3>
+            
+            <button class="secondary" onclick="openListManager()">📋 名單管理</button>
+            <br><br>
             
             <button class="secondary" onclick="updateSheet2Date()">📅 修改『祭改日期』</button>
             <br><br>
             
-            <button style="background:#cc0000" onclick="clearSheet1()">🗑️ 清空『祭改名單』</button>
+            <button style="background:linear-gradient(135deg,#D83A56,#cc0000)" onclick="clearSheet1()">🗑️ 清空『祭改名單』</button>
             <br><br>
             
             <button class="secondary" onclick="closeModal()">關閉</button>
+        </div>
+    </div>
+
+    <!-- 名單管理彈窗（新增） -->
+    <div id="listManagerModal" class="modal">
+        <div class="modal-content">
+			<button class="refresh-top-btn" onclick="refreshManagerList()">🔄<br>載入<br>名單</button>
+            <h3 style="text-align:center; margin:0 0 16px 0; color:#E0CFC0;">📋 名單管理</h3>
+            
+            <input type="text" id="managerSearch" placeholder="🔍 搜尋姓名/項目" oninput="searchManagerList()">
+            <div id="managerList" class="list" style="max-height:380px; margin-top:10px;">載入中...</div>
+            
+            <br>
+            <button class="secondary" onclick="closeListManager()">關閉</button>
         </div>
     </div>
 
@@ -341,7 +455,6 @@
             currentUserId = p.userId || "unknown_user";
             currentDisplayName = p.displayName || "unknown_name";
             
-            // 從 GAS 後端驗證管理員，不暴露ID在前端
             const res = await fetch(WEB_APP_URL, {
                 method: "POST",
                 body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId })
@@ -349,7 +462,6 @@
             const data = await res.json();
             isAdminUser = data.isAdmin || false;
 
-            // 驗證成功才顯示管理按鈕
             if(isAdminUser){
                 document.getElementById("adminBtn").style.display = "block";
             }
@@ -360,19 +472,19 @@
         }
     }
 
+    // 修復：折疊展開功能
     function toggleCollapse() {
         const content = document.getElementById("collapseContent");
         const btn = document.querySelector(".collapse-btn");
-        if (content.style.maxHeight === "800px") {
-            content.style.maxHeight = null;
-            btn.innerText = "展開：▶";
-        } else {
+        if (!content.style.maxHeight || content.style.maxHeight === "0px") {
             content.style.maxHeight = "800px";
             btn.innerText = "收合：▼";
+        } else {
+            content.style.maxHeight = "0px";
+            btn.innerText = "展開：▶";
         }
     }
 
-    // 純日期格式 (給工作表2用)
     function getSignDate() {
         const now = new Date();
         const y = now.getFullYear();
@@ -381,7 +493,6 @@
         return `${y}/${m}/${d}`;
     }
 
-    // 完整日期時間格式 (給報名時間用：2026/4/13 上午 6:51:01)
     function getFullDateTime() {
         const now = new Date();
         const y = now.getFullYear();
@@ -398,6 +509,11 @@
         
         const timeStr = `${period} ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         return `${y}/${m}/${d} ${timeStr}`;
+    }
+
+    // 檢查姓名是否重複
+    function isNameExists(name) {
+        return allRecords.some(row => row[0]?.trim() === name.trim());
     }
 
     async function submitSignup() {
@@ -417,6 +533,12 @@
 
         if (!name) { showMsg("請輸入姓名", false); return; }
         if (items.length === 0) { showMsg("請選擇項目", false); return; }
+        
+        // 防重複報名
+        if (isNameExists(name)) {
+            showMsg("❌ 此姓名已報名過，無法重複報名", false);
+            return;
+        }
 
         btn.disabled = true;
         btn.innerText = "⏳ 提交中...";
@@ -472,7 +594,7 @@
         });
     }
 
-    // 渲染名單 + 管理員權限控制
+	// 首頁名單：隱藏修改刪除
     function renderList(records) {
         let html = "";
         records.forEach(row => {
@@ -483,12 +605,6 @@
             <div class="item">
                 <span class="name">${name}</span>
                 <span class="itemText">：${item}</span>
-                ${isAdminUser ? `
-                <div class="admin-row">
-                    <button style="background:#003366" onclick="editItem('${name}')">修改</button>
-                    <button style="background:#cc0000" onclick="deleteItem('${name}')">刪除</button>
-                </div>
-                ` : ""}
             </div>`;
         });
         document.getElementById("list").innerHTML = html;
@@ -505,7 +621,7 @@
         renderList(filtered);
     }
 
-    // 彈窗
+    // 基礎彈窗
     function openModal() {
         document.getElementById("adminModal").classList.add("show");
     }
@@ -513,42 +629,112 @@
         document.getElementById("adminModal").classList.remove("show");
     }
 
+    // === 名單管理功能 ===
+    function openListManager() {
+        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
+        closeModal();
+        document.getElementById("listManagerModal").classList.add("show");
+        renderManagerList(allRecords);
+    }
+    function closeListManager() {
+        document.getElementById("listManagerModal").classList.remove("show");
+    }
+	
+	// 載入名單 + 點擊等待特效
+	function refreshManagerList(){
+		let btn = document.querySelector(".refresh-top-btn");
+		btn.innerText = "⏳ 載入中...";
+		btn.disabled = true;
+		
+		loadList();
+		setTimeout(()=>{
+			renderManagerList(allRecords);
+			btn.innerText = "🔄 載入名單";
+			btn.disabled = false;
+			showMsg("✅ 名單已重新載入",true);
+		},600)
+	}
+	
+    function renderManagerList(records) {
+        let html = "";
+        records.forEach(row => {
+            const name = row[0] || "";
+            const item = row[1] || "";
+            html += `
+            <div class="item">
+                <span class="name">${name}</span>
+                <span class="itemText">：${item}</span>
+                <div class="admin-row">
+                    <button style="background:linear-gradient(135deg,#2D6A99,#003366)" onclick="managerEdit('${name}')">修改</button>
+                    <button style="background:linear-gradient(135deg,#D83A56,#cc0000)" onclick="managerDelete('${name}')">刪除</button>
+                </div>
+            </div>`;
+        });
+        document.getElementById("managerList").innerHTML = html || "無資料";
+    }
+    function searchManagerList() {
+        const keyword = document.getElementById("managerSearch").value.trim().toLowerCase();
+        if (!keyword) { renderManagerList(allRecords); return; }
+        const filtered = allRecords.filter(row => {
+            const name = (row[0] || "").toLowerCase();
+            const item = (row[1] || "").toLowerCase();
+            return name.includes(keyword) || item.includes(keyword);
+        });
+        renderManagerList(filtered);
+    }
+	// 管理修改 - 雙重防呆 + 執行中特效
+    function managerEdit(name) {
+		if(!confirm("⚠️ 確定要修改這筆資料嗎？")) return;
+        const newItem = prompt("修改項目：", "");
+        if(!newItem) return;
+		
+		showMsg("⏳ 修改處理中...", true);
+        fetch(WEB_APP_URL,{
+            method:"POST",
+            body:new URLSearchParams({ name, item: newItem, userId: currentUserId, displayName: currentDisplayName, signDate: getSignDate() })
+        }).then(()=>{ 
+            showMsg("✅ 修改完成", true);
+            loadList();
+            renderManagerList(allRecords);
+        }).catch(()=>showMsg("❌ 修改失敗", false));
+    }
+	// 管理刪除 - 雙重防呆 + 執行中特效
+    function managerDelete(name){
+		if(!confirm("⚠️ 確定永久刪除？此動作無法復原！")) return;
+		
+		showMsg("⏳ 刪除處理中...", true);
+        fetch(WEB_APP_URL,{ method:"POST", body:new URLSearchParams({ mode:"delete", name }) })
+        .then(()=>{ 
+            showMsg("✅ 已刪除", true);
+            loadList();
+            renderManagerList(allRecords);
+        }).catch(()=>showMsg("❌ 刪除失敗", false));
+    }
+    // === 名單管理結束 ===
+
     function editItem(name) {
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         const newItem = prompt("修改項目：", "");
         if(!newItem) return;
         fetch(WEB_APP_URL,{
             method:"POST",
-            body:new URLSearchParams({ 
-                name: name, 
-                item: newItem,
-                userId: currentUserId,
-                displayName: currentDisplayName,
-                signDate: getSignDate()
-            })
+            body:new URLSearchParams({ name, item: newItem, userId: currentUserId, displayName: currentDisplayName, signDate: getSignDate() })
         }).then(()=>{ 
             showMsg("✅ 修改完成", true); 
             loadList(); 
-        }).catch(()=>{
-            showMsg("❌ 修改失敗", false);
-        });
+        }).catch(()=>showMsg("❌ 修改失敗", false));
     }
 
     function deleteItem(name){
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         if(!confirm("確定刪除？")) return;
-        fetch(WEB_APP_URL,{
-            method:"POST",
-            body:new URLSearchParams({ mode:"delete", name:name })
-        }).then(()=>{ 
+        fetch(WEB_APP_URL,{ method:"POST", body:new URLSearchParams({ mode:"delete", name }) })
+        .then(()=>{ 
             showMsg("✅ 已刪除", true); 
             loadList(); 
-        }).catch(()=>{
-            showMsg("❌ 刪除失敗", false);
-        });
+        }).catch(()=>showMsg("❌ 刪除失敗", false));
     }
 
-    // 更新工作表2日期 (格式：2026/4/13 不變)
     function updateSheet2Date() {
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         const input = prompt("請輸入新日期（範例：3月16日）", "");
@@ -567,30 +753,21 @@
         }).then(() => {
             showMsg(`✅ 日期已更新：${newDate}`, true);
             closeModal();
-        }).catch(() => {
-            showMsg("❌ 更新失敗", false);
-        });
+        }).catch(() => showMsg("❌ 更新失敗", false));
     }
 
-    // 清空工作表1
     function clearSheet1() {
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
-        if (!confirm("⚠️ 確定清空工作表1？無法復原！")) return;
-        
-        const form = new URLSearchParams();
-        form.append("mode", "clearSheet1");
-        form.append("userId", currentUserId);
+        if (!confirm("⚠️ 確定清空『祭改名單』？無法復原！")) return;
         
         fetch(WEB_APP_URL, {
             method: "POST",
-            body: form
+            body: new URLSearchParams({ mode: "clearSheet1", userId: currentUserId })
         }).then(() => {
             showMsg("✅ 已清空", true);
             loadList();
             closeModal();
-        }).catch(()=>{
-            showMsg("❌ 清空失敗", false);
-        });
+        }).catch(()=>showMsg("❌ 清空失敗", false));
     }
 
     function showMsg(text, success) {
@@ -598,8 +775,9 @@
         msg.innerText = text;
         msg.className = "msg " + (success ? "success" : "error");
         msg.style.display = "block";
-        setTimeout(() => msg.style.display = "none", 2600);
+        setTimeout(() => msg.style.display = "none", 2800);
     }
 </script>
 </body>
+    
 </html>
