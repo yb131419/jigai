@@ -442,7 +442,8 @@
         });
 
         await initLiffAndGetUser();
-        loadList();
+        // 🔥 強制先載入最新後端資料，再驗證報名，徹底解決重開網頁重複報名
+        await loadList();
     };
 
     async function initLiffAndGetUser() {
@@ -512,7 +513,7 @@
         return `${y}/${m}/${d} ${timeStr}`;
     }
 
-    // 🔥 新規則：同一用戶ID 同名只能報一次，不同用戶可同名
+    // 🔥 核心規則：同一用戶ID 同名只能報一次，不同用戶可同名
     function isUserAlreadySigned(name) {
         return allRecords.some(row => 
             row[0]?.trim() === name.trim() && 
@@ -521,6 +522,9 @@
     }
 
     async function submitSignup() {
+        // 🔥 提交前強制刷新最新後端資料，徹底杜絕重複報名
+        await loadList();
+        
         const btn = document.getElementById("submitBtn");
         const name = document.getElementById("name").value.trim();
         const custom = document.getElementById("customItem").value.trim();
@@ -538,7 +542,7 @@
         if (!name) { showMsg("請輸入姓名", false); return; }
         if (items.length === 0) { showMsg("請選擇項目", false); return; }
         
-        // 🔥 新規則：同一用戶ID 同名只能報一次
+        // 🔥 嚴格驗證
         if (isUserAlreadySigned(name)) {
             showMsg("❌ 你已經用此姓名報名過，無法重複報名", false);
             return;
@@ -565,7 +569,7 @@
                 document.getElementById("customItem").value = "";
                 document.querySelectorAll(".checkbox-group input").forEach(c => c.checked = false);
                 document.getElementById("customItem").style.display = "none";
-                loadList();
+                await loadList();
             } else {
                 showMsg("❌ 失敗：" + (data.message || ""), false);
             }
@@ -577,13 +581,14 @@
         }
     }
 
-    function loadList() {
-        fetch(WEB_APP_URL, {
-            method: "POST",
-            body: new URLSearchParams({ mode: "read" })
-        })
-        .then(res => res.json())
-        .then(data => {
+    // 包裝為 async 確保等待完成
+    async function loadList() {
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: new URLSearchParams({ mode: "read" })
+            });
+            const data = await res.json();
             if (!data.success || data.records.length === 0) {
                 document.getElementById("list").innerHTML = "目前無報名資料";
                 allRecords = [];
@@ -591,11 +596,10 @@
             }
             allRecords = data.records;
             renderList(allRecords);
-        })
-        .catch(() => {
+        } catch (err) {
             document.getElementById("list").innerHTML = "目前無報名資料";
             allRecords = [];
-        });
+        }
     }
 
 	// 首頁名單：隱藏修改刪除
@@ -686,33 +690,40 @@
         });
         renderManagerList(filtered);
     }
-	// 管理修改 - 雙重防呆 + 執行中特效 + 完成後自動重新載入
-    function managerEdit(name) {
+
+	// 🔥 管理修改：顯示修改中 + 強制重新載入最新名單
+    async function managerEdit(name) {
 		if(!confirm("⚠️ 確定要修改這筆資料嗎？")) return;
         const newItem = prompt("修改項目：", "");
         if(!newItem) return;
 		
-		showMsg("⏳ 修改處理中...", true);
-        fetch(WEB_APP_URL,{
-            method:"POST",
-            body:new URLSearchParams({ name, item: newItem, userId: currentUserId, displayName: currentDisplayName, signDate: getSignDate() })
-        }).then(()=>{ 
+		showMsg("⏳ 修改中...", true);
+        try {
+            await fetch(WEB_APP_URL,{
+                method:"POST",
+                body:new URLSearchParams({ name, item: newItem, userId: currentUserId, displayName: currentDisplayName, signDate: getSignDate() })
+            });
             showMsg("✅ 修改完成", true);
-            loadList();
-            setTimeout(()=>renderManagerList(allRecords), 300);
-        }).catch(()=>showMsg("❌ 修改失敗", false));
+            await loadList();
+            renderManagerList(allRecords);
+        } catch (e) {
+            showMsg("❌ 修改失敗", false);
+        }
     }
-	// 管理刪除 - 雙重防呆 + 執行中特效 + 完成後自動重新載入
-    function managerDelete(name){
+
+	// 🔥 管理刪除：顯示刪除中 + 強制重新載入最新名單
+    async function managerDelete(name){
 		if(!confirm("⚠️ 確定永久刪除？此動作無法復原！")) return;
 		
-		showMsg("⏳ 刪除處理中...", true);
-        fetch(WEB_APP_URL,{ method:"POST", body:new URLSearchParams({ mode:"delete", name }) })
-        .then(()=>{ 
-            showMsg("✅ 已刪除", true);
-            loadList();
-            setTimeout(()=>renderManagerList(allRecords), 300);
-        }).catch(()=>showMsg("❌ 刪除失敗", false));
+		showMsg("⏳ 刪除中...", true);
+        try {
+            await fetch(WEB_APP_URL,{ method:"POST", body:new URLSearchParams({ mode:"delete", name }) });
+            showMsg("✅ 刪除成功", true);
+            await loadList();
+            renderManagerList(allRecords);
+        } catch (e) {
+            showMsg("❌ 刪除失敗", false);
+        }
     }
     // === 名單管理結束 ===
 
