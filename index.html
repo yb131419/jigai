@@ -402,7 +402,7 @@
     <!-- 名單管理彈窗（新增） -->
     <div id="listManagerModal" class="modal">
         <div class="modal-content">
-			<button class="refresh-top-btn" onclick="refreshManagerList()">載入<br>名單</button>
+			<button class="refresh-top-btn" onclick="refreshManagerList()">🔄 載入名單</button>
             <h3 style="text-align:center; margin:0 0 16px 0; color:#E0CFC0;">📋 名單管理</h3>
             
             <input type="text" id="managerSearch" placeholder="🔍 搜尋姓名/項目" oninput="searchManagerList()">
@@ -544,7 +544,7 @@
         
         // 🔥 嚴格驗證
         if (isUserAlreadySigned(name)) {
-            showMsg("❌ 你已經用此姓名報名過，無法重複報名", false);
+            showMsg("❌\n你已經用此姓名報名過,\n無法重複報名", false);
             return;
         }
 
