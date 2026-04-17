@@ -27,7 +27,7 @@
             color: #E0CFC0;
         }
 
-        /* 管理介面按鈕 */
+        /* 管理介面按鈕 - 預設隱藏 */
         .admin-vertical-btn {
             position: absolute;
             right: 18px;
@@ -49,6 +49,7 @@
             width: auto !important;
             min-width: unset !important;
             max-width: fit-content !important;
+            display: none; /* 預設隱藏 */
         }
 
         .card {
@@ -102,7 +103,7 @@
 
         .collapse-content {
             overflow: hidden;
-            max-height: 0;
+            max-height: 800px; /* 預設展開 */
             transition: max-height 0.4s ease-out;
         }
 
@@ -183,6 +184,7 @@
             margin-top: 10px;
             max-height: 380px;
             overflow-y: auto;
+            color: #ffffff; /* 載入中文字白色 */
         }
         .item {
             padding: 10px;
@@ -252,7 +254,7 @@
 
     <div class="card header-card">
         <h2>☸️ 祭改報名系統 ☸️</h2>
-        <button class="admin-vertical-btn" onclick="openModal()">管理<br>介面</button>
+        <button class="admin-vertical-btn" id="adminBtn" onclick="openModal()">管理<br>介面</button>
     </div>
 
     <div class="card">
@@ -261,7 +263,7 @@
         
         <div class="title">
             📜 祭改項目（可多選）
-            <button class="collapse-btn" onclick="toggleCollapse()">展開：▶</button>
+            <button class="collapse-btn" onclick="toggleCollapse()">收合：▼</button>
         </div>
 
         <div class="collapse-content" id="collapseContent">
@@ -346,6 +348,11 @@
             });
             const data = await res.json();
             isAdminUser = data.isAdmin || false;
+
+            // 驗證成功才顯示管理按鈕
+            if(isAdminUser){
+                document.getElementById("adminBtn").style.display = "block";
+            }
         } catch (e) {
             currentUserId = "error_user";
             currentDisplayName = "error_name";
@@ -356,7 +363,7 @@
     function toggleCollapse() {
         const content = document.getElementById("collapseContent");
         const btn = document.querySelector(".collapse-btn");
-        if (content.style.maxHeight) {
+        if (content.style.maxHeight === "800px") {
             content.style.maxHeight = null;
             btn.innerText = "展開：▶";
         } else {
