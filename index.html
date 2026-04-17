@@ -338,8 +338,8 @@
 			color: #fff;
 			border: none;
 			border-radius: 10px;
-			padding: 8px 10px;
-			font-size: 14px;
+			padding: 8px 12px;
+			font-size: 15px;
 			cursor: pointer;
 		}
     </style>
@@ -349,7 +349,7 @@
 
     <div class="card header-card">
         <h2>☸️ 祭改報名系統 ☸️</h2>
-        <button class="admin-vertical-btn" id="adminBtn" onclick="openModal()">管理<br>介面</button>
+        <button class="admin-vertical-btn" id="adminBtn" onclick="openModal()">管<br>理</button>
     </div>
 
     <div class="card">
@@ -470,15 +470,16 @@
         }
     }
 
+    // 修復：折疊展開功能
     function toggleCollapse() {
         const content = document.getElementById("collapseContent");
         const btn = document.querySelector(".collapse-btn");
-        if (content.style.maxHeight === "800px") {
-            content.style.maxHeight = null;
-            btn.innerText = "展開：▶";
-        } else {
+        if (!content.style.maxHeight || content.style.maxHeight === "0px") {
             content.style.maxHeight = "800px";
             btn.innerText = "收合：▼";
+        } else {
+            content.style.maxHeight = "0px";
+            btn.innerText = "展開：▶";
         }
     }
 
@@ -626,12 +627,19 @@
         document.getElementById("listManagerModal").classList.remove("show");
     }
 	
-	// 手動載入名單
+	// 載入名單 + 點擊等待特效
 	function refreshManagerList(){
+		let btn = document.querySelector(".refresh-top-btn");
+		btn.innerText = "⏳ 載入中...";
+		btn.disabled = true;
+		
 		loadList();
 		setTimeout(()=>{
 			renderManagerList(allRecords);
-		},500)
+			btn.innerText = "🔄 載入名單";
+			btn.disabled = false;
+			showMsg("✅ 名單已重新載入",true);
+		},600)
 	}
 	
     function renderManagerList(records) {
@@ -660,11 +668,13 @@
         });
         renderManagerList(filtered);
     }
-	// 管理修改 - 雙重防呆
+	// 管理修改 - 雙重防呆 + 執行中特效
     function managerEdit(name) {
 		if(!confirm("⚠️ 確定要修改這筆資料嗎？")) return;
         const newItem = prompt("修改項目：", "");
         if(!newItem) return;
+		
+		showMsg("⏳ 修改處理中...", true);
         fetch(WEB_APP_URL,{
             method:"POST",
             body:new URLSearchParams({ name, item: newItem, userId: currentUserId, displayName: currentDisplayName, signDate: getSignDate() })
@@ -674,9 +684,11 @@
             renderManagerList(allRecords);
         }).catch(()=>showMsg("❌ 修改失敗", false));
     }
-	// 管理刪除 - 雙重防呆
+	// 管理刪除 - 雙重防呆 + 執行中特效
     function managerDelete(name){
 		if(!confirm("⚠️ 確定永久刪除？此動作無法復原！")) return;
+		
+		showMsg("⏳ 刪除處理中...", true);
         fetch(WEB_APP_URL,{ method:"POST", body:new URLSearchParams({ mode:"delete", name }) })
         .then(()=>{ 
             showMsg("✅ 已刪除", true);
