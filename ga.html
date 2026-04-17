@@ -521,32 +521,49 @@
     }
 
     async function submitSignup() {
-        await loadList();
-        
         const btn = document.getElementById("submitBtn");
         const name = document.getElementById("name").value.trim();
         const custom = document.getElementById("customItem").value.trim();
         const checks = document.querySelectorAll(".checkbox-group input:checked");
         
+        // 🔥 立即按鈕禁用 + 顯示提交中（立刻反應）
+        btn.disabled = true;
+        btn.innerText = "⏳ 提交中...";
+        showMsg("⏳ 報名中，請稍候…", true);
+
         let items = Array.from(checks).map(c => c.value);
         const hasOther = items.includes("其他");
 
         if (hasOther) {
             items = items.filter(i => i !== "其他");
-            if (!custom) { showMsg("請輸入其他項目", false); return; }
+            if (!custom) { 
+                showMsg("請輸入其他項目", false);
+                btn.disabled = false;
+                btn.innerText = "✅ 送出報名";
+                return; 
+            }
             items.push(custom);
         }
 
-        if (!name) { showMsg("請輸入姓名", false); return; }
-        if (items.length === 0) { showMsg("請選擇項目", false); return; }
+        if (!name) { 
+            showMsg("請輸入姓名", false);
+            btn.disabled = false;
+            btn.innerText = "✅ 送出報名";
+            return; 
+        }
+        if (items.length === 0) { 
+            showMsg("請選擇項目", false);
+            btn.disabled = false;
+            btn.innerText = "✅ 送出報名";
+            return; 
+        }
         
         if (isUserAlreadySigned(name)) {
-            showMsg("❌\n你已經用此姓名報名過，\n無法重複報名", false);
+            showMsg("❌\n此姓名報名過，\n無法重複報名", false);
+            btn.disabled = false;
+            btn.innerText = "✅ 送出報名";
             return;
         }
-
-        btn.disabled = true;
-        btn.innerText = "⏳ 提交中...";
 
         try {
             const form = new URLSearchParams();
