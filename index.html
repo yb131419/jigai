@@ -595,25 +595,27 @@
         }
     }
 
-    async function loadList() {
-        try {
-            const res = await fetch(WEB_APP_URL, {
-                method: "POST",
-                body: new URLSearchParams({ mode: "read" })
-            });
-            const data = await res.json();
-            if (!data.success || data.records.length === 0) {
-                document.getElementById("list").innerHTML = "目前無報名資料";
-                allRecords = [];
-                return;
-            }
-            allRecords = data.records;
-            renderList(allRecords);
-        } catch (err) {
+async function loadList() {
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: "POST",
+            body: new URLSearchParams({ mode: "read" })
+        });
+        const data = await res.json();
+        if (!data.success || data.records.length === 0) {
             document.getElementById("list").innerHTML = "目前無報名資料";
             allRecords = [];
+            return;
         }
+        allRecords = data.records;
+        // 🔥 关键：倒序排列（最新在最上面）
+        allRecords.reverse();
+        renderList(allRecords);
+    } catch (err) {
+        document.getElementById("list").innerHTML = "目前無報名資料";
+        allRecords = [];
     }
+}
 
 	// 首頁名單：隱藏修改刪除
     function renderList(records) {
@@ -685,12 +687,13 @@
         showMsg("⏳ 重新載入名單中...", true);
 		
 		loadList();
-		setTimeout(()=>{
-			renderManagerList(allRecords);
-			btn.innerText = "🔄 載入名單";
-			btn.disabled = false;
-			showMsg("✅ 名單已重新載入",true);
-		},600)
+setTimeout(()=>{
+  allRecords.reverse(); // 加上这行
+  renderManagerList(allRecords);
+  btn.innerText = "🔄 載入名單";
+  btn.disabled = false;
+  showMsg("✅ 名單已重新載入",true);
+},600)
 	}
 	
     function renderManagerList(records) {
