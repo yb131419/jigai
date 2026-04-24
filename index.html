@@ -257,7 +257,7 @@
         }
         .item {
             padding: 14px 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1px solid rgba(255,255,25,0.06);
             font-size: 16px;
             color: #E0E0E0;
             transition: 0.2s;
@@ -476,8 +476,11 @@
             const data = await res.json();
             isAdminUser = data.isAdmin || false;
 
+            // 修復：強制顯示管理員按鈕
             if(isAdminUser){
-                document.getElementById("adminBtn").style.display = "block";
+                const adminBtn = document.getElementById("adminBtn");
+                adminBtn.style.display = "block";
+                adminBtn.style.visibility = "visible";
             }
         } catch (e) {
             currentUserId = "error_user";
