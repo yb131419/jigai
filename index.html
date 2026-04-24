@@ -240,28 +240,18 @@
             border: 1px solid rgba(255,179,179,0.15);
         }
 
-        /* 名單區塊 - 左右滑動分頁 */
-        .list-container {
-            position: relative;
-            width: 100%;
-            overflow: hidden;
+        /* 名單區塊 */
+        .list {
             margin-top: 12px;
-        }
-        .list-wrapper {
-            display: flex;
-            transition: transform 0.3s ease;
-            height: 420px;
-        }
-        .list-page {
-            min-width: 100%;
-            padding-right: 4px;
-            color: #ffffff;
+            max-height: 420px;
             overflow-y: auto;
+            color: #ffffff;
+            padding-right: 4px;
         }
-        .list-page::-webkit-scrollbar {
+        .list::-webkit-scrollbar {
             width: 6px;
         }
-        .list-page::-webkit-scrollbar-thumb {
+        .list::-webkit-scrollbar-thumb {
             background: rgba(255,255,255,0.12);
             border-radius: 10px;
         }
@@ -282,32 +272,6 @@
         }
         .itemText {
             color: #A9B4D8;
-        }
-
-        /* 分頁按鈕 */
-        .page-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(160,82,77,0.7);
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            cursor: pointer;
-            z-index: 5;
-            backdrop-filter: blur(4px);
-        }
-        .page-btn.left { left: 8px; }
-        .page-btn.right { right: 8px; }
-        .page-btn:disabled {
-            background: rgba(100,100,100,0.5);
-            cursor: not-allowed;
         }
 
         /* 管理按鈕列 */
@@ -414,11 +378,7 @@
         <input type="text" id="searchInput" placeholder="請輸入關鍵字搜尋..." oninput="searchList()">
         
         <div class="title" style="margin-top:5px;">📋 目前報名名單</div>
-        <div class="list-container">
-            <button class="page-btn left" onclick="prevPage()" disabled>‹</button>
-            <div class="list-wrapper" id="listWrapper"></div>
-            <button class="page-btn right" onclick="nextPage()">›</button>
-        </div>
+        <div id="list" class="list">載入中...</div>
     </div>
 
     <!-- 管理員彈窗 -->
@@ -427,9 +387,6 @@
             <h3 style="text-align:center; margin:0 0 20px 0; color:#E0CFC0;">管理員選單</h3>
             
             <button class="secondary" onclick="openListManager()">📋 名單管理</button>
-            <br><br>
-            
-            <button class="secondary" onclick="openAdminList()">👑 管理員名單</button>
             <br><br>
             
             <button class="secondary" onclick="updateSheet2Date()">📅 修改『祭改日期』</button>
@@ -442,7 +399,7 @@
         </div>
     </div>
 
-    <!-- 名單管理彈窗 -->
+    <!-- 名單管理彈窗（新增） -->
     <div id="listManagerModal" class="modal">
         <div class="modal-content">
 			<button class="refresh-top-btn" onclick="refreshManagerList()">🔄 載入名單</button>
@@ -453,16 +410,6 @@
             
             <br>
             <button class="secondary" onclick="closeListManager()">關閉</button>
-        </div>
-    </div>
-
-    <!-- 管理員名單彈窗 -->
-    <div id="adminListModal" class="modal">
-        <div class="modal-content">
-            <h3 style="text-align:center; margin:0 0 16px 0; color:#E0CFC0;">👑 管理員名單</h3>
-            <div id="adminList" class="list" style="max-height:380px; text-align:center; font-size:17px; font-weight:bold;"></div>
-            <br>
-            <button class="secondary" onclick="closeAdminList()">關閉</button>
         </div>
     </div>
 
@@ -478,10 +425,7 @@
     let currentUserId = "";
     let currentDisplayName = "";
     let allRecords = [];
-    let filteredRecords = [];
     let isAdminUser = false;
-    let currentPage = 0;
-    const pageSize = 10;
 
     window.onload = async function () {
         const box = document.getElementById("items");
@@ -529,12 +473,11 @@
         }
     }
 
-    // 修復：點一下就收合/展開
+    // 修復：折疊展開功能
     function toggleCollapse() {
         const content = document.getElementById("collapseContent");
         const btn = document.querySelector(".collapse-btn");
-        
-        if (content.style.maxHeight === "0px") {
+        if (!content.style.maxHeight || content.style.maxHeight === "0px") {
             content.style.maxHeight = "800px";
             btn.innerText = "收合：▼";
         } else {
@@ -652,109 +595,53 @@
         }
     }
 
-    async function loadList() {
-        try {
-            const res = await fetch(WEB_APP_URL, {
-                method: "POST",
-                body: new URLSearchParams({ mode: "read" })
-            });
-            const data = await res.json();
-            if (!data.success || data.records.length === 0) {
-                allRecords = [];
-                filteredRecords = [];
-            } else {
-                allRecords = data.records;
-                allRecords.reverse();
-                filteredRecords = [...allRecords];
-            }
-            currentPage = 0;
-            renderPagedList();
-            updatePageButtons();
-        } catch (err) {
+async function loadList() {
+    try {
+        const res = await fetch(WEB_APP_URL, {
+            method: "POST",
+            body: new URLSearchParams({ mode: "read" })
+        });
+        const data = await res.json();
+        if (!data.success || data.records.length === 0) {
+            document.getElementById("list").innerHTML = "目前無報名資料";
             allRecords = [];
-            filteredRecords = [];
-            renderPagedList();
-        }
-    }
-
-    // 左右分頁顯示名單
-    function renderPagedList() {
-        const wrapper = document.getElementById("listWrapper");
-        wrapper.innerHTML = "";
-
-        if (filteredRecords.length === 0) {
-            wrapper.innerHTML = `<div class="list-page" style="display:flex;align-items:center;justify-content;color:#ccc;">目前無報名資料</div>`;
             return;
         }
-
-        const totalPages = Math.ceil(filteredRecords.length / pageSize);
-        
-        for (let i = 0; i < totalPages; i++) {
-            const page = document.createElement("div");
-            page.className = "list-page";
-            
-            const start = i * pageSize;
-            const end = start + pageSize;
-            const pageRecords = filteredRecords.slice(start, end);
-            
-            let html = "";
-            pageRecords.forEach(row => {
-                const name = row[0] || "";
-                const item = row[1] || "";
-                html += `
-                <div class="item">
-                    <span class="name">${name}</span>
-                    <span class="itemText">：${item}</span>
-                </div>`;
-            });
-            
-            page.innerHTML = html;
-            wrapper.appendChild(page);
-        }
-        
-        wrapper.style.transform = `translateX(-${currentPage * 100}%)`;
+        allRecords = data.records;
+        // 🔥 关键：倒序排列（最新在最上面）
+        allRecords.reverse();
+        renderList(allRecords);
+    } catch (err) {
+        document.getElementById("list").innerHTML = "目前無報名資料";
+        allRecords = [];
     }
+}
 
-    function updatePageButtons() {
-        const leftBtn = document.querySelector(".page-btn.left");
-        const rightBtn = document.querySelector(".page-btn.right");
-        const totalPages = Math.ceil(filteredRecords.length / pageSize);
-        
-        leftBtn.disabled = currentPage === 0;
-        rightBtn.disabled = currentPage >= totalPages - 1;
-    }
-
-    function prevPage() {
-        if (currentPage > 0) {
-            currentPage--;
-            document.getElementById("listWrapper").style.transform = `translateX(-${currentPage * 100}%)`;
-            updatePageButtons();
-        }
-    }
-
-    function nextPage() {
-        const totalPages = Math.ceil(filteredRecords.length / pageSize);
-        if (currentPage < totalPages - 1) {
-            currentPage++;
-            document.getElementById("listWrapper").style.transform = `translateX(-${currentPage * 100}%)`;
-            updatePageButtons();
-        }
+	// 首頁名單：隱藏修改刪除
+    function renderList(records) {
+        let html = "";
+        records.forEach(row => {
+            const name = row[0] || "";
+            const item = row[1] || "";
+            
+            html += `
+            <div class="item">
+                <span class="name">${name}</span>
+                <span class="itemText">：${item}</span>
+            </div>`;
+        });
+        document.getElementById("list").innerHTML = html;
     }
 
     function searchList() {
         const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
-        if (!keyword) {
-            filteredRecords = [...allRecords];
-        } else {
-            filteredRecords = allRecords.filter(row => {
-                const name = (row[0] || "").toLowerCase();
-                const item = (row[1] || "").toLowerCase();
-                return name.includes(keyword) || item.includes(keyword);
-            });
-        }
-        currentPage = 0;
-        renderPagedList();
-        updatePageButtons();
+        if (!keyword) { renderList(allRecords); return; }
+        const filtered = allRecords.filter(row => {
+            const name = (row[0] || "").toLowerCase();
+            const item = (row[1] || "").toLowerCase();
+            return name.includes(keyword) || item.includes(keyword);
+        });
+        renderList(filtered);
     }
 
     // === 彈窗按鈕 加入特效 + 防呆 ===
@@ -773,7 +660,7 @@
         },300);
     }
 
-    // === 名單管理功能 ===
+    // === 名單管理功能 全部加入防呆 + 特效 ===
     function openListManager() {
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         showMsg("⏳ 開啟名單管理...", true);
@@ -800,12 +687,13 @@
         showMsg("⏳ 重新載入名單中...", true);
 		
 		loadList();
-        setTimeout(()=>{
-            renderManagerList(allRecords);
-            btn.innerText = "🔄 載入名單";
-            btn.disabled = false;
-            showMsg("✅ 名單已重新載入",true);
-        },600)
+setTimeout(()=>{
+  allRecords.reverse(); // 加上这行
+  renderManagerList(allRecords);
+  btn.innerText = "🔄 載入名單";
+  btn.disabled = false;
+  showMsg("✅ 名單已重新載入",true);
+},600)
 	}
 	
     function renderManagerList(records) {
@@ -836,7 +724,7 @@
         renderManagerList(filtered);
     }
 
-	// 🔥 管理修改
+	// 🔥 管理修改：顯示修改中 + 強制重新載入最新名單
     async function managerEdit(name) {
 		if(!confirm("⚠️ 確定要修改這筆資料嗎？")) return;
         const newItem = prompt("修改項目：", "");
@@ -863,7 +751,7 @@
         }
     }
 
-	// 🔥 管理刪除
+	// 🔥 管理刪除：顯示刪除中 + 強制重新載入最新名單
     async function managerDelete(name){
 		if(!confirm("⚠️ 確定永久刪除？此動作無法復原！")) return;
 		
@@ -883,38 +771,6 @@
             btns.disabled = false;
             btns.innerText = "刪除";
         }
-    }
-
-    // === 管理員名單功能 ===
-    async function openAdminList() {
-        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
-        showMsg("⏳ 載入管理員名單...", true);
-        closeModal();
-        
-        try {
-            const res = await fetch(WEB_APP_URL, {
-                method: "POST",
-                body: new URLSearchParams({ mode: "getAdminList" })
-            });
-            const data = await res.json();
-            const adminList = data.adminList || [];
-            
-            let html = "";
-            adminList.forEach(name => {
-                html += `<div class="item" style="color:#E0CFC0;">👑 ${name}</div>`;
-            });
-            
-            document.getElementById("adminList").innerHTML = html || "暂无管理员";
-            document.getElementById("adminListModal").classList.add("show");
-            showMsg("✅ 載入成功", true);
-        } catch (e) {
-            showMsg("❌ 載入失敗", false);
-        }
-    }
-
-    function closeAdminList() {
-        document.getElementById("adminListModal").classList.remove("show");
-        showMsg("✅ 已關閉", true);
     }
 
     async function updateSheet2Date() {
