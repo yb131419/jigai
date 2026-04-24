@@ -257,7 +257,7 @@
         }
         .item {
             padding: 14px 10px;
-            border-bottom: 1px solid rgba(255,255,25,0.06);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
             font-size: 16px;
             color: #E0E0E0;
             transition: 0.2s;
@@ -389,9 +389,6 @@
             <button class="secondary" onclick="openListManager()">📋 名單管理</button>
             <br><br>
             
-            <button class="secondary" onclick="openAdminList()">👑 管理員名單</button>
-            <br><br>
-            
             <button class="secondary" onclick="updateSheet2Date()">📅 修改『祭改日期』</button>
             <br><br>
             
@@ -402,7 +399,7 @@
         </div>
     </div>
 
-    <!-- 名單管理彈窗 -->
+    <!-- 名單管理彈窗（新增） -->
     <div id="listManagerModal" class="modal">
         <div class="modal-content">
 			<button class="refresh-top-btn" onclick="refreshManagerList()">🔄 載入名單</button>
@@ -416,17 +413,7 @@
         </div>
     </div>
 
-    <!-- 管理員名單彈窗（新增） -->
-    <div id="adminListModal" class="modal">
-        <div class="modal-content">
-            <h3 style="text-align:center; margin:0 0 16px 0; color:#E0CFC0;">👑 管理員名單</h3>
-            <div id="adminList" class="list" style="max-height:380px; text-align:center; font-size:17px; font-weight:bold;"></div>
-            <br>
-            <button class="secondary" onclick="closeAdminList()">關閉</button>
-        </div>
-    </div>
-
-<script src="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-100-M/liff/2.22.1/liff-stable.js"></script>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwWIZ3ID5K9PNgSJ20wwMZOiMIQ4dcDGm8M8FIU-u8sRqrzGdomM74OEREGPt2Fgxz8Og/exec";
     const WISH_ITEMS = [
@@ -476,11 +463,8 @@
             const data = await res.json();
             isAdminUser = data.isAdmin || false;
 
-            // 修復：強制顯示管理員按鈕
             if(isAdminUser){
-                const adminBtn = document.getElementById("adminBtn");
-                adminBtn.style.display = "block";
-                adminBtn.style.visibility = "visible";
+                document.getElementById("adminBtn").style.display = "block";
             }
         } catch (e) {
             currentUserId = "error_user";
@@ -704,7 +688,7 @@ async function loadList() {
 		
 		loadList();
 setTimeout(()=>{
-  allRecords.reverse();
+  allRecords.reverse(); // 加上这行
   renderManagerList(allRecords);
   btn.innerText = "🔄 載入名單";
   btn.disabled = false;
@@ -787,38 +771,6 @@ setTimeout(()=>{
             btns.disabled = false;
             btns.innerText = "刪除";
         }
-    }
-
-    // === 管理員名單功能（新增）===
-    async function openAdminList() {
-        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
-        showMsg("⏳ 載入管理員名單...", true);
-        closeModal();
-        
-        try {
-            const res = await fetch(WEB_APP_URL, {
-                method: "POST",
-                body: new URLSearchParams({ mode: "getAdminList" })
-            });
-            const data = await res.json();
-            const adminList = data.adminList || [];
-            
-            let html = "";
-            adminList.forEach(name => {
-                html += `<div class="item" style="color:#E0CFC0;">👑 ${name}</div>`;
-            });
-            
-            document.getElementById("adminList").innerHTML = html || "暂无管理员";
-            document.getElementById("adminListModal").classList.add("show");
-            showMsg("✅ 載入成功", true);
-        } catch (e) {
-            showMsg("❌ 載入失敗", false);
-        }
-    }
-
-    function closeAdminList() {
-        document.getElementById("adminListModal").classList.remove("show");
-        showMsg("✅ 已關閉", true);
     }
 
     async function updateSheet2Date() {
