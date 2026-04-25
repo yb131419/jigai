@@ -254,19 +254,19 @@
             padding: 14px 10px;
             border-bottom: 1px solid rgba(255,255,255,0.06);
             font-size: 16px;
-            color: #E0E0E0;
+            color: #FFFC99; /* 亮黃色 */
             transition: 0.2s;
         }
         .item:hover {
             background: rgba(255,255,255,0.03);
         }
         .name {
-            color: #D4B59E;
+            color: #FFFC99; /* 亮黃色 */
             font-weight: bold;
             font-size: 17px;
         }
         .itemText {
-            color: #A9B4D8;
+            color: #FFFC99; /* 亮黃色 */
         }
 
         /* 管理按鈕列 */
@@ -459,9 +459,8 @@
             <h3 style="text-align:center; margin:0 0 16px 0; color:#E0CFC0;">📋 名單管理</h3>
             
             <input type="text" id="managerSearch" placeholder="🔍 搜尋姓名/項目" oninput="searchManagerList()">
-            <div id="managerList" class="list" style="max-height:380px; overflow:auto; margin-top:10px;">載入中...</div>
             
-            <!-- 名單管理分頁：名單下方 -->
+            <!-- 管理後台分頁：搜尋欄下方 -->
             <div class="pagination" id="managerPagination" style="display: none; margin-top:12px;">
                 <button class="page-btn" id="mFirstPage" onclick="mGoToPage(1)">«</button>
                 <button class="page-btn" id="mPrevPage" onclick="mChangePage(-1)">‹</button>
@@ -469,6 +468,8 @@
                 <button class="page-btn" id="mNextPage" onclick="mChangePage(1)">›</button>
                 <button class="page-btn" id="mLastPage" onclick="mGoToPage(mTotalPages)">»</button>
             </div>
+
+            <div id="managerList" class="list" style="max-height:380px; overflow:auto; margin-top:10px;">載入中...</div>
 
             <br>
             <button class="secondary" onclick="closeListManager()">關閉</button>
@@ -495,9 +496,9 @@
     let totalPages = 1;
     let filteredRecords = [];
 
-    // ===== 名單管理分頁 (每頁7筆) =====
+    // ===== 名單管理分頁 (每頁4筆) =====
     let mCurrentPage = 1;
-    const mRecordsPerPage = 7;
+    const mRecordsPerPage = 4;
     let mTotalPages = 1;
     let mFilteredRecords = [];
     let mAllRecords = [];
