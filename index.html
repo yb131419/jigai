@@ -341,7 +341,7 @@
             width: fit-content;
 		}
 
-        /* 百萬級質感分頁欄 - 移至上方 */
+        /* 百萬級質感分頁欄 - 通用 */
         .pagination {
             display: flex;
             align-items: center;
@@ -422,7 +422,7 @@
         
         <div class="title" style="margin-top:5px;">📋 目前報名名單</div>
         
-        <!-- 分頁移至名單「上方」 -->
+        <!-- 首頁分頁：名單上方 -->
         <div class="pagination" id="pagination" style="display: none;">
             <button class="page-btn" id="firstPage" onclick="goToPage(1)">«</button>
             <button class="page-btn" id="prevPage" onclick="changePage(-1)">‹</button>
@@ -452,15 +452,24 @@
         </div>
     </div>
 
-    <!-- 名單管理彈窗（新增） -->
+    <!-- 名單管理彈窗（新增分頁） -->
     <div id="listManagerModal" class="modal">
         <div class="modal-content">
 			<button class="refresh-top-btn" onclick="refreshManagerList()">🔄 載入名單</button>
             <h3 style="text-align:center; margin:0 0 16px 0; color:#E0CFC0;">📋 名單管理</h3>
             
             <input type="text" id="managerSearch" placeholder="🔍 搜尋姓名/項目" oninput="searchManagerList()">
-            <div id="managerList" class="list" style="max-height:380px; margin-top:10px;">載入中...</div>
+            <div id="managerList" class="list" style="max-height:380px; overflow:auto; margin-top:10px;">載入中...</div>
             
+            <!-- 名單管理分頁：名單下方 -->
+            <div class="pagination" id="managerPagination" style="display: none; margin-top:12px;">
+                <button class="page-btn" id="mFirstPage" onclick="mGoToPage(1)">«</button>
+                <button class="page-btn" id="mPrevPage" onclick="mChangePage(-1)">‹</button>
+                <div class="page-info" id="mPageInfo">1 / 1</div>
+                <button class="page-btn" id="mNextPage" onclick="mChangePage(1)">›</button>
+                <button class="page-btn" id="mLastPage" onclick="mGoToPage(mTotalPages)">»</button>
+            </div>
+
             <br>
             <button class="secondary" onclick="closeListManager()">關閉</button>
         </div>
@@ -480,11 +489,18 @@
     let allRecords = [];
     let isAdminUser = false;
 
-    // 分頁變數 - 每頁7筆
+    // ===== 首頁分頁 (每頁7筆) =====
     let currentPage = 1;
     const recordsPerPage = 7;
     let totalPages = 1;
     let filteredRecords = [];
+
+    // ===== 名單管理分頁 (每頁7筆) =====
+    let mCurrentPage = 1;
+    const mRecordsPerPage = 7;
+    let mTotalPages = 1;
+    let mFilteredRecords = [];
+    let mAllRecords = [];
 
     window.onload = async function () {
         const box = document.getElementById("items");
@@ -532,7 +548,7 @@
         }
     }
 
-    // 🔥 徹底修復：折疊展開（點一下就動）
+    // 折疊功能
     function toggleCollapse() {
         const content = document.getElementById("collapseContent");
         const btn = document.querySelector(".collapse-btn");
@@ -572,7 +588,6 @@
         return `${y}/${m}/${d} ${timeStr}`;
     }
 
-    // 🔥 核心規則：同一用戶ID 同名只能報一次，不同用戶可同名
     function isUserAlreadySigned(name) {
         return allRecords.some(row => 
             row[0]?.trim() === name.trim() && 
@@ -586,7 +601,6 @@
         const custom = document.getElementById("customItem").value.trim();
         const checks = document.querySelectorAll(".checkbox-group input:checked");
         
-        // 🔥 立即按鈕禁用 + 顯示提交中（立刻反應）
         btn.disabled = true;
         btn.innerText = "⏳ 提交中...";
         showMsg("⏳ 報名中，請稍候…", true);
@@ -655,6 +669,7 @@
         }
     }
 
+    // ===== 首頁載入名單 =====
 async function loadList() {
     try {
         const res = await fetch(WEB_APP_URL, {
@@ -683,14 +698,13 @@ async function loadList() {
     }
 }
 
-    // 分頁相關函式
+    // 首頁分頁渲染
     function renderCurrentPage() {
         const start = (currentPage - 1) * recordsPerPage;
         const end = start + recordsPerPage;
         const paginatedRecords = filteredRecords.slice(start, end);
         renderList(paginatedRecords);
     }
-
     function updatePagination() {
         totalPages = Math.ceil(filteredRecords.length / recordsPerPage);
         const paginationEl = document.getElementById("pagination");
@@ -708,21 +722,19 @@ async function loadList() {
         document.getElementById("nextPage").disabled = currentPage === totalPages;
         document.getElementById("lastPage").disabled = currentPage === totalPages;
     }
-
     function changePage(direction) {
         currentPage += direction;
         currentPage = Math.max(1, Math.min(currentPage, totalPages));
         renderCurrentPage();
         updatePagination();
     }
-
     function goToPage(page) {
         currentPage = Math.max(1, Math.min(page, totalPages));
         renderCurrentPage();
         updatePagination();
     }
 
-	// 首頁名單：隱藏修改刪除
+    // 首頁名單渲染
     function renderList(records) {
         let html = "";
         records.forEach(row => {
@@ -738,6 +750,7 @@ async function loadList() {
         document.getElementById("list").innerHTML = html || "目前無報名資料";
     }
 
+    // 首頁搜尋
     function searchList() {
         const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
         if (!keyword) {
@@ -754,7 +767,7 @@ async function loadList() {
         renderCurrentPage();
     }
 
-    // === 彈窗按鈕 加入特效 + 防呆 ===
+    // === 彈窗 ===
     function openModal() {
         showMsg("⏳ 開啟管理選單...", true);
         setTimeout(()=>{
@@ -770,14 +783,18 @@ async function loadList() {
         },300);
     }
 
-    // === 名單管理功能 全部加入防呆 + 特效 ===
+    // === 名單管理 ===
     function openListManager() {
         if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
         showMsg("⏳ 開啟名單管理...", true);
         setTimeout(()=>{
             closeModal();
             document.getElementById("listManagerModal").classList.add("show");
-            renderManagerList(allRecords);
+            mAllRecords = [...allRecords];
+            mFilteredRecords = [...mAllRecords];
+            mCurrentPage = 1;
+            mUpdatePagination();
+            mRenderCurrentPage();
             showMsg("✅ 已開啟名單管理", true);
         },300);
     }
@@ -789,7 +806,6 @@ async function loadList() {
         },300);
     }
 	
-	// 載入名單 + 點擊等待特效
 	function refreshManagerList(){
 		let btn = document.querySelector(".refresh-top-btn");
 		btn.innerText = "⏳ 載入中...";
@@ -798,13 +814,54 @@ async function loadList() {
 		
 		loadList();
         setTimeout(()=>{
-            renderManagerList(allRecords);
+            mAllRecords = [...allRecords];
+            mFilteredRecords = [...mAllRecords];
+            mCurrentPage = 1;
+            mUpdatePagination();
+            mRenderCurrentPage();
             btn.innerText = "🔄 載入名單";
             btn.disabled = false;
             showMsg("✅ 名單已重新載入",true);
         },600)
 	}
-	
+
+    // ===== 名單管理分頁 (核心) =====
+    function mRenderCurrentPage() {
+        const start = (mCurrentPage - 1) * mRecordsPerPage;
+        const end = start + mRecordsPerPage;
+        const paginatedRecords = mFilteredRecords.slice(start, end);
+        renderManagerList(paginatedRecords);
+    }
+    function mUpdatePagination() {
+        mTotalPages = Math.ceil(mFilteredRecords.length / mRecordsPerPage);
+        const paginationEl = document.getElementById("managerPagination");
+        
+        if (mFilteredRecords.length === 0) {
+            paginationEl.style.display = "none";
+            return;
+        }
+        
+        paginationEl.style.display = "flex";
+        document.getElementById("mPageInfo").innerText = `${mCurrentPage} / ${mTotalPages}`;
+        
+        document.getElementById("mFirstPage").disabled = mCurrentPage === 1;
+        document.getElementById("mPrevPage").disabled = mCurrentPage === 1;
+        document.getElementById("mNextPage").disabled = mCurrentPage === mTotalPages;
+        document.getElementById("mLastPage").disabled = mCurrentPage === mTotalPages;
+    }
+    function mChangePage(direction) {
+        mCurrentPage += direction;
+        mCurrentPage = Math.max(1, Math.min(mCurrentPage, mTotalPages));
+        mRenderCurrentPage();
+        mUpdatePagination();
+    }
+    function mGoToPage(page) {
+        mCurrentPage = Math.max(1, Math.min(page, mTotalPages));
+        mRenderCurrentPage();
+        mUpdatePagination();
+    }
+
+    // 管理後台名單渲染
     function renderManagerList(records) {
         let html = "";
         records.forEach(row => {
@@ -822,18 +879,25 @@ async function loadList() {
         });
         document.getElementById("managerList").innerHTML = html || "無資料";
     }
+
+    // 管理後台搜尋
     function searchManagerList() {
         const keyword = document.getElementById("managerSearch").value.trim().toLowerCase();
-        if (!keyword) { renderManagerList(allRecords); return; }
-        const filtered = allRecords.filter(row => {
-            const name = (row[0] || "").toLowerCase();
-            const item = (row[1] || "").toLowerCase();
-            return name.includes(keyword) || item.includes(keyword);
-        });
-        renderManagerList(filtered);
+        if (!keyword) {
+            mFilteredRecords = [...mAllRecords];
+        } else {
+            mFilteredRecords = mAllRecords.filter(row => {
+                const name = (row[0] || "").toLowerCase();
+                const item = (row[1] || "").toLowerCase();
+                return name.includes(keyword) || item.includes(keyword);
+            });
+        }
+        mCurrentPage = 1;
+        mUpdatePagination();
+        mRenderCurrentPage();
     }
 
-	// 🔥 管理修改：顯示修改中 + 強制重新載入最新名單
+    // 管理修改
     async function managerEdit(name) {
 		if(!confirm("⚠️ 確定要修改這筆資料嗎？")) return;
         const newItem = prompt("修改項目：", "");
@@ -851,7 +915,10 @@ async function loadList() {
             });
             showMsg("✅ 修改完成", true);
             await loadList();
-            renderManagerList(allRecords);
+            mAllRecords = [...allRecords];
+            mFilteredRecords = [...mAllRecords];
+            mRenderCurrentPage();
+            mUpdatePagination();
         } catch (e) {
             showMsg("❌ 修改失敗", false);
         } finally {
@@ -860,7 +927,7 @@ async function loadList() {
         }
     }
 
-	// 🔥 管理刪除：顯示刪除中 + 強制重新載入最新名單
+    // 管理刪除
     async function managerDelete(name){
 		if(!confirm("⚠️ 確定永久刪除？此動作無法復原！")) return;
 		
@@ -873,7 +940,10 @@ async function loadList() {
             await fetch(WEB_APP_URL,{ method:"POST", body:new URLSearchParams({ mode:"delete", name }) });
             showMsg("✅ 刪除成功", true);
             await loadList();
-            renderManagerList(allRecords);
+            mAllRecords = [...allRecords];
+            mFilteredRecords = [...mAllRecords];
+            mRenderCurrentPage();
+            mUpdatePagination();
         } catch (e) {
             showMsg("❌ 刪除失敗", false);
         } finally {
