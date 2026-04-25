@@ -274,13 +274,14 @@
             display: flex;
             margin-top: 10px;
             gap: 8px;
+            justify-content: flex-start;
         }
         .admin-row button {
-            padding: 10px 12px !important;
-            font-size: 15px !important;
-            width: auto !important;
-            flex: 1;
-            border-radius: 10px;
+            padding: 5px 10px !important;
+            font-size: 14px !important;
+            width: fit-content !important;
+            flex: unset !important;
+            border-radius: 8px;
             white-space: nowrap;
             font-weight: normal;
             transition: all 0.2s ease;
@@ -420,9 +421,7 @@
         <div class="title">🔍 搜尋姓名 / 項目</div>
         <input type="text" id="searchInput" placeholder="請輸入關鍵字搜尋..." oninput="searchList()">
         
-        <div class="title" style="margin-top:5px;">📋 目前報名名單</div>
-        
-        <!-- 首頁分頁：名單上方 -->
+        <!-- 首頁分頁：搜尋欄下面、名單上面 -->
         <div class="pagination" id="pagination" style="display: none;">
             <button class="page-btn" id="firstPage" onclick="goToPage(1)">«</button>
             <button class="page-btn" id="prevPage" onclick="changePage(-1)">‹</button>
@@ -431,6 +430,7 @@
             <button class="page-btn" id="lastPage" onclick="goToPage(totalPages)">»</button>
         </div>
 
+        <div class="title" style="margin-top:5px;">📋 目前報名名單</div>
         <div id="list" class="list">載入中...</div>
     </div>
 
