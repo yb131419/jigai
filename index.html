@@ -139,7 +139,11 @@
 
         .collapse-content {
             overflow: hidden;
+            max-height: 0;
             transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .collapse-content.open {
+            max-height: 800px;
         }
 
         /* 頂級核取方塊群組 + 字體放大 */
@@ -239,20 +243,12 @@
             border: 1px solid rgba(255,179,179,0.15);
         }
 
-        /* 名單區塊 */
+        /* 名單區塊 - 取消滾動 */
         .list {
             margin-top: 12px;
-            max-height: 420px;
-            overflow-y: auto;
+            overflow: hidden;
             color: #ffffff;
             padding-right: 4px;
-        }
-        .list::-webkit-scrollbar {
-            width: 6px;
-        }
-        .list::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.12);
-            border-radius: 10px;
         }
         .item {
             padding: 14px 10px;
@@ -345,13 +341,14 @@
             width: fit-content;
 		}
 
-        /* 百萬級質感分頁欄 */
+        /* 百萬級質感分頁欄 - 移至上方 */
         .pagination {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            margin-top: 16px;
+            margin-top: 10px;
+            margin-bottom: 10px;
             padding: 12px;
             background: rgba(25,21,19,0.7);
             border-radius: 16px;
@@ -407,7 +404,7 @@
         
         <div class="title">
             📜 祭改項目（可多選）
-            <button class="collapse-btn" onclick="toggleCollapse()">收合：▼</button>
+            <button class="collapse-btn" onclick="toggleCollapse()">展開：▶</button>
         </div>
 
         <div class="collapse-content" id="collapseContent">
@@ -424,9 +421,8 @@
         <input type="text" id="searchInput" placeholder="請輸入關鍵字搜尋..." oninput="searchList()">
         
         <div class="title" style="margin-top:5px;">📋 目前報名名單</div>
-        <div id="list" class="list">載入中...</div>
         
-        <!-- 百萬級質感分頁 -->
+        <!-- 分頁移至名單「上方」 -->
         <div class="pagination" id="pagination" style="display: none;">
             <button class="page-btn" id="firstPage" onclick="goToPage(1)">«</button>
             <button class="page-btn" id="prevPage" onclick="changePage(-1)">‹</button>
@@ -434,6 +430,8 @@
             <button class="page-btn" id="nextPage" onclick="changePage(1)">›</button>
             <button class="page-btn" id="lastPage" onclick="goToPage(totalPages)">»</button>
         </div>
+
+        <div id="list" class="list">載入中...</div>
     </div>
 
     <!-- 管理員彈窗 -->
@@ -482,9 +480,9 @@
     let allRecords = [];
     let isAdminUser = false;
 
-    // 分頁變數
+    // 分頁變數 - 每頁7筆
     let currentPage = 1;
-    const recordsPerPage = 15;
+    const recordsPerPage = 7;
     let totalPages = 1;
     let filteredRecords = [];
 
@@ -534,17 +532,17 @@
         }
     }
 
-    // 修復：折疊展開功能（一次點擊生效）
+    // 🔥 徹底修復：折疊展開（點一下就動）
     function toggleCollapse() {
         const content = document.getElementById("collapseContent");
         const btn = document.querySelector(".collapse-btn");
         
-        if (content.style.maxHeight === "0px" || !content.style.maxHeight) {
-            content.style.maxHeight = content.scrollHeight + "px";
-            btn.innerText = "收合：▼";
-        } else {
-            content.style.maxHeight = "0px";
+        if (content.classList.contains("open")) {
+            content.classList.remove("open");
             btn.innerText = "展開：▶";
+        } else {
+            content.classList.add("open");
+            btn.innerText = "收合：▼";
         }
     }
 
