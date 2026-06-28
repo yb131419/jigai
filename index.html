@@ -531,29 +531,233 @@
         }
         .admin-row button:hover { transform: scale(1.03); }
 
+        /* ===== Modal 基礎 ===== */
         .modal {
             display: none !important;
             position: fixed !important;
             z-index: 9999 !important;
             left: 0 !important; top: 0 !important;
             width: 100% !important; height: 100% !important;
-            background-color: rgba(0,0,0,0.85) !important;
+            background-color: rgba(0,0,0,0.88) !important;
             align-items: center !important;
             justify-content: center !important;
-            backdrop-filter: blur(6px) !important;
+            backdrop-filter: blur(8px) !important;
+            padding: 16px !important;
         }
         .modal.show { display: flex !important; }
         .modal-content {
-            background: linear-gradient(140deg, #24201D, #1A1613) !important;
+            background: linear-gradient(160deg, #201C19, #161210) !important;
             color: #E0E0E0 !important;
             margin: auto !important;
-            padding: 32px 28px !important;
+            padding: 0 !important;
             border-radius: 24px !important;
-            width: 90% !important;
+            width: 100% !important;
             max-width: 420px !important;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.6) !important;
-            border: 1px solid rgba(255,255,255,0.08) !important;
-            position: relative;
+            max-height: 88vh !important;
+            overflow-y: auto !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.07) !important;
+            position: relative !important;
+        }
+
+        /* ===== 管理員彈窗內部元件 ===== */
+        .adm-header {
+            padding: 22px 24px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .adm-header-icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #5C3A37, #3A2220);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+        .adm-header-title {
+            font-size: 17px; font-weight: bold;
+            color: #E0CFC0; letter-spacing: 0.3px;
+        }
+        .adm-header-sub {
+            font-size: 12px; color: #888; margin-top: 2px;
+        }
+        .adm-close-btn {
+            margin-left: auto;
+            background: rgba(255,255,255,0.06) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 8px !important;
+            width: 32px !important; height: 32px !important;
+            padding: 0 !important;
+            font-size: 18px !important;
+            color: #888 !important;
+            cursor: pointer !important;
+            display: flex !important; align-items: center !important; justify-content: center !important;
+            box-shadow: none !important;
+            letter-spacing: 0 !important;
+            transition: all 0.15s !important;
+            flex-shrink: 0 !important;
+            line-height: 1 !important;
+        }
+        .adm-close-btn:hover {
+            background: rgba(255,255,255,0.1) !important;
+            color: #E0E0E0 !important;
+            transform: none !important;
+        }
+
+        .adm-body { padding: 16px 20px 20px; }
+
+        /* 功能按鈕群 */
+        .adm-btn-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+        .adm-btn {
+            width: 100% !important;
+            padding: 13px 16px !important;
+            border-radius: 14px !important;
+            font-size: 15px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            display: flex !important; align-items: center !important; gap: 10px !important;
+            text-align: left !important;
+            border: 1px solid transparent !important;
+            transition: all 0.2s !important;
+            letter-spacing: 0 !important;
+            box-shadow: none !important;
+        }
+        .adm-btn-icon {
+            font-size: 18px; flex-shrink: 0;
+            width: 28px; text-align: center;
+        }
+        .adm-btn-text { flex: 1; }
+        .adm-btn-sub { font-size: 11px; font-weight: 400; opacity: 0.6; display: block; margin-top: 1px; }
+        .adm-btn-arrow { font-size: 14px; color: rgba(255,255,255,0.3); flex-shrink: 0; }
+
+        .adm-btn.blue {
+            background: linear-gradient(135deg, rgba(46,109,164,0.25), rgba(24,70,120,0.2)) !important;
+            border-color: rgba(46,109,164,0.35) !important;
+            color: #90C8F0 !important;
+        }
+        .adm-btn.blue:hover {
+            background: linear-gradient(135deg, rgba(46,109,164,0.4), rgba(24,70,120,0.35)) !important;
+            transform: translateY(-1px) !important;
+        }
+        .adm-btn.gold {
+            background: linear-gradient(135deg, rgba(184,134,11,0.2), rgba(120,88,8,0.2)) !important;
+            border-color: rgba(184,134,11,0.3) !important;
+            color: #E8C060 !important;
+        }
+        .adm-btn.gold:hover {
+            background: linear-gradient(135deg, rgba(184,134,11,0.35), rgba(120,88,8,0.3)) !important;
+            transform: translateY(-1px) !important;
+        }
+        .adm-btn.red {
+            background: linear-gradient(135deg, rgba(180,40,50,0.2), rgba(120,20,30,0.2)) !important;
+            border-color: rgba(180,40,50,0.3) !important;
+            color: #F08090 !important;
+        }
+        .adm-btn.red:hover {
+            background: linear-gradient(135deg, rgba(180,40,50,0.35), rgba(120,20,30,0.3)) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* 分隔線 */
+        .adm-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.07);
+            margin: 4px 0 16px;
+        }
+
+        /* 管理員名單區 */
+        .adm-section-title {
+            font-size: 11px; font-weight: bold;
+            color: #A08070; letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .adm-section-title::after {
+            content: ""; flex: 1; height: 1px;
+            background: rgba(255,255,255,0.07);
+        }
+        .adm-list {
+            display: flex; flex-direction: column; gap: 6px;
+            margin-bottom: 12px;
+            max-height: 160px; overflow-y: auto;
+        }
+        .adm-list-item {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(30,26,24,0.7);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+            padding: 9px 12px;
+        }
+        .adm-list-avatar {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: linear-gradient(135deg, #5C3A37, #3A2220);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: bold; color: #E0CFC0;
+            flex-shrink: 0;
+        }
+        .adm-list-name { flex: 1; font-size: 14px; color: #E0E0E0; }
+        .adm-list-id { font-size: 11px; color: #666; font-family: monospace; }
+        .adm-list-del {
+            background: rgba(180,40,50,0.15) !important;
+            border: 1px solid rgba(180,40,50,0.25) !important;
+            border-radius: 6px !important;
+            width: 28px !important; height: 28px !important;
+            padding: 0 !important;
+            font-size: 14px !important;
+            color: #F08090 !important;
+            cursor: pointer !important;
+            display: flex !important; align-items: center !important; justify-content: center !important;
+            box-shadow: none !important;
+            letter-spacing: 0 !important;
+            flex-shrink: 0 !important;
+            line-height: 1 !important;
+        }
+        .adm-list-del:hover {
+            background: rgba(180,40,50,0.3) !important;
+            transform: none !important;
+        }
+        .adm-list-empty {
+            text-align: center; color: #666; font-size: 13px;
+            padding: 16px 0;
+        }
+
+        /* 新增管理員輸入列 */
+        .adm-add-row {
+            display: flex; gap: 8px; margin-top: 4px;
+        }
+        .adm-add-input {
+            flex: 1 !important;
+            padding: 10px 12px !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 10px !important;
+            font-size: 13px !important;
+            background: rgba(30,26,24,0.8) !important;
+            color: #E0E0E0 !important;
+            margin-bottom: 0 !important;
+        }
+        .adm-add-input:focus {
+            border-color: rgba(160,82,77,0.5) !important;
+            outline: none !important;
+        }
+        .adm-add-btn {
+            background: linear-gradient(135deg, #B86B5F, #A0524D) !important;
+            border: none !important;
+            border-radius: 10px !important;
+            padding: 10px 14px !important;
+            font-size: 13px !important;
+            font-weight: bold !important;
+            color: #fff !important;
+            cursor: pointer !important;
+            white-space: nowrap !important;
+            box-shadow: none !important;
+            letter-spacing: 0 !important;
+            width: auto !important;
+        }
+        .adm-add-btn:hover {
+            transform: none !important;
+            filter: brightness(1.1) !important;
         }
 
         #searchInput { margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); }
@@ -681,11 +885,58 @@
     <!-- 管理員彈窗 -->
     <div id="adminModal" class="modal">
         <div class="modal-content">
-            <h3 style="text-align:center; margin:0 0 20px 0; color:#E0CFC0;">管理員選單</h3>
-            <button class="secondary" onclick="openListManager()">📋 名單管理</button><br><br>
-            <button class="secondary" onclick="updateSheet2Date()">📅 修改『祭改日期』</button><br><br>
-            <button style="background:linear-gradient(135deg,#D83A56,#cc0000)" onclick="clearSheet1()">🗑️ 清空『祭改名單』</button><br><br>
-            <button class="secondary" onclick="closeModal()">關閉</button>
+            <!-- Header -->
+            <div class="adm-header">
+                <div class="adm-header-icon">⚙️</div>
+                <div>
+                    <div class="adm-header-title">管理員後台</div>
+                    <div class="adm-header-sub">祭改報名系統控制台</div>
+                </div>
+                <button class="adm-close-btn" onclick="closeModal()">✕</button>
+            </div>
+
+            <div class="adm-body">
+                <!-- 功能按鈕 -->
+                <div class="adm-btn-group">
+                    <button class="adm-btn blue" onclick="openListManager()">
+                        <span class="adm-btn-icon">📋</span>
+                        <span class="adm-btn-text">
+                            名單管理
+                            <span class="adm-btn-sub">查看、修改、刪除報名資料</span>
+                        </span>
+                        <span class="adm-btn-arrow">›</span>
+                    </button>
+                    <button class="adm-btn gold" onclick="updateSheet2Date()">
+                        <span class="adm-btn-icon">📅</span>
+                        <span class="adm-btn-text">
+                            修改祭改日期
+                            <span class="adm-btn-sub">更新工作表顯示的日期</span>
+                        </span>
+                        <span class="adm-btn-arrow">›</span>
+                    </button>
+                    <button class="adm-btn red" onclick="clearSheet1()">
+                        <span class="adm-btn-icon">🗑️</span>
+                        <span class="adm-btn-text">
+                            清空祭改名單
+                            <span class="adm-btn-sub">清除所有報名（操作前自動備份）</span>
+                        </span>
+                        <span class="adm-btn-arrow">›</span>
+                    </button>
+                </div>
+
+                <div class="adm-divider"></div>
+
+                <!-- 管理員名單 -->
+                <div class="adm-section-title">管理員名單</div>
+                <div class="adm-list" id="adminList">
+                    <div class="adm-list-empty">載入中...</div>
+                </div>
+                <div class="adm-add-row">
+                    <input class="adm-add-input" type="text" id="newAdminId"
+                        placeholder="貼上 LINE userId（U開頭）">
+                    <button class="adm-add-btn" onclick="addAdmin()">＋ 新增</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1213,12 +1464,86 @@
     }
 
     function openModal() {
-        showMsg("⏳ 開啟管理選單...", true);
-        setTimeout(() => { document.getElementById("adminModal").classList.add("show"); showMsg("✅ 已開啟管理選單", true); }, 300);
+        document.getElementById("adminModal").classList.add("show");
+        loadAdminList();
     }
     function closeModal() {
-        showMsg("⏳ 關閉選單中...", true);
-        setTimeout(() => { document.getElementById("adminModal").classList.remove("show"); showMsg("✅ 已關閉", true); }, 300);
+        document.getElementById("adminModal").classList.remove("show");
+    }
+
+    // ===== 管理員名單 =====
+    async function loadAdminList() {
+        const listEl = document.getElementById("adminList");
+        listEl.innerHTML = '<div class="adm-list-empty">載入中...</div>';
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: new URLSearchParams({ mode: "getAdminList", userId: currentUserId })
+            });
+            const data = await res.json();
+            if (!data.success || !data.admins || data.admins.length === 0) {
+                listEl.innerHTML = '<div class="adm-list-empty">目前無管理員資料</div>';
+                return;
+            }
+            listEl.innerHTML = data.admins.map((a, i) => `
+                <div class="adm-list-item">
+                    <div class="adm-list-avatar">${(a.name || "管")[0]}</div>
+                    <div style="flex:1; min-width:0;">
+                        <div class="adm-list-name">${a.name || "管理員"}</div>
+                        <div class="adm-list-id">${(a.userId || "").slice(0, 20)}...</div>
+                    </div>
+                    <button class="adm-list-del" onclick="removeAdmin('${a.userId || ""}', '${(a.name || "").replace(/'/g, "")}')" title="移除管理員">✕</button>
+                </div>
+            `).join("");
+        } catch (e) {
+            listEl.innerHTML = '<div class="adm-list-empty">載入失敗</div>';
+        }
+    }
+
+    async function addAdmin() {
+        const input = document.getElementById("newAdminId");
+        const newId = input.value.trim();
+        if (!newId || !newId.startsWith("U")) {
+            showMsg("❌ 請輸入正確的 LINE userId（U開頭）", false); return;
+        }
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: new URLSearchParams({ mode: "addAdmin", userId: currentUserId, newAdminId: newId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showMsg("✅ 已新增管理員", true);
+                input.value = "";
+                loadAdminList();
+            } else {
+                showMsg("❌ " + (data.message || "新增失敗"), false);
+            }
+        } catch (e) {
+            showMsg("❌ 連線異常", false);
+        }
+    }
+
+    async function removeAdmin(removeId, removeName) {
+        if (!confirm(`⚠️ 確定移除管理員「${removeName}」？`)) return;
+        if (removeId === currentUserId) {
+            showMsg("❌ 不能移除自己", false); return;
+        }
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: new URLSearchParams({ mode: "removeAdmin", userId: currentUserId, removeAdminId: removeId })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showMsg("✅ 已移除管理員", true);
+                loadAdminList();
+            } else {
+                showMsg("❌ " + (data.message || "移除失敗"), false);
+            }
+        } catch (e) {
+            showMsg("❌ 連線異常", false);
+        }
     }
 
     function openListManager() {
