@@ -776,6 +776,158 @@
             width: fit-content;
         }
 
+        /* ===== 名單管理彈窗 ===== */
+        .mgr-header {
+            padding: 20px 22px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            display: flex; align-items: center; gap: 12px;
+        }
+        .mgr-header-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: linear-gradient(135deg, #1E4A7A, #0D2E50);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px; flex-shrink: 0;
+        }
+        .mgr-header-title { font-size: 16px; font-weight: bold; color: #90C8F0; }
+        .mgr-header-sub { font-size: 11px; color: #666; margin-top: 1px; }
+        .mgr-close-btn {
+            margin-left: auto;
+            background: rgba(255,255,255,0.06) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 8px !important;
+            width: 32px !important; height: 32px !important;
+            padding: 0 !important; font-size: 16px !important;
+            color: #888 !important; cursor: pointer !important;
+            display: flex !important; align-items: center !important; justify-content: center !important;
+            box-shadow: none !important; letter-spacing: 0 !important;
+            flex-shrink: 0 !important; line-height: 1 !important;
+            transition: all 0.15s !important;
+        }
+        .mgr-close-btn:hover { background: rgba(255,255,255,0.12) !important; color: #E0E0E0 !important; transform: none !important; }
+
+        .mgr-toolbar {
+            padding: 14px 20px 10px;
+            display: flex; gap: 8px; align-items: center;
+        }
+        .mgr-search {
+            flex: 1 !important;
+            padding: 10px 14px !important;
+            border: 1px solid rgba(255,255,255,0.09) !important;
+            border-radius: 12px !important;
+            font-size: 14px !important;
+            background: rgba(20,18,16,0.8) !important;
+            color: #E0E0E0 !important;
+            margin-bottom: 0 !important;
+        }
+        .mgr-search:focus { border-color: rgba(46,109,164,0.5) !important; outline: none !important; }
+        .mgr-refresh-btn {
+            background: linear-gradient(135deg, rgba(46,109,164,0.3), rgba(24,70,120,0.3)) !important;
+            border: 1px solid rgba(46,109,164,0.35) !important;
+            border-radius: 10px !important;
+            width: 40px !important; height: 40px !important;
+            padding: 0 !important; font-size: 16px !important;
+            color: #90C8F0 !important; cursor: pointer !important;
+            display: flex !important; align-items: center !important; justify-content: center !important;
+            box-shadow: none !important; letter-spacing: 0 !important; flex-shrink: 0 !important;
+            transition: all 0.2s !important;
+        }
+        .mgr-refresh-btn:hover { background: linear-gradient(135deg, rgba(46,109,164,0.5), rgba(24,70,120,0.5)) !important; transform: none !important; }
+
+        .mgr-counter {
+            padding: 0 20px 8px;
+            font-size: 12px; color: #666;
+        }
+        .mgr-counter span { color: #90C8F0; font-weight: bold; }
+
+        .mgr-list-wrap {
+            padding: 0 12px;
+            max-height: 52vh; overflow-y: auto;
+        }
+        .mgr-item {
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(22,20,18,0.8);
+            margin-bottom: 8px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+        .mgr-item:hover { border-color: rgba(46,109,164,0.3); }
+        .mgr-item-main {
+            padding: 12px 14px;
+            display: flex; align-items: flex-start; gap: 10px;
+        }
+        .mgr-item-num {
+            font-size: 11px; color: #555; font-weight: bold;
+            width: 20px; text-align: right; flex-shrink: 0; padding-top: 2px;
+        }
+        .mgr-item-body { flex: 1; min-width: 0; }
+        .mgr-item-name {
+            font-size: 15px; font-weight: bold; color: #FFD966;
+            margin-bottom: 4px;
+        }
+        .mgr-item-items {
+            font-size: 13px; color: #8AB4F8;
+            word-break: break-all; line-height: 1.5;
+        }
+        .mgr-item-actions {
+            display: flex; gap: 6px; padding: 0 14px 12px 44px;
+        }
+        .mgr-btn-edit {
+            flex: 1 !important;
+            padding: 8px 0 !important;
+            border-radius: 8px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            background: linear-gradient(135deg, rgba(46,109,164,0.25), rgba(24,70,120,0.2)) !important;
+            border: 1px solid rgba(46,109,164,0.35) !important;
+            color: #90C8F0 !important;
+            letter-spacing: 0 !important;
+            box-shadow: none !important;
+            transition: all 0.15s !important;
+        }
+        .mgr-btn-edit:hover { background: linear-gradient(135deg, rgba(46,109,164,0.45), rgba(24,70,120,0.4)) !important; transform: none !important; }
+        .mgr-btn-del {
+            flex: 1 !important;
+            padding: 8px 0 !important;
+            border-radius: 8px !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            cursor: pointer !important;
+            background: linear-gradient(135deg, rgba(180,40,50,0.2), rgba(120,20,30,0.15)) !important;
+            border: 1px solid rgba(180,40,50,0.3) !important;
+            color: #F08090 !important;
+            letter-spacing: 0 !important;
+            box-shadow: none !important;
+            transition: all 0.15s !important;
+        }
+        .mgr-btn-del:hover { background: linear-gradient(135deg, rgba(180,40,50,0.4), rgba(120,20,30,0.35)) !important; transform: none !important; }
+
+        .mgr-pagination {
+            display: flex; align-items: center; justify-content: center;
+            gap: 6px; padding: 12px 20px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .mgr-page-btn {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: rgba(30,26,24,0.8);
+            color: #D4B59E;
+            border: 1px solid rgba(255,255,255,0.08);
+            font-size: 14px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: none !important; letter-spacing: 0 !important;
+            transition: all 0.2s;
+        }
+        .mgr-page-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(46,109,164,0.4), rgba(24,70,120,0.35));
+            border-color: rgba(46,109,164,0.4); color: #90C8F0;
+            transform: none;
+        }
+        .mgr-page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .mgr-page-info { font-size: 13px; color: #888; min-width: 60px; text-align: center; }
+        .mgr-empty { text-align: center; color: #555; font-size: 14px; padding: 32px 0; }
+
         .pagination {
             display: flex;
             align-items: center;
@@ -926,15 +1078,10 @@
 
                 <div class="adm-divider"></div>
 
-                <!-- 管理員名單 -->
+                <!-- 管理員名單（唯讀） -->
                 <div class="adm-section-title">管理員名單</div>
                 <div class="adm-list" id="adminList">
                     <div class="adm-list-empty">載入中...</div>
-                </div>
-                <div class="adm-add-row">
-                    <input class="adm-add-input" type="text" id="newAdminId"
-                        placeholder="貼上 LINE userId（U開頭）">
-                    <button class="adm-add-btn" onclick="addAdmin()">＋ 新增</button>
                 </div>
             </div>
         </div>
@@ -943,21 +1090,35 @@
     <!-- 名單管理彈窗 -->
     <div id="listManagerModal" class="modal">
         <div class="modal-content">
-            <button class="refresh-top-btn" onclick="refreshManagerList()">🔄 載入名單</button>
-            <h3 style="text-align:center; margin:0 0 16px 0; color:#E0CFC0;">📋 名單管理</h3>
-            <input type="text" id="managerSearch" placeholder="🔍 搜尋姓名/項目" oninput="searchManagerList()">
-            
-            <div class="pagination" id="managerPagination" style="display: none; margin-top:12px;">
-                <button class="page-btn" id="mFirstPage" onclick="mGoToPage(1)">«</button>
-                <button class="page-btn" id="mPrevPage" onclick="mChangePage(-1)">‹</button>
-                <div class="page-info" id="mPageInfo">1 / 1</div>
-                <button class="page-btn" id="mNextPage" onclick="mChangePage(1)">›</button>
-                <button class="page-btn" id="mLastPage" onclick="mGoToPage(mTotalPages)">»</button>
+            <!-- Header -->
+            <div class="mgr-header">
+                <div class="mgr-header-icon">📋</div>
+                <div>
+                    <div class="mgr-header-title">名單管理</div>
+                    <div class="mgr-header-sub">查看、修改、刪除報名資料</div>
+                </div>
+                <button class="mgr-close-btn" onclick="closeListManager()">✕</button>
             </div>
 
-            <div id="managerList" class="list" style="max-height:380px; overflow:auto; margin-top:10px;">載入中...</div>
-            <br>
-            <button class="secondary" onclick="closeListManager()">關閉</button>
+            <!-- 搜尋工具列 -->
+            <div class="mgr-toolbar">
+                <input class="mgr-search" type="text" id="managerSearch"
+                    placeholder="🔍 搜尋姓名或項目…" oninput="searchManagerList()">
+                <button class="mgr-refresh-btn" onclick="refreshManagerList()" title="重新載入">🔄</button>
+            </div>
+            <div class="mgr-counter" id="mgrCounter"></div>
+
+            <!-- 名單 -->
+            <div class="mgr-list-wrap" id="managerList">載入中...</div>
+
+            <!-- 分頁 -->
+            <div class="mgr-pagination" id="managerPagination" style="display:none;">
+                <button class="mgr-page-btn" id="mFirstPage" onclick="mGoToPage(1)">«</button>
+                <button class="mgr-page-btn" id="mPrevPage" onclick="mChangePage(-1)">‹</button>
+                <div class="mgr-page-info" id="mPageInfo">1 / 1</div>
+                <button class="mgr-page-btn" id="mNextPage" onclick="mChangePage(1)">›</button>
+                <button class="mgr-page-btn" id="mLastPage" onclick="mGoToPage(mTotalPages)">»</button>
+            </div>
         </div>
     </div>
 
@@ -1485,14 +1646,10 @@
                 listEl.innerHTML = '<div class="adm-list-empty">目前無管理員資料</div>';
                 return;
             }
-            listEl.innerHTML = data.admins.map((a, i) => `
+            listEl.innerHTML = data.admins.map(a => `
                 <div class="adm-list-item">
                     <div class="adm-list-avatar">${(a.name || "管")[0]}</div>
-                    <div style="flex:1; min-width:0;">
-                        <div class="adm-list-name">${a.name || "管理員"}</div>
-                        <div class="adm-list-id">${(a.userId || "").slice(0, 20)}...</div>
-                    </div>
-                    <button class="adm-list-del" onclick="removeAdmin('${a.userId || ""}', '${(a.name || "").replace(/'/g, "")}')" title="移除管理員">✕</button>
+                    <div class="adm-list-name">${a.name || "管理員"}</div>
                 </div>
             `).join("");
         } catch (e) {
@@ -1500,96 +1657,53 @@
         }
     }
 
-    async function addAdmin() {
-        const input = document.getElementById("newAdminId");
-        const newId = input.value.trim();
-        if (!newId || !newId.startsWith("U")) {
-            showMsg("❌ 請輸入正確的 LINE userId（U開頭）", false); return;
-        }
-        try {
-            const res = await fetch(WEB_APP_URL, {
-                method: "POST",
-                body: new URLSearchParams({ mode: "addAdmin", userId: currentUserId, newAdminId: newId })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showMsg("✅ 已新增管理員", true);
-                input.value = "";
-                loadAdminList();
-            } else {
-                showMsg("❌ " + (data.message || "新增失敗"), false);
-            }
-        } catch (e) {
-            showMsg("❌ 連線異常", false);
-        }
-    }
-
-    async function removeAdmin(removeId, removeName) {
-        if (!confirm(`⚠️ 確定移除管理員「${removeName}」？`)) return;
-        if (removeId === currentUserId) {
-            showMsg("❌ 不能移除自己", false); return;
-        }
-        try {
-            const res = await fetch(WEB_APP_URL, {
-                method: "POST",
-                body: new URLSearchParams({ mode: "removeAdmin", userId: currentUserId, removeAdminId: removeId })
-            });
-            const data = await res.json();
-            if (data.success) {
-                showMsg("✅ 已移除管理員", true);
-                loadAdminList();
-            } else {
-                showMsg("❌ " + (data.message || "移除失敗"), false);
-            }
-        } catch (e) {
-            showMsg("❌ 連線異常", false);
-        }
-    }
-
     function openListManager() {
         if (!isAdminUser) { showMsg("❌ 僅管理員可操作", false); return; }
-        showMsg("⏳ 開啟名單管理...", true);
-        setTimeout(() => {
-            closeModal();
-            document.getElementById("listManagerModal").classList.add("show");
-            mAllRecords = [...allRecords];
-            mFilteredRecords = [...mAllRecords];
-            mCurrentPage = 1;
-            mUpdatePagination(); mRenderCurrentPage();
-            showMsg("✅ 已開啟名單管理", true);
-        }, 300);
+        closeModal();
+        document.getElementById("listManagerModal").classList.add("show");
+        mAllRecords = [...allRecords];
+        mFilteredRecords = [...mAllRecords];
+        mCurrentPage = 1;
+        mUpdatePagination(); mRenderCurrentPage();
     }
     function closeListManager() {
-        showMsg("⏳ 關閉中...", true);
-        setTimeout(() => { document.getElementById("listManagerModal").classList.remove("show"); showMsg("✅ 已關閉", true); }, 300);
+        document.getElementById("listManagerModal").classList.remove("show");
     }
-    function refreshManagerList() {
-        let btn = document.querySelector(".refresh-top-btn");
-        btn.innerText = "⏳ 載入中..."; btn.disabled = true;
-        showMsg("⏳ 重新載入名單中...", true);
-        loadList();
-        setTimeout(() => {
-            mAllRecords = [...allRecords]; mFilteredRecords = [...mAllRecords];
-            mCurrentPage = 1; mUpdatePagination(); mRenderCurrentPage();
-            btn.innerText = "🔄 載入名單"; btn.disabled = false;
-            showMsg("✅ 名單已重新載入", true);
-        }, 600);
+    async function refreshManagerList() {
+        const btn = document.querySelector(".mgr-refresh-btn");
+        btn.textContent = "⏳"; btn.disabled = true;
+        await loadList();
+        mAllRecords = [...allRecords]; mFilteredRecords = [...mAllRecords];
+        mCurrentPage = 1; mUpdatePagination(); mRenderCurrentPage();
+        btn.textContent = "🔄"; btn.disabled = false;
+        showMsg("✅ 已重新載入", true);
     }
 
     function mRenderCurrentPage() {
         const start = (mCurrentPage - 1) * mRecordsPerPage;
         renderManagerList(mFilteredRecords.slice(start, start + mRecordsPerPage));
+        // 更新計數器
+        const counter = document.getElementById("mgrCounter");
+        if (counter) {
+            const total = mFilteredRecords.length;
+            const kw = (document.getElementById("managerSearch")?.value || "").trim();
+            counter.innerHTML = kw
+                ? `搜尋結果：<span>${total}</span> 筆`
+                : `共 <span>${total}</span> 筆報名`;
+        }
     }
     function mUpdatePagination() {
-        mTotalPages = Math.ceil(mFilteredRecords.length / mRecordsPerPage);
+        mTotalPages = Math.ceil(mFilteredRecords.length / mRecordsPerPage) || 1;
         const el = document.getElementById("managerPagination");
-        if (mFilteredRecords.length === 0) { el.style.display = "none"; return; }
-        el.style.display = "flex";
-        document.getElementById("mPageInfo").innerText = `${mCurrentPage} / ${mTotalPages}`;
-        document.getElementById("mFirstPage").disabled = mCurrentPage === 1;
-        document.getElementById("mPrevPage").disabled = mCurrentPage === 1;
-        document.getElementById("mNextPage").disabled = mCurrentPage === mTotalPages;
-        document.getElementById("mLastPage").disabled = mCurrentPage === mTotalPages;
+        if (mFilteredRecords.length <= mRecordsPerPage) { el.style.display = "none"; }
+        else {
+            el.style.display = "flex";
+            document.getElementById("mPageInfo").innerText = `${mCurrentPage} / ${mTotalPages}`;
+            document.getElementById("mFirstPage").disabled = mCurrentPage === 1;
+            document.getElementById("mPrevPage").disabled = mCurrentPage === 1;
+            document.getElementById("mNextPage").disabled = mCurrentPage === mTotalPages;
+            document.getElementById("mLastPage").disabled = mCurrentPage === mTotalPages;
+        }
     }
     function mChangePage(d) {
         mCurrentPage = Math.max(1, Math.min(mCurrentPage + d, mTotalPages));
@@ -1601,23 +1715,39 @@
     }
 
     function renderManagerList(records) {
-        document.getElementById("managerList").innerHTML = records.length
-            ? records.map(row => `
-                <div class="item">
-                    <span class="name">${row[0]||""}</span>
-                    <span class="itemText">：${row[1]||""}</span>
-                    <div class="admin-row">
-                        <button style="background:linear-gradient(135deg,#2D6A99,#003366)" onclick="managerEdit('${row[0]||""}')">修改</button>
-                        <button style="background:linear-gradient(135deg,#D83A56,#cc0000)" onclick="managerDelete('${row[0]||""}')">刪除</button>
+        const el = document.getElementById("managerList");
+        if (!records.length) {
+            el.innerHTML = '<div class="mgr-empty">查無資料</div>';
+            return;
+        }
+        const startIdx = (mCurrentPage - 1) * mRecordsPerPage;
+        el.innerHTML = records.map((row, i) => {
+            const name = (row[0] || "").replace(/'/g, "\'");
+            const nameDisplay = row[0] || "";
+            const items = row[1] || "";
+            const num = startIdx + i + 1;
+            return `<div class="mgr-item">
+                <div class="mgr-item-main">
+                    <div class="mgr-item-num">${num}</div>
+                    <div class="mgr-item-body">
+                        <div class="mgr-item-name">${nameDisplay}</div>
+                        <div class="mgr-item-items">${items}</div>
                     </div>
-                </div>`).join("")
-            : "無資料";
+                </div>
+                <div class="mgr-item-actions">
+                    <button class="mgr-btn-edit" onclick="managerEdit('${name}')">✏️ 修改項目</button>
+                    <button class="mgr-btn-del" onclick="managerDelete('${name}')">🗑️ 刪除</button>
+                </div>
+            </div>`;
+        }).join("");
     }
 
     function searchManagerList() {
         const kw = document.getElementById("managerSearch").value.trim().toLowerCase();
         mFilteredRecords = kw
-            ? mAllRecords.filter(r => (r[0]||"").toLowerCase().includes(r[1]||"").toLowerCase().includes(kw))
+            ? mAllRecords.filter(r =>
+                (r[0]||"").toLowerCase().includes(kw) ||
+                (r[1]||"").toLowerCase().includes(kw))
             : [...mAllRecords];
         mCurrentPage = 1; mUpdatePagination(); mRenderCurrentPage();
     }
