@@ -133,16 +133,56 @@
         .collapse-content {
             overflow: hidden;
             max-height: 0;
-            transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .collapse-content.open { max-height: 1200px; }
+        .collapse-content.open { max-height: 2000px; }
 
-        /* ===== 項目選擇 + 份數 ===== */
+        /* ===== 族群分類區塊 ===== */
+        .group-block {
+            margin-bottom: 14px;
+        }
+        .group-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #A08070;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 0 2px;
+            margin-bottom: 8px;
+            margin-top: 6px;
+        }
+        .group-label::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(160,128,112,0.3), transparent);
+        }
+
+        /* 族群色系 */
+        .group-block[data-group="財運"] .item-row.checked { border-color: rgba(255,200,50,0.45); background: rgba(50,42,15,0.75); }
+        .group-block[data-group="財運"] .group-label { color: #C8A840; }
+        .group-block[data-group="財運"] .group-label::after { background: linear-gradient(90deg, rgba(200,168,64,0.3), transparent); }
+
+        .group-block[data-group="靈煞"] .item-row.checked { border-color: rgba(160,82,200,0.45); background: rgba(40,20,55,0.75); }
+        .group-block[data-group="靈煞"] .group-label { color: #A882C8; }
+        .group-block[data-group="靈煞"] .group-label::after { background: linear-gradient(90deg, rgba(168,130,200,0.3), transparent); }
+
+        .group-block[data-group="運勢"] .item-row.checked { border-color: rgba(80,160,220,0.45); background: rgba(15,35,55,0.75); }
+        .group-block[data-group="運勢"] .group-label { color: #6AABCC; }
+        .group-block[data-group="運勢"] .group-label::after { background: linear-gradient(90deg, rgba(106,171,204,0.3), transparent); }
+
+        .group-block[data-group="其他"] .item-row.checked { border-color: rgba(160,82,77,0.5); background: rgba(50,28,26,0.75); }
+        .group-block[data-group="其他"] .group-label { color: #A0524D; }
+        .group-block[data-group="其他"] .group-label::after { background: linear-gradient(90deg, rgba(160,82,77,0.3), transparent); }
+
+        /* ===== 項目列（一行一列）===== */
         .checkbox-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-top: 10px;
+            gap: 7px;
         }
         .item-row {
             background: rgba(30,26,24,0.7);
@@ -150,19 +190,16 @@
             border: 1px solid rgba(255,255,255,0.06);
             display: flex;
             align-items: center;
-            padding: 10px 12px;
+            padding: 11px 14px;
             gap: 10px;
-            transition: all 0.25s ease;
+            transition: all 0.22s ease;
             backdrop-filter: blur(4px);
+            width: 100%;
         }
         .item-row:hover {
             background: rgba(44,32,30,0.8);
-            border-color: rgba(160,82,77,0.35);
-            transform: translateY(-1px);
-        }
-        .item-row.checked {
-            border-color: rgba(160,82,77,0.5);
-            background: rgba(50,28,26,0.75);
+            border-color: rgba(160,82,77,0.3);
+            transform: translateX(2px);
         }
         .item-row input[type="checkbox"] {
             width: 22px;
@@ -174,11 +211,18 @@
         }
         .item-label {
             flex: 1;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 500;
             color: #E0E0E0;
             cursor: pointer;
             user-select: none;
+            line-height: 1;
+        }
+        .item-emoji {
+            font-size: 18px;
+            flex-shrink: 0;
+            width: 26px;
+            text-align: center;
         }
 
         /* 份數控制器 */
@@ -186,7 +230,7 @@
             display: flex;
             align-items: center;
             gap: 0;
-            opacity: 0.35;
+            opacity: 0.3;
             pointer-events: none;
             transition: opacity 0.2s;
         }
@@ -195,11 +239,11 @@
             pointer-events: all;
         }
         .qty-btn {
-            width: 32px !important;
-            height: 32px !important;
+            width: 30px !important;
+            height: 30px !important;
             padding: 0 !important;
             border-radius: 8px !important;
-            font-size: 18px !important;
+            font-size: 17px !important;
             font-weight: bold;
             background: linear-gradient(135deg, #5C3A37, #4A2C2A) !important;
             color: #E0CFC0 !important;
@@ -212,35 +256,30 @@
             line-height: 1;
             transition: all 0.15s;
             min-width: unset !important;
-            width: fit-content !important;
             letter-spacing: 0;
         }
         .qty-btn:hover:not(:disabled) {
             background: linear-gradient(135deg, #B86B5F, #A0524D) !important;
-            transform: scale(1.1) !important;
-            box-shadow: none !important;
+            transform: scale(1.12) !important;
         }
-        .qty-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
+        .qty-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .qty-display {
-            min-width: 36px;
+            min-width: 32px;
             text-align: center;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: bold;
             color: #FFE44D;
-            padding: 0 4px;
-            line-height: 32px;
+            padding: 0 3px;
+            line-height: 30px;
         }
         .qty-unit {
-            font-size: 13px;
+            font-size: 12px;
             color: #A08070;
-            margin-left: 2px;
+            margin-left: 1px;
         }
 
         #customItem {
-            margin-top: 12px;
+            margin-top: 10px;
             display: none;
             width: 100%;
             padding: 12px 16px;
@@ -496,11 +535,11 @@
         </div>
 
         <div class="collapse-content" id="collapseContent">
-            <div class="checkbox-group" id="items"></div>
+            <div id="items"></div>
             <input id="customItem" placeholder="✍️ 請輸入其他項目說明">
         </div>
 
-        <button id="submitBtn" onclick="submitSignup()"> 送出報名 </button>
+        <button id="submitBtn" onclick="submitSignup()">✅ 送出報名</button>
         <div id="msg" class="msg"></div>
     </div>
 
@@ -562,32 +601,63 @@
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwWIZ3ID5K9PNgSJ20wwMZOiMIQ4dcDGm8M8FIU-u8sRqrzGdomM74OEREGPt2Fgxz8Og/exec";
     
-    // 祭改項目清單（不含「其他」，另外處理）
-    const WISH_ITEMS = [
-        "補財庫", "冤親債主", "歷代祖先",
-        "病符", "嬰靈", "陰纏", "祭小人",
-        "車關", "倒房", "其他"
+    // ===== 族群分類定義 =====
+    const WISH_GROUPS = [
+        {
+            id: "財運",
+            label: "🪙 財運類",
+            items: [
+                { name: "補財庫", emoji: "💰" }
+            ]
+        },
+        {
+            id: "靈煞",
+            label: "🕯️ 靈煞類",
+            items: [
+                { name: "冤親債主", emoji: "👻" },
+                { name: "歷代祖先", emoji: "🏮" },
+                { name: "嬰靈",     emoji: "🌸" },
+                { name: "陰纏",     emoji: "🌙" }
+            ]
+        },
+        {
+            id: "運勢",
+            label: "🌟 運勢類",
+            items: [
+                { name: "病符", emoji: "🩺" },
+                { name: "祭小人", emoji: "⚔️" },
+                { name: "車關",  emoji: "🚗" },
+                { name: "倒房",  emoji: "🏠" }
+            ]
+        },
+        {
+            id: "其他",
+            label: "✍️ 其他",
+            items: [
+                { name: "其他", emoji: "📝" }
+            ]
+        }
     ];
+
+    // 全部 WISH_ITEMS（扁平化，供其他函式使用）
+    const WISH_ITEMS = WISH_GROUPS.flatMap(g => g.items.map(i => i.name));
 
     let currentUserId = "";
     let currentDisplayName = "";
     let allRecords = [];
     let isAdminUser = false;
 
-    // 首頁分頁
     let currentPage = 1;
     const recordsPerPage = 7;
     let totalPages = 1;
     let filteredRecords = [];
 
-    // 名單管理分頁
     let mCurrentPage = 1;
     const mRecordsPerPage = 4;
     let mTotalPages = 1;
     let mFilteredRecords = [];
     let mAllRecords = [];
 
-    // ===== 份數資料 (itemName -> qty) =====
     const itemQty = {};
 
     window.onload = async function () {
@@ -596,76 +666,100 @@
         await loadList();
     };
 
-    // ===== 建立項目列（帶份數控制） =====
+    // ===== 建立族群分類項目列 =====
     function buildItemRows() {
-        const box = document.getElementById("items");
-        box.innerHTML = "";
+        const container = document.getElementById("items");
+        container.innerHTML = "";
 
-        WISH_ITEMS.forEach(itemName => {
-            itemQty[itemName] = 1;
+        WISH_GROUPS.forEach(group => {
+            const block = document.createElement("div");
+            block.className = "group-block";
+            block.dataset.group = group.id;
 
-            const row = document.createElement("div");
-            row.className = "item-row";
-            row.dataset.item = itemName;
+            // 族群標籤
+            const groupLabel = document.createElement("div");
+            groupLabel.className = "group-label";
+            groupLabel.textContent = group.label;
+            block.appendChild(groupLabel);
 
-            // 勾選框
-            const cb = document.createElement("input");
-            cb.type = "checkbox";
-            cb.value = itemName;
-            cb.id = `cb_${itemName}`;
+            // 項目列表
+            const cbGroup = document.createElement("div");
+            cbGroup.className = "checkbox-group";
 
-            // 標籤
-            const lbl = document.createElement("label");
-            lbl.className = "item-label";
-            lbl.htmlFor = `cb_${itemName}`;
-            lbl.textContent = itemName;
+            group.items.forEach(itemDef => {
+                const itemName = itemDef.name;
+                itemQty[itemName] = 1;
 
-            // 份數控制器
-            const qtyCtrl = document.createElement("div");
-            qtyCtrl.className = "qty-control";
-            qtyCtrl.id = `qty_${itemName}`;
+                const row = document.createElement("div");
+                row.className = "item-row";
+                row.dataset.item = itemName;
 
-            const minusBtn = document.createElement("button");
-            minusBtn.className = "qty-btn";
-            minusBtn.textContent = "－";
-            minusBtn.type = "button";
-            minusBtn.onclick = (e) => { e.stopPropagation(); changeQty(itemName, -1); };
+                // emoji
+                const emojiSpan = document.createElement("span");
+                emojiSpan.className = "item-emoji";
+                emojiSpan.textContent = itemDef.emoji;
 
-            const display = document.createElement("div");
-            display.className = "qty-display";
-            display.id = `qd_${itemName}`;
-            display.textContent = "1";
+                // 勾選框
+                const cb = document.createElement("input");
+                cb.type = "checkbox";
+                cb.value = itemName;
+                cb.id = `cb_${itemName}`;
 
-            const plusBtn = document.createElement("button");
-            plusBtn.className = "qty-btn";
-            plusBtn.textContent = "＋";
-            plusBtn.type = "button";
-            plusBtn.onclick = (e) => { e.stopPropagation(); changeQty(itemName, 1); };
+                // 標籤
+                const lbl = document.createElement("label");
+                lbl.className = "item-label";
+                lbl.htmlFor = `cb_${itemName}`;
+                lbl.textContent = itemName;
 
-            const unit = document.createElement("span");
-            unit.className = "qty-unit";
-            unit.textContent = "份";
+                // 份數控制器
+                const qtyCtrl = document.createElement("div");
+                qtyCtrl.className = "qty-control";
+                qtyCtrl.id = `qty_${itemName}`;
 
-            qtyCtrl.appendChild(minusBtn);
-            qtyCtrl.appendChild(display);
-            qtyCtrl.appendChild(plusBtn);
-            qtyCtrl.appendChild(unit);
+                const minusBtn = document.createElement("button");
+                minusBtn.className = "qty-btn";
+                minusBtn.textContent = "－";
+                minusBtn.type = "button";
+                minusBtn.onclick = (e) => { e.stopPropagation(); changeQty(itemName, -1); };
 
-            row.appendChild(cb);
-            row.appendChild(lbl);
-            row.appendChild(qtyCtrl);
+                const display = document.createElement("div");
+                display.className = "qty-display";
+                display.id = `qd_${itemName}`;
+                display.textContent = "1";
 
-            // 勾選時啟用份數控制
-            cb.addEventListener("change", function () {
-                row.classList.toggle("checked", this.checked);
-                qtyCtrl.classList.toggle("active", this.checked);
-                // 其他項目顯示輸入框
-                if (itemName === "其他") {
-                    document.getElementById("customItem").style.display = this.checked ? "block" : "none";
-                }
+                const plusBtn = document.createElement("button");
+                plusBtn.className = "qty-btn";
+                plusBtn.textContent = "＋";
+                plusBtn.type = "button";
+                plusBtn.onclick = (e) => { e.stopPropagation(); changeQty(itemName, 1); };
+
+                const unit = document.createElement("span");
+                unit.className = "qty-unit";
+                unit.textContent = "份";
+
+                qtyCtrl.appendChild(minusBtn);
+                qtyCtrl.appendChild(display);
+                qtyCtrl.appendChild(plusBtn);
+                qtyCtrl.appendChild(unit);
+
+                row.appendChild(emojiSpan);
+                row.appendChild(cb);
+                row.appendChild(lbl);
+                row.appendChild(qtyCtrl);
+
+                cb.addEventListener("change", function () {
+                    row.classList.toggle("checked", this.checked);
+                    qtyCtrl.classList.toggle("active", this.checked);
+                    if (itemName === "其他") {
+                        document.getElementById("customItem").style.display = this.checked ? "block" : "none";
+                    }
+                });
+
+                cbGroup.appendChild(row);
             });
 
-            box.appendChild(row);
+            block.appendChild(cbGroup);
+            container.appendChild(block);
         });
     }
 
@@ -726,7 +820,6 @@
         return allRecords.some(row => row[0]?.trim() === name.trim() && row[2] === currentUserId);
     }
 
-    // ===== 送出報名（項目帶份數，格式：冤親債主×2、補財庫×1） =====
     async function submitSignup() {
         const btn = document.getElementById("submitBtn");
         const name = document.getElementById("name").value.trim();
@@ -761,7 +854,6 @@
             btn.disabled = false; btn.innerText = "✅ 送出報名"; return;
         }
 
-        // 組裝帶份數的字串：冤親債主×2、補財庫×1
         let itemParts = items.map(i => {
             const qty = itemQty[i] || 1;
             return qty > 1 ? `${i}×${qty}` : i;
@@ -810,7 +902,6 @@
         }
     }
 
-    // ===== 載入名單 =====
     async function loadList() {
         try {
             const res = await fetch(WEB_APP_URL, {
@@ -840,10 +931,7 @@
         }
     }
 
-    // ===== 統計（解析「項目×份數」格式） =====
     function parseItemsFromString(str) {
-        // 支援「、」分隔，每項可以是「名稱×N」或「名稱」
-        // ×: U+00D7(×)、U+FF38(Ｘ)、半形x、X、*
         const parts = str.split(/[、,，]/);
         const result = [];
         parts.forEach(p => {
@@ -868,7 +956,6 @@
             return;
         }
 
-        // 統計各項目的份數總和
         const countMap = {};
         records.forEach(row => {
             const itemStr = row[1] || "";
@@ -879,16 +966,13 @@
             });
         });
 
-        // 依照 WISH_ITEMS 順序排列，其他的排後面
         const ordered = [];
         WISH_ITEMS.filter(i => i !== "其他").forEach(wi => {
             if (countMap[wi]) ordered.push({ name: wi, count: countMap[wi] });
         });
-        // 其餘（自訂項目）
         Object.keys(countMap).forEach(k => {
             if (!WISH_ITEMS.includes(k)) ordered.push({ name: k, count: countMap[k] });
         });
-        // 「其他」分類總計（如有殘留）
         if (countMap["其他"]) ordered.push({ name: "其他", count: countMap["其他"] });
 
         if (ordered.length === 0) {
@@ -906,7 +990,6 @@
         `).join("");
     }
 
-    // ===== 首頁分頁 =====
     function renderCurrentPage() {
         const start = (currentPage - 1) * recordsPerPage;
         renderList(filteredRecords.slice(start, start + recordsPerPage));
@@ -949,7 +1032,6 @@
         currentPage = 1; updatePagination(); renderCurrentPage();
     }
 
-    // ===== 彈窗 =====
     function openModal() {
         showMsg("⏳ 開啟管理選單...", true);
         setTimeout(() => { document.getElementById("adminModal").classList.add("show"); showMsg("✅ 已開啟管理選單", true); }, 300);
@@ -989,7 +1071,6 @@
         }, 600);
     }
 
-    // ===== 名單管理分頁 =====
     function mRenderCurrentPage() {
         const start = (mCurrentPage - 1) * mRecordsPerPage;
         renderManagerList(mFilteredRecords.slice(start, start + mRecordsPerPage));
@@ -1031,7 +1112,7 @@
     function searchManagerList() {
         const kw = document.getElementById("managerSearch").value.trim().toLowerCase();
         mFilteredRecords = kw
-            ? mAllRecords.filter(r => (r[0]||"").toLowerCase().includes(kw) || (r[1]||"").toLowerCase().includes(kw))
+            ? mAllRecords.filter(r => (r[0]||"").toLowerCase().includes(r[1]||"").toLowerCase().includes(kw))
             : [...mAllRecords];
         mCurrentPage = 1; mUpdatePagination(); mRenderCurrentPage();
     }
@@ -1040,8 +1121,6 @@
         if (!confirm("⚠️ 確定要修改這筆資料嗎？")) return;
         const newItem = prompt("修改項目：", "");
         if (!newItem) return;
-        let btns = event.currentTarget;
-        btns.disabled = true; btns.innerText = "⏳ 修改中...";
         showMsg("⏳ 修改中...", true);
         try {
             await fetch(WEB_APP_URL, {
@@ -1054,15 +1133,11 @@
             mRenderCurrentPage(); mUpdatePagination();
         } catch (e) {
             showMsg("❌ 修改失敗", false);
-        } finally {
-            btns.disabled = false; btns.innerText = "修改";
         }
     }
 
     async function managerDelete(name) {
         if (!confirm("⚠️ 確定永久刪除？此動作無法復原！")) return;
-        let btns = event.currentTarget;
-        btns.disabled = true; btns.innerText = "⏳ 刪除中...";
         showMsg("⏳ 刪除中...", true);
         try {
             await fetch(WEB_APP_URL, { method: "POST", body: new URLSearchParams({ mode: "delete", name }) });
@@ -1072,8 +1147,6 @@
             mRenderCurrentPage(); mUpdatePagination();
         } catch (e) {
             showMsg("❌ 刪除失敗", false);
-        } finally {
-            btns.disabled = false; btns.innerText = "刪除";
         }
     }
 
@@ -1086,8 +1159,6 @@
         let day = input.match(/(\d+)日/)?.[1];
         if (!month || !day) { showMsg("❌ 格式錯誤，請輸入 3月16日", false); return; }
         const newDate = `${year}/${month}/${day}`;
-        let btn = event.currentTarget;
-        btn.disabled = true; btn.innerText = "⏳ 更新中...";
         showMsg("⏳ 更新日期中...", true);
         try {
             await fetch(WEB_APP_URL, { method: "POST", body: new URLSearchParams({ mode: "updateSheet2Date", newDate }) });
@@ -1095,16 +1166,12 @@
             closeModal();
         } catch (e) {
             showMsg("❌ 更新失敗", false);
-        } finally {
-            btn.disabled = false; btn.innerText = "📅 修改『祭改日期』";
         }
     }
 
     async function clearSheet1() {
         if (!isAdminUser) { showMsg("❌ 僅管理員可操作", false); return; }
         if (!confirm("⚠️ 確定清空『祭改名單』？無法復原！")) return;
-        let btn = event.currentTarget;
-        btn.disabled = true; btn.innerText = "⏳ 清空中...";
         showMsg("⏳ 正在清空所有資料...", true);
         try {
             await fetch(WEB_APP_URL, { method: "POST", body: new URLSearchParams({ mode: "clearSheet1", userId: currentUserId }) });
@@ -1113,8 +1180,6 @@
             closeModal();
         } catch (e) {
             showMsg("❌ 清空失敗", false);
-        } finally {
-            btn.disabled = false; btn.innerText = "🗑️ 清空『祭改名單』";
         }
     }
 
