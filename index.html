@@ -369,49 +369,147 @@
         .itemText { color: #8AB4F8; }
 
         /* ===== 項目統計區 ===== */
+        /* ===== 統計卡主體 ===== */
         .stats-card {
-            background: linear-gradient(140deg, #1E1A18, #181411);
+            background: linear-gradient(140deg, #1A1714, #131110);
             border-radius: 20px;
-            padding: 24px;
+            padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
         }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+
+        /* 總覽列：人數 + 份數 */
+        .stats-overview {
+            display: flex;
             gap: 10px;
-            margin-top: 14px;
+            margin-bottom: 16px;
         }
-        .stat-item {
-            background: rgba(30,26,24,0.8);
+        .stats-overview-item {
+            flex: 1;
+            background: rgba(20,18,16,0.9);
             border: 1px solid rgba(255,255,255,0.07);
             border-radius: 14px;
-            padding: 14px 12px;
+            padding: 14px 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 6px;
-            transition: 0.2s;
+            gap: 4px;
         }
-        .stat-item:hover {
-            border-color: rgba(160,82,77,0.3);
-            background: rgba(44,30,28,0.8);
+        .overview-label {
+            font-size: 11px;
+            color: #888;
+            letter-spacing: 0.5px;
         }
-        .stat-name {
-            font-size: 15px;
-            color: #D4B59E;
-            font-weight: 500;
-            text-align: center;
-        }
-        .stat-count {
-            font-size: 28px;
-            font-weight: bold;
+        .overview-num {
+            font-size: 32px;
+            font-weight: 900;
             color: #FFE44D;
             line-height: 1;
+            font-variant-numeric: tabular-nums;
         }
-        .stat-unit {
-            font-size: 13px;
-            color: #A08070;
+        .overview-unit {
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* 族群色塊 */
+        .stat-group {
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-group::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+        }
+        .stat-group[data-g="財運"] {
+            background: linear-gradient(135deg, rgba(61,48,16,0.9), rgba(40,32,10,0.9));
+            border: 1px solid rgba(200,168,64,0.25);
+        }
+        .stat-group[data-g="靈煞"] {
+            background: linear-gradient(135deg, rgba(42,16,64,0.9), rgba(28,10,45,0.9));
+            border: 1px solid rgba(136,85,187,0.25);
+        }
+        .stat-group[data-g="運勢"] {
+            background: linear-gradient(135deg, rgba(10,32,53,0.9), rgba(6,20,36,0.9));
+            border: 1px solid rgba(68,136,187,0.25);
+        }
+        .stat-group[data-g="其他"] {
+            background: linear-gradient(135deg, rgba(42,21,16,0.9), rgba(28,14,10,0.9));
+            border: 1px solid rgba(160,80,48,0.25);
+        }
+
+        /* 族群標題列 */
+        .stat-group-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .stat-group-bar {
+            width: 3px;
+            height: 16px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+        .stat-group[data-g="財運"] .stat-group-bar { background: #C8A840; }
+        .stat-group[data-g="靈煞"] .stat-group-bar { background: #8855BB; }
+        .stat-group[data-g="運勢"] .stat-group-bar { background: #4488BB; }
+        .stat-group[data-g="其他"] .stat-group-bar { background: #A05030; }
+
+        .stat-group-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .stat-group[data-g="財運"] .stat-group-label { color: #C8A840; }
+        .stat-group[data-g="靈煞"] .stat-group-label { color: #A882C8; }
+        .stat-group[data-g="運勢"] .stat-group-label { color: #6AABCC; }
+        .stat-group[data-g="其他"] .stat-group-label { color: #C07050; }
+
+        .stat-group-divider {
+            flex: 1;
+            height: 1px;
+            opacity: 0.25;
+        }
+        .stat-group[data-g="財運"] .stat-group-divider { background: #C8A840; }
+        .stat-group[data-g="靈煞"] .stat-group-divider { background: #8855BB; }
+        .stat-group[data-g="運勢"] .stat-group-divider { background: #4488BB; }
+        .stat-group[data-g="其他"] .stat-group-divider { background: #A05030; }
+
+        /* 每項：一行，左名稱右份數 */
+        .stat-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-row-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: #E0E0E0;
+        }
+        .stat-row-right {
+            display: flex;
+            align-items: baseline;
+            gap: 3px;
+        }
+        .stat-row-count {
+            font-size: 22px;
+            font-weight: 800;
+            color: #FFE44D;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+        .stat-row-unit {
+            font-size: 12px;
+            color: #888;
         }
 
         .admin-row {
@@ -546,7 +644,21 @@
     <!-- 項目統計卡 -->
     <div class="stats-card" id="statsCard" style="display:none;">
         <div class="title">📊 項目總計統計</div>
-        <div class="stats-grid" id="statsGrid"></div>
+        <!-- 總覽：人數 + 份數 -->
+        <div class="stats-overview">
+            <div class="stats-overview-item">
+                <div class="overview-label">祭改人數</div>
+                <div class="overview-num" id="statsPeople">0</div>
+                <div class="overview-unit">人</div>
+            </div>
+            <div class="stats-overview-item">
+                <div class="overview-label">祭改份數</div>
+                <div class="overview-num" id="statsTotal">0</div>
+                <div class="overview-unit">份</div>
+            </div>
+        </div>
+        <!-- 族群分類區 -->
+        <div id="statsGroups"></div>
     </div>
 
     <div class="card">
@@ -945,47 +1057,116 @@
         return result;
     }
 
+    // ===== 族群分類定義（統計用，與 WISH_GROUPS 對應）=====
+    const STAT_GROUPS = [
+        { id: "財運", label: "🪙 財運類", items: ["補財庫"] },
+        { id: "靈煞", label: "🕯️ 靈煞類", items: ["冤親債主", "歷代祖先", "嬰靈"] },
+        { id: "運勢", label: "🌟 運勢類", items: ["病符", "車關", "倒房"] }
+    ];
+    const ALL_KNOWN_ITEMS = STAT_GROUPS.flatMap(g => g.items);
+
+    // ===== 前綴比對（支援「冤親債主（累世）」等備註格式）=====
+    function resolveStatGroup(rawName) {
+        for (const g of STAT_GROUPS) {
+            for (const kw of g.items) {
+                if (rawName.startsWith(kw)) return { groupId: g.id, stdName: kw };
+            }
+        }
+        return null;
+    }
+
     function renderStats(records) {
         const statsCard = document.getElementById("statsCard");
-        const statsGrid = document.getElementById("statsGrid");
 
         if (!records || records.length === 0) {
             statsCard.style.display = "none";
             return;
         }
 
-        const countMap = {};
+        // ── 統計（前綴比對歸類）
+        const groupCounter = {};   // stdName → qty（歸入標準族群）
+        const otherCounter = {};   // rawName → qty（無法歸類）
+        const nameSet = new Set();
+        let totalQty = 0;
+
         records.forEach(row => {
-            const itemStr = row[1] || "";
-            const parsed = parseItemsFromString(itemStr);
-            parsed.forEach(({ name, qty }) => {
-                if (!name) return;
-                countMap[name] = (countMap[name] || 0) + qty;
+            const personName = (row[0] || "").trim();
+            const itemStr = (row[1] || "").trim();
+            if (!personName || !itemStr) return;
+            nameSet.add(personName);
+
+            parseItemsFromString(itemStr).forEach(({ name: rawName, qty }) => {
+                if (!rawName) return;
+                totalQty += qty;
+                const resolved = resolveStatGroup(rawName);
+                if (resolved) {
+                    groupCounter[resolved.stdName] = (groupCounter[resolved.stdName] || 0) + qty;
+                } else {
+                    otherCounter[rawName] = (otherCounter[rawName] || 0) + qty;
+                }
             });
         });
 
-        const ordered = [];
-        WISH_ITEMS.filter(i => i !== "其他").forEach(wi => {
-            if (countMap[wi]) ordered.push({ name: wi, count: countMap[wi] });
-        });
-        Object.keys(countMap).forEach(k => {
-            if (!WISH_ITEMS.includes(k)) ordered.push({ name: k, count: countMap[k] });
-        });
-        if (countMap["其他"]) ordered.push({ name: "其他", count: countMap["其他"] });
-
-        if (ordered.length === 0) {
+        const hasData = Object.keys(groupCounter).length > 0 || Object.keys(otherCounter).length > 0;
+        if (!hasData) {
             statsCard.style.display = "none";
             return;
         }
 
         statsCard.style.display = "block";
-        statsGrid.innerHTML = ordered.map(({ name, count }) => `
-            <div class="stat-item">
-                <div class="stat-name">${name}</div>
-                <div class="stat-count">${count}</div>
-                <div class="stat-unit">份</div>
-            </div>
-        `).join("");
+
+        // ── 更新總覽
+        document.getElementById("statsPeople").textContent = nameSet.size;
+        document.getElementById("statsTotal").textContent = totalQty;
+
+        // ── 渲染族群分類區塊
+        const groupsEl = document.getElementById("statsGroups");
+        let html = "";
+
+        STAT_GROUPS.forEach(group => {
+            const rows = group.items
+                .filter(itemName => groupCounter[itemName])
+                .map(itemName => ({ name: itemName, qty: groupCounter[itemName] }));
+            if (rows.length === 0) return;
+
+            html += `<div class="stat-group" data-g="${group.id}">
+                <div class="stat-group-header">
+                    <div class="stat-group-bar"></div>
+                    <div class="stat-group-label">${group.label}</div>
+                    <div class="stat-group-divider"></div>
+                </div>
+                ${rows.map(({ name, qty }) => `
+                <div class="stat-row">
+                    <div class="stat-row-name">${name}</div>
+                    <div class="stat-row-right">
+                        <div class="stat-row-count">${qty}</div>
+                        <div class="stat-row-unit">份</div>
+                    </div>
+                </div>`).join("")}
+            </div>`;
+        });
+
+        // 其他
+        const otherEntries = Object.entries(otherCounter);
+        if (otherEntries.length > 0) {
+            html += `<div class="stat-group" data-g="其他">
+                <div class="stat-group-header">
+                    <div class="stat-group-bar"></div>
+                    <div class="stat-group-label">✍️ 其他</div>
+                    <div class="stat-group-divider"></div>
+                </div>
+                ${otherEntries.map(([name, qty]) => `
+                <div class="stat-row">
+                    <div class="stat-row-name">${name}</div>
+                    <div class="stat-row-right">
+                        <div class="stat-row-count">${qty}</div>
+                        <div class="stat-row-unit">份</div>
+                    </div>
+                </div>`).join("")}
+            </div>`;
+        }
+
+        groupsEl.innerHTML = html;
     }
 
     function renderCurrentPage() {
