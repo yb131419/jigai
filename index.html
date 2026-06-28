@@ -21,7 +21,6 @@
             min-height: 100vh;
         }
 
-        /* 頂級質感標題區 */
         .header-card {
             position: relative;
             padding: 32px 20px;
@@ -39,7 +38,6 @@
             background: linear-gradient(90deg, transparent, rgba(224,207,192,0.2), transparent);
         }
 
-        /* 管理按鈕 - 文字更小、框剛好包住文字 + 尊貴發光 */
         .admin-vertical-btn {
             position: absolute;
             right: 20px;
@@ -69,7 +67,6 @@
             box-shadow: 0 3px 10px rgba(0,0,0,0.35), 0 0 12px rgba(224, 207, 192, 0.6);
         }
 
-        /* 頂級質感卡片 */
         .card {
             background: linear-gradient(140deg, #1E1A18, #181411);
             border-radius: 20px;
@@ -99,8 +96,7 @@
             letter-spacing: 0.3px;
         }
 
-        /* 頂級輸入框 */
-        input {
+        input[type="text"], input:not([type="checkbox"]):not([type="number"]) {
             width: 100%;
             padding: 15px 16px;
             border: 1px solid rgba(255,255,255,0.08);
@@ -112,7 +108,7 @@
             transition: all 0.25s ease;
             backdrop-filter: blur(4px);
         }
-        input:focus {
+        input[type="text"]:focus, input:not([type="checkbox"]):not([type="number"]):focus {
             outline: none;
             border-color: rgba(160,82,77,0.4);
             background: rgba(36,30,28,0.8);
@@ -122,7 +118,6 @@
             color: #777777;
         }
 
-        /* 折疊按鈕 */
         .collapse-btn {
             background: none;
             border: none;
@@ -133,63 +128,135 @@
             white-space: nowrap;
             transition: 0.2s;
         }
-        .collapse-btn:hover {
-            color: #E0CFC0;
-        }
+        .collapse-btn:hover { color: #E0CFC0; }
 
         .collapse-content {
             overflow: hidden;
             max-height: 0;
             transition: max-height 0.45s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .collapse-content.open {
-            max-height: 800px;
-        }
+        .collapse-content.open { max-height: 1200px; }
 
-        /* 頂級核取方塊群組 + 字體放大 */
+        /* ===== 項目選擇 + 份數 ===== */
         .checkbox-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 8px;
             margin-top: 10px;
         }
-        .checkbox-group label {
+        .item-row {
             background: rgba(30,26,24,0.7);
-            padding: 14px 10px;
             border-radius: 12px;
             border: 1px solid rgba(255,255,255,0.06);
-            font-size: 17px;
-            font-weight: 500;
-            cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
+            padding: 10px 12px;
+            gap: 10px;
             transition: all 0.25s ease;
-            color: #E0E0E0;
             backdrop-filter: blur(4px);
         }
-        .checkbox-group label:hover {
+        .item-row:hover {
             background: rgba(44,32,30,0.8);
             border-color: rgba(160,82,77,0.35);
             transform: translateY(-1px);
         }
-        .checkbox-group input[type="checkbox"] {
+        .item-row.checked {
+            border-color: rgba(160,82,77,0.5);
+            background: rgba(50,28,26,0.75);
+        }
+        .item-row input[type="checkbox"] {
             width: 22px;
             height: 22px;
             margin: 0;
+            flex-shrink: 0;
             accent-color: #A0524D;
+            cursor: pointer;
+        }
+        .item-label {
+            flex: 1;
+            font-size: 17px;
+            font-weight: 500;
+            color: #E0E0E0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* 份數控制器 */
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            opacity: 0.35;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .qty-control.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .qty-btn {
+            width: 32px !important;
+            height: 32px !important;
+            padding: 0 !important;
+            border-radius: 8px !important;
+            font-size: 18px !important;
+            font-weight: bold;
+            background: linear-gradient(135deg, #5C3A37, #4A2C2A) !important;
+            color: #E0CFC0 !important;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: none !important;
+            line-height: 1;
+            transition: all 0.15s;
+            min-width: unset !important;
+            width: fit-content !important;
+            letter-spacing: 0;
+        }
+        .qty-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #B86B5F, #A0524D) !important;
+            transform: scale(1.1) !important;
+            box-shadow: none !important;
+        }
+        .qty-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .qty-display {
+            min-width: 36px;
+            text-align: center;
+            font-size: 17px;
+            font-weight: bold;
+            color: #FFE44D;
+            padding: 0 4px;
+            line-height: 32px;
+        }
+        .qty-unit {
+            font-size: 13px;
+            color: #A08070;
+            margin-left: 2px;
         }
 
         #customItem {
             margin-top: 12px;
             display: none;
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            font-size: 15px;
+            background: rgba(30,26,24,0.6);
+            color: #E0E0E0;
+        }
+        #customItem:focus {
+            outline: none;
+            border-color: rgba(160,82,77,0.4);
         }
 
-        #submitBtn {
-            margin-top: 24px;
-        }
+        #submitBtn { margin-top: 24px; }
 
-        /* 頂級按鈕 + 尊貴發光（不用點擊也發光） */
         button {
             width: 100%;
             padding: 17px;
@@ -222,7 +289,6 @@
             box-shadow: 0 6px 20px rgba(61,90,115,0.28), 0 0 12px rgba(74, 106, 140, 0.5);
         }
 
-        /* 訊息提示 */
         .msg {
             text-align: center;
             padding: 14px;
@@ -243,7 +309,6 @@
             border: 1px solid rgba(255,179,179,0.15);
         }
 
-        /* 名單區塊 - 取消滾動 */
         .list {
             margin-top: 12px;
             overflow: hidden;
@@ -256,20 +321,60 @@
             font-size: 16px;
             transition: 0.2s;
         }
-        .item:hover {
-            background: rgba(255,255,255,0.03);
-        }
-        /* === 祭改專屬高級配色 === */
+        .item:hover { background: rgba(255,255,255,0.03); }
         .name {
-            color: #FFE44D; /* 高級亮金色（不刺眼） */
+            color: #FFE44D;
             font-weight: bold;
             font-size: 17px;
         }
-        .itemText {
-            color: #8AB4F8; /* 神聖柔和藍 */
+        .itemText { color: #8AB4F8; }
+
+        /* ===== 項目統計區 ===== */
+        .stats-card {
+            background: linear-gradient(140deg, #1E1A18, #181411);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.05);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .stat-item {
+            background: rgba(30,26,24,0.8);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+            padding: 14px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+        .stat-item:hover {
+            border-color: rgba(160,82,77,0.3);
+            background: rgba(44,30,28,0.8);
+        }
+        .stat-name {
+            font-size: 15px;
+            color: #D4B59E;
+            font-weight: 500;
+            text-align: center;
+        }
+        .stat-count {
+            font-size: 28px;
+            font-weight: bold;
+            color: #FFE44D;
+            line-height: 1;
+        }
+        .stat-unit {
+            font-size: 13px;
+            color: #A08070;
         }
 
-        /* 管理按鈕列 */
         .admin-row {
             display: flex;
             margin-top: 10px;
@@ -286,27 +391,20 @@
             font-weight: normal;
             transition: all 0.2s ease;
         }
-		.admin-row button:hover {
-			transform: scale(1.03);
-		}
+        .admin-row button:hover { transform: scale(1.03); }
 
-        /* 頂級彈窗 */
         .modal {
             display: none !important;
             position: fixed !important;
             z-index: 9999 !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
+            left: 0 !important; top: 0 !important;
+            width: 100% !important; height: 100% !important;
             background-color: rgba(0,0,0,0.85) !important;
             align-items: center !important;
             justify-content: center !important;
             backdrop-filter: blur(6px) !important;
         }
-        .modal.show {
-            display: flex !important;
-        }
+        .modal.show { display: flex !important; }
         .modal-content {
             background: linear-gradient(140deg, #24201D, #1A1613) !important;
             color: #E0E0E0 !important;
@@ -320,29 +418,22 @@
             position: relative;
         }
 
-        /* 搜尋框 */
-        #searchInput {
-            margin-bottom: 12px;
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-		
-		/* 載入名單按鈕：剛好包住文字大小 */
-		.refresh-top-btn {
-			position: absolute;
-			right: 24px;
-			top: 24px;
-			background: linear-gradient(135deg, #3D735C, #2D5A43);
-			color: #fff;
-			border: none;
-			border-radius: 8px;
-			padding: 5px 9px;
-			font-size: 13px;
-			cursor: pointer;
+        #searchInput { margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); }
+
+        .refresh-top-btn {
+            position: absolute;
+            right: 24px; top: 24px;
+            background: linear-gradient(135deg, #3D735C, #2D5A43);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 5px 9px;
+            font-size: 13px;
+            cursor: pointer;
             white-space: nowrap;
             width: fit-content;
         }
 
-        /* 百萬級質感分頁欄 - 通用 */
         .pagination {
             display: flex;
             align-items: center;
@@ -357,8 +448,7 @@
             border: 1px solid rgba(255,255,255,0.06);
         }
         .page-btn {
-            width: 44px;
-            height: 44px;
+            width: 44px; height: 44px;
             border-radius: 12px;
             background: linear-gradient(135deg, #2D2420, #1C1612);
             color: #E0CFC0;
@@ -377,10 +467,7 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(160,82,77,0.25);
         }
-        .page-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .page-info {
             min-width: 70px;
             text-align: center;
@@ -401,7 +488,7 @@
 
     <div class="card">
         <div class="title">報名者姓名</div>
-        <input id="name" placeholder="請輸入姓名">
+        <input type="text" id="name" placeholder="請輸入姓名">
         
         <div class="title">
             📜 祭改項目（可多選）
@@ -417,11 +504,16 @@
         <div id="msg" class="msg"></div>
     </div>
 
+    <!-- 項目統計卡 -->
+    <div class="stats-card" id="statsCard" style="display:none;">
+        <div class="title">📊 項目總計統計</div>
+        <div class="stats-grid" id="statsGrid"></div>
+    </div>
+
     <div class="card">
         <div class="title">🔍 搜尋姓名 / 項目</div>
         <input type="text" id="searchInput" placeholder="請輸入關鍵字搜尋..." oninput="searchList()">
         
-        <!-- 首頁分頁：搜尋欄下面、名單上面 -->
         <div class="pagination" id="pagination" style="display: none;">
             <button class="page-btn" id="firstPage" onclick="goToPage(1)">«</button>
             <button class="page-btn" id="prevPage" onclick="changePage(-1)">‹</button>
@@ -438,29 +530,20 @@
     <div id="adminModal" class="modal">
         <div class="modal-content">
             <h3 style="text-align:center; margin:0 0 20px 0; color:#E0CFC0;">管理員選單</h3>
-            
-            <button class="secondary" onclick="openListManager()">📋 名單管理</button>
-            <br><br>
-            
-            <button class="secondary" onclick="updateSheet2Date()">📅 修改『祭改日期』</button>
-            <br><br>
-            
-            <button style="background:linear-gradient(135deg,#D83A56,#cc0000)" onclick="clearSheet1()">🗑️ 清空『祭改名單』</button>
-            <br><br>
-            
+            <button class="secondary" onclick="openListManager()">📋 名單管理</button><br><br>
+            <button class="secondary" onclick="updateSheet2Date()">📅 修改『祭改日期』</button><br><br>
+            <button style="background:linear-gradient(135deg,#D83A56,#cc0000)" onclick="clearSheet1()">🗑️ 清空『祭改名單』</button><br><br>
             <button class="secondary" onclick="closeModal()">關閉</button>
         </div>
     </div>
 
-    <!-- 名單管理彈窗（新增分頁） -->
+    <!-- 名單管理彈窗 -->
     <div id="listManagerModal" class="modal">
         <div class="modal-content">
-			<button class="refresh-top-btn" onclick="refreshManagerList()">🔄 載入名單</button>
+            <button class="refresh-top-btn" onclick="refreshManagerList()">🔄 載入名單</button>
             <h3 style="text-align:center; margin:0 0 16px 0; color:#E0CFC0;">📋 名單管理</h3>
-            
             <input type="text" id="managerSearch" placeholder="🔍 搜尋姓名/項目" oninput="searchManagerList()">
             
-            <!-- 管理後台分頁：搜尋欄下方 -->
             <div class="pagination" id="managerPagination" style="display: none; margin-top:12px;">
                 <button class="page-btn" id="mFirstPage" onclick="mGoToPage(1)">«</button>
                 <button class="page-btn" id="mPrevPage" onclick="mChangePage(-1)">‹</button>
@@ -470,7 +553,6 @@
             </div>
 
             <div id="managerList" class="list" style="max-height:380px; overflow:auto; margin-top:10px;">載入中...</div>
-
             <br>
             <button class="secondary" onclick="closeListManager()">關閉</button>
         </div>
@@ -479,6 +561,8 @@
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwWIZ3ID5K9PNgSJ20wwMZOiMIQ4dcDGm8M8FIU-u8sRqrzGdomM74OEREGPt2Fgxz8Og/exec";
+    
+    // 祭改項目清單（不含「其他」，另外處理）
     const WISH_ITEMS = [
         "補財庫", "冤親債主", "歷代祖先",
         "病符", "嬰靈", "陰纏", "祭小人",
@@ -490,58 +574,120 @@
     let allRecords = [];
     let isAdminUser = false;
 
-    // ===== 首頁分頁 (每頁7筆) =====
+    // 首頁分頁
     let currentPage = 1;
     const recordsPerPage = 7;
     let totalPages = 1;
     let filteredRecords = [];
 
-    // ===== 名單管理分頁 (每頁4筆) =====
+    // 名單管理分頁
     let mCurrentPage = 1;
     const mRecordsPerPage = 4;
     let mTotalPages = 1;
     let mFilteredRecords = [];
     let mAllRecords = [];
 
+    // ===== 份數資料 (itemName -> qty) =====
+    const itemQty = {};
+
     window.onload = async function () {
-        const box = document.getElementById("items");
-        WISH_ITEMS.forEach(item => {
-            const label = document.createElement("label");
-            label.innerHTML = `<input type="checkbox" value="${item}"> ${item}`;
-            box.appendChild(label);
-        });
-
-        document.querySelectorAll('input[value="其他"]').forEach(input => {
-            input.addEventListener('change', function() {
-                document.getElementById('customItem').style.display = this.checked ? 'block' : 'none';
-            });
-        });
-
+        buildItemRows();
         await initLiffAndGetUser();
         await loadList();
     };
 
+    // ===== 建立項目列（帶份數控制） =====
+    function buildItemRows() {
+        const box = document.getElementById("items");
+        box.innerHTML = "";
+
+        WISH_ITEMS.forEach(itemName => {
+            itemQty[itemName] = 1;
+
+            const row = document.createElement("div");
+            row.className = "item-row";
+            row.dataset.item = itemName;
+
+            // 勾選框
+            const cb = document.createElement("input");
+            cb.type = "checkbox";
+            cb.value = itemName;
+            cb.id = `cb_${itemName}`;
+
+            // 標籤
+            const lbl = document.createElement("label");
+            lbl.className = "item-label";
+            lbl.htmlFor = `cb_${itemName}`;
+            lbl.textContent = itemName;
+
+            // 份數控制器
+            const qtyCtrl = document.createElement("div");
+            qtyCtrl.className = "qty-control";
+            qtyCtrl.id = `qty_${itemName}`;
+
+            const minusBtn = document.createElement("button");
+            minusBtn.className = "qty-btn";
+            minusBtn.textContent = "－";
+            minusBtn.type = "button";
+            minusBtn.onclick = (e) => { e.stopPropagation(); changeQty(itemName, -1); };
+
+            const display = document.createElement("div");
+            display.className = "qty-display";
+            display.id = `qd_${itemName}`;
+            display.textContent = "1";
+
+            const plusBtn = document.createElement("button");
+            plusBtn.className = "qty-btn";
+            plusBtn.textContent = "＋";
+            plusBtn.type = "button";
+            plusBtn.onclick = (e) => { e.stopPropagation(); changeQty(itemName, 1); };
+
+            const unit = document.createElement("span");
+            unit.className = "qty-unit";
+            unit.textContent = "份";
+
+            qtyCtrl.appendChild(minusBtn);
+            qtyCtrl.appendChild(display);
+            qtyCtrl.appendChild(plusBtn);
+            qtyCtrl.appendChild(unit);
+
+            row.appendChild(cb);
+            row.appendChild(lbl);
+            row.appendChild(qtyCtrl);
+
+            // 勾選時啟用份數控制
+            cb.addEventListener("change", function () {
+                row.classList.toggle("checked", this.checked);
+                qtyCtrl.classList.toggle("active", this.checked);
+                // 其他項目顯示輸入框
+                if (itemName === "其他") {
+                    document.getElementById("customItem").style.display = this.checked ? "block" : "none";
+                }
+            });
+
+            box.appendChild(row);
+        });
+    }
+
+    function changeQty(itemName, delta) {
+        itemQty[itemName] = Math.max(1, Math.min(99, (itemQty[itemName] || 1) + delta));
+        document.getElementById(`qd_${itemName}`).textContent = itemQty[itemName];
+    }
+
     async function initLiffAndGetUser() {
         try {
             await liff.init({ liffId: "2007416974-JzvPy6DZ" });
-            if (!liff.isLoggedIn()) {
-                liff.login();
-                return;
-            }
+            if (!liff.isLoggedIn()) { liff.login(); return; }
             const p = await liff.getProfile();
             currentUserId = p.userId || "unknown_user";
             currentDisplayName = p.displayName || "unknown_name";
-            
             const res = await fetch(WEB_APP_URL, {
                 method: "POST",
                 body: new URLSearchParams({ mode: "checkAdmin", userId: currentUserId })
             });
             const data = await res.json();
             isAdminUser = data.isAdmin || false;
-
-            if(isAdminUser){
-                document.getElementById("adminBtn").style.display = "block";
-            }
+            if (isAdminUser) document.getElementById("adminBtn").style.display = "block";
         } catch (e) {
             currentUserId = "error_user";
             currentDisplayName = "error_name";
@@ -549,11 +695,9 @@
         }
     }
 
-    // 折疊功能
     function toggleCollapse() {
         const content = document.getElementById("collapseContent");
         const btn = document.querySelector(".collapse-btn");
-        
         if (content.classList.contains("open")) {
             content.classList.remove("open");
             btn.innerText = "展開：▶";
@@ -565,43 +709,30 @@
 
     function getSignDate() {
         const now = new Date();
-        const y = now.getFullYear();
-        m = now.getMonth() + 1;
-        d = now.getDate();
-        return `${y}/${m}/${d}`;
+        return `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()}`;
     }
 
     function getFullDateTime() {
         const now = new Date();
-        const y = now.getFullYear();
-        m = now.getMonth() + 1;
-        d = now.getDate();
-        
-        let hours = now.getHours();
-        const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
-        const period = hours >= 12 ? "下午" : "上午";
-        
-        if (hours > 12) hours -= 12;
-        if (hours === 0) hours = 12;
-        
-        const timeStr = `${period} ${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        return `${y}/${m}/${d} ${timeStr}`;
+        let h = now.getHours();
+        const m = now.getMinutes(), s = now.getSeconds();
+        const p = h >= 12 ? "下午" : "上午";
+        if (h > 12) h -= 12;
+        if (h === 0) h = 12;
+        return `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${p} ${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     }
 
     function isUserAlreadySigned(name) {
-        return allRecords.some(row => 
-            row[0]?.trim() === name.trim() && 
-            row[2] === currentUserId
-        );
+        return allRecords.some(row => row[0]?.trim() === name.trim() && row[2] === currentUserId);
     }
 
+    // ===== 送出報名（項目帶份數，格式：冤親債主×2、補財庫×1） =====
     async function submitSignup() {
         const btn = document.getElementById("submitBtn");
         const name = document.getElementById("name").value.trim();
         const custom = document.getElementById("customItem").value.trim();
-        const checks = document.querySelectorAll(".checkbox-group input:checked");
-        
+        const checks = document.querySelectorAll(".checkbox-group input[type='checkbox']:checked");
+
         btn.disabled = true;
         btn.innerText = "⏳ 提交中...";
         showMsg("⏳ 報名中，請稍候…", true);
@@ -611,39 +742,39 @@
 
         if (hasOther) {
             items = items.filter(i => i !== "其他");
-            if (!custom) { 
+            if (!custom) {
                 showMsg("請輸入其他項目", false);
-                btn.disabled = false;
-                btn.innerText = "✅ 送出報名";
-                return; 
+                btn.disabled = false; btn.innerText = "✅ 送出報名"; return;
             }
-            items.push(custom);
         }
 
-        if (!name) { 
+        if (!name) {
             showMsg("請輸入姓名", false);
-            btn.disabled = false;
-            btn.innerText = "✅ 送出報名";
-            return; 
+            btn.disabled = false; btn.innerText = "✅ 送出報名"; return;
         }
-        if (items.length === 0) { 
+        if (items.length === 0 && !hasOther) {
             showMsg("請選擇項目", false);
-            btn.disabled = false;
-            btn.innerText = "✅ 送出報名";
-            return; 
+            btn.disabled = false; btn.innerText = "✅ 送出報名"; return;
         }
-        
         if (isUserAlreadySigned(name)) {
             showMsg("❌\n此姓名報名過，\n無法重複報名", false);
-            btn.disabled = false;
-            btn.innerText = "✅ 送出報名";
-            return;
+            btn.disabled = false; btn.innerText = "✅ 送出報名"; return;
+        }
+
+        // 組裝帶份數的字串：冤親債主×2、補財庫×1
+        let itemParts = items.map(i => {
+            const qty = itemQty[i] || 1;
+            return qty > 1 ? `${i}×${qty}` : i;
+        });
+        if (hasOther) {
+            const qty = itemQty["其他"] || 1;
+            itemParts.push(qty > 1 ? `${custom}×${qty}` : custom);
         }
 
         try {
             const form = new URLSearchParams();
             form.append("name", name);
-            form.append("item", items.join("、"));
+            form.append("item", itemParts.join("、"));
             form.append("userId", currentUserId);
             form.append("displayName", currentDisplayName);
             form.append("signDate", getSignDate());
@@ -656,7 +787,16 @@
                 showMsg("✅ 報名成功", true);
                 document.getElementById("name").value = "";
                 document.getElementById("customItem").value = "";
-                document.querySelectorAll(".checkbox-group input").forEach(c => c.checked = false);
+                document.querySelectorAll(".checkbox-group input[type='checkbox']").forEach(c => {
+                    c.checked = false;
+                    const row = c.closest(".item-row");
+                    if (row) row.classList.remove("checked");
+                    const ctrl = document.getElementById(`qty_${c.value}`);
+                    if (ctrl) ctrl.classList.remove("active");
+                    itemQty[c.value] = 1;
+                    const disp = document.getElementById(`qd_${c.value}`);
+                    if (disp) disp.textContent = "1";
+                });
                 document.getElementById("customItem").style.display = "none";
                 await loadList();
             } else {
@@ -670,344 +810,310 @@
         }
     }
 
-    // ===== 首頁載入名單 =====
-async function loadList() {
-    try {
-        const res = await fetch(WEB_APP_URL, {
-            method: "POST",
-            body: new URLSearchParams({ mode: "read" })
-        });
-        const data = await res.json();
-        if (!data.success || data.records.length === 0) {
-            document.getElementById("list").innerHTML = "目前無報名資料";
-            allRecords = [];
-            filteredRecords = [];
+    // ===== 載入名單 =====
+    async function loadList() {
+        try {
+            const res = await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: new URLSearchParams({ mode: "read" })
+            });
+            const data = await res.json();
+            if (!data.success || data.records.length === 0) {
+                document.getElementById("list").innerHTML = "目前無報名資料";
+                allRecords = []; filteredRecords = [];
+                updatePagination();
+                renderStats([]);
+                return;
+            }
+            allRecords = data.records;
+            allRecords.reverse();
+            filteredRecords = [...allRecords];
+            currentPage = 1;
             updatePagination();
+            renderCurrentPage();
+            renderStats(allRecords);
+        } catch (err) {
+            document.getElementById("list").innerHTML = "目前無報名資料";
+            allRecords = []; filteredRecords = [];
+            updatePagination();
+            renderStats([]);
+        }
+    }
+
+    // ===== 統計（解析「項目×份數」格式） =====
+    function parseItemsFromString(str) {
+        // 支援「、」分隔，每項可以是「名稱×N」或「名稱」
+        const parts = str.split(/[、,，]/);
+        const result = [];
+        parts.forEach(p => {
+            p = p.trim();
+            if (!p) return;
+            const match = p.match(/^(.+)[×x×*](\d+)$/);
+            if (match) {
+                result.push({ name: match[1].trim(), qty: parseInt(match[2]) });
+            } else {
+                result.push({ name: p, qty: 1 });
+            }
+        });
+        return result;
+    }
+
+    function renderStats(records) {
+        const statsCard = document.getElementById("statsCard");
+        const statsGrid = document.getElementById("statsGrid");
+
+        if (!records || records.length === 0) {
+            statsCard.style.display = "none";
             return;
         }
-        allRecords = data.records;
-        allRecords.reverse();
-        filteredRecords = [...allRecords];
-        currentPage = 1;
-        updatePagination();
-        renderCurrentPage();
-    } catch (err) {
-        document.getElementById("list").innerHTML = "目前無報名資料";
-        allRecords = [];
-        filteredRecords = [];
-        updatePagination();
-    }
-}
 
-    // 首頁分頁渲染
+        // 統計各項目的份數總和
+        const countMap = {};
+        records.forEach(row => {
+            const itemStr = row[1] || "";
+            const parsed = parseItemsFromString(itemStr);
+            parsed.forEach(({ name, qty }) => {
+                if (!name) return;
+                countMap[name] = (countMap[name] || 0) + qty;
+            });
+        });
+
+        // 依照 WISH_ITEMS 順序排列，其他的排後面
+        const ordered = [];
+        WISH_ITEMS.filter(i => i !== "其他").forEach(wi => {
+            if (countMap[wi]) ordered.push({ name: wi, count: countMap[wi] });
+        });
+        // 其餘（自訂項目）
+        Object.keys(countMap).forEach(k => {
+            if (!WISH_ITEMS.includes(k)) ordered.push({ name: k, count: countMap[k] });
+        });
+        // 「其他」分類總計（如有殘留）
+        if (countMap["其他"]) ordered.push({ name: "其他", count: countMap["其他"] });
+
+        if (ordered.length === 0) {
+            statsCard.style.display = "none";
+            return;
+        }
+
+        statsCard.style.display = "block";
+        statsGrid.innerHTML = ordered.map(({ name, count }) => `
+            <div class="stat-item">
+                <div class="stat-name">${name}</div>
+                <div class="stat-count">${count}</div>
+                <div class="stat-unit">份</div>
+            </div>
+        `).join("");
+    }
+
+    // ===== 首頁分頁 =====
     function renderCurrentPage() {
         const start = (currentPage - 1) * recordsPerPage;
-        const end = start + recordsPerPage;
-        const paginatedRecords = filteredRecords.slice(start, end);
-        renderList(paginatedRecords);
+        renderList(filteredRecords.slice(start, start + recordsPerPage));
     }
     function updatePagination() {
         totalPages = Math.ceil(filteredRecords.length / recordsPerPage);
-        const paginationEl = document.getElementById("pagination");
-        
-        if (filteredRecords.length === 0) {
-            paginationEl.style.display = "none";
-            return;
-        }
-        
-        paginationEl.style.display = "flex";
+        const el = document.getElementById("pagination");
+        if (filteredRecords.length === 0) { el.style.display = "none"; return; }
+        el.style.display = "flex";
         document.getElementById("pageInfo").innerText = `${currentPage} / ${totalPages}`;
-        
         document.getElementById("firstPage").disabled = currentPage === 1;
         document.getElementById("prevPage").disabled = currentPage === 1;
         document.getElementById("nextPage").disabled = currentPage === totalPages;
         document.getElementById("lastPage").disabled = currentPage === totalPages;
     }
-    function changePage(direction) {
-        currentPage += direction;
-        currentPage = Math.max(1, Math.min(currentPage, totalPages));
-        renderCurrentPage();
-        updatePagination();
+    function changePage(d) {
+        currentPage = Math.max(1, Math.min(currentPage + d, totalPages));
+        renderCurrentPage(); updatePagination();
     }
-    function goToPage(page) {
-        currentPage = Math.max(1, Math.min(page, totalPages));
-        renderCurrentPage();
-        updatePagination();
+    function goToPage(p) {
+        currentPage = Math.max(1, Math.min(p, totalPages));
+        renderCurrentPage(); updatePagination();
     }
 
-    // 首頁名單渲染
     function renderList(records) {
-        let html = "";
-        records.forEach(row => {
-            const name = row[0] || "";
-            const item = row[1] || "";
-            
-            html += `
-            <div class="item">
-                <span class="name">${name}</span>
-                <span class="itemText">：${item}</span>
-            </div>`;
-        });
-        document.getElementById("list").innerHTML = html || "目前無報名資料";
+        document.getElementById("list").innerHTML = records.length
+            ? records.map(row => `
+                <div class="item">
+                    <span class="name">${row[0] || ""}</span>
+                    <span class="itemText">：${row[1] || ""}</span>
+                </div>`).join("")
+            : "目前無報名資料";
     }
 
-    // 首頁搜尋
     function searchList() {
-        const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
-        if (!keyword) {
-            filteredRecords = [...allRecords];
-        } else {
-            filteredRecords = allRecords.filter(row => {
-                const name = (row[0] || "").toLowerCase();
-                const item = (row[1] || "").toLowerCase();
-                return name.includes(keyword) || item.includes(keyword);
-            });
-        }
-        currentPage = 1;
-        updatePagination();
-        renderCurrentPage();
+        const kw = document.getElementById("searchInput").value.trim().toLowerCase();
+        filteredRecords = kw
+            ? allRecords.filter(r => (r[0]||"").toLowerCase().includes(kw) || (r[1]||"").toLowerCase().includes(kw))
+            : [...allRecords];
+        currentPage = 1; updatePagination(); renderCurrentPage();
     }
 
-    // === 彈窗 ===
+    // ===== 彈窗 =====
     function openModal() {
         showMsg("⏳ 開啟管理選單...", true);
-        setTimeout(()=>{
-            document.getElementById("adminModal").classList.add("show");
-            showMsg("✅ 已開啟管理選單", true);
-        },300);
+        setTimeout(() => { document.getElementById("adminModal").classList.add("show"); showMsg("✅ 已開啟管理選單", true); }, 300);
     }
     function closeModal() {
         showMsg("⏳ 關閉選單中...", true);
-        setTimeout(()=>{
-            document.getElementById("adminModal").classList.remove("show");
-            showMsg("✅ 已關閉", true);
-        },300);
+        setTimeout(() => { document.getElementById("adminModal").classList.remove("show"); showMsg("✅ 已關閉", true); }, 300);
     }
 
-    // === 名單管理 ===
     function openListManager() {
-        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
+        if (!isAdminUser) { showMsg("❌ 僅管理員可操作", false); return; }
         showMsg("⏳ 開啟名單管理...", true);
-        setTimeout(()=>{
+        setTimeout(() => {
             closeModal();
             document.getElementById("listManagerModal").classList.add("show");
             mAllRecords = [...allRecords];
             mFilteredRecords = [...mAllRecords];
             mCurrentPage = 1;
-            mUpdatePagination();
-            mRenderCurrentPage();
+            mUpdatePagination(); mRenderCurrentPage();
             showMsg("✅ 已開啟名單管理", true);
-        },300);
+        }, 300);
     }
     function closeListManager() {
         showMsg("⏳ 關閉中...", true);
-        setTimeout(()=>{
-            document.getElementById("listManagerModal").classList.remove("show");
-            showMsg("✅ 已關閉", true);
-        },300);
+        setTimeout(() => { document.getElementById("listManagerModal").classList.remove("show"); showMsg("✅ 已關閉", true); }, 300);
     }
-	
-	function refreshManagerList(){
-		let btn = document.querySelector(".refresh-top-btn");
-		btn.innerText = "⏳ 載入中...";
-		btn.disabled = true;
+    function refreshManagerList() {
+        let btn = document.querySelector(".refresh-top-btn");
+        btn.innerText = "⏳ 載入中..."; btn.disabled = true;
         showMsg("⏳ 重新載入名單中...", true);
-		
-		loadList();
-        setTimeout(()=>{
-            mAllRecords = [...allRecords];
-            mFilteredRecords = [...mAllRecords];
-            mCurrentPage = 1;
-            mUpdatePagination();
-            mRenderCurrentPage();
-            btn.innerText = "🔄 載入名單";
-            btn.disabled = false;
-            showMsg("✅ 名單已重新載入",true);
-        },600)
-	}
+        loadList();
+        setTimeout(() => {
+            mAllRecords = [...allRecords]; mFilteredRecords = [...mAllRecords];
+            mCurrentPage = 1; mUpdatePagination(); mRenderCurrentPage();
+            btn.innerText = "🔄 載入名單"; btn.disabled = false;
+            showMsg("✅ 名單已重新載入", true);
+        }, 600);
+    }
 
-    // ===== 名單管理分頁 (核心) =====
+    // ===== 名單管理分頁 =====
     function mRenderCurrentPage() {
         const start = (mCurrentPage - 1) * mRecordsPerPage;
-        const end = start + mRecordsPerPage;
-        const paginatedRecords = mFilteredRecords.slice(start, end);
-        renderManagerList(paginatedRecords);
+        renderManagerList(mFilteredRecords.slice(start, start + mRecordsPerPage));
     }
     function mUpdatePagination() {
         mTotalPages = Math.ceil(mFilteredRecords.length / mRecordsPerPage);
-        const paginationEl = document.getElementById("managerPagination");
-        
-        if (mFilteredRecords.length === 0) {
-            paginationEl.style.display = "none";
-            return;
-        }
-        
-        paginationEl.style.display = "flex";
+        const el = document.getElementById("managerPagination");
+        if (mFilteredRecords.length === 0) { el.style.display = "none"; return; }
+        el.style.display = "flex";
         document.getElementById("mPageInfo").innerText = `${mCurrentPage} / ${mTotalPages}`;
-        
         document.getElementById("mFirstPage").disabled = mCurrentPage === 1;
         document.getElementById("mPrevPage").disabled = mCurrentPage === 1;
         document.getElementById("mNextPage").disabled = mCurrentPage === mTotalPages;
         document.getElementById("mLastPage").disabled = mCurrentPage === mTotalPages;
     }
-    function mChangePage(direction) {
-        mCurrentPage += direction;
-        mCurrentPage = Math.max(1, Math.min(mCurrentPage, mTotalPages));
-        mRenderCurrentPage();
-        mUpdatePagination();
+    function mChangePage(d) {
+        mCurrentPage = Math.max(1, Math.min(mCurrentPage + d, mTotalPages));
+        mRenderCurrentPage(); mUpdatePagination();
     }
-    function mGoToPage(page) {
-        mCurrentPage = Math.max(1, Math.min(page, mTotalPages));
-        mRenderCurrentPage();
-        mUpdatePagination();
+    function mGoToPage(p) {
+        mCurrentPage = Math.max(1, Math.min(p, mTotalPages));
+        mRenderCurrentPage(); mUpdatePagination();
     }
 
-    // 管理後台名單渲染
     function renderManagerList(records) {
-        let html = "";
-        records.forEach(row => {
-            const name = row[0] || "";
-            const item = row[1] || "";
-            html += `
-            <div class="item">
-                <span class="name">${name}</span>
-                <span class="itemText">：${item}</span>
-                <div class="admin-row">
-                    <button style="background:linear-gradient(135deg,#2D6A99,#003366)" onclick="managerEdit('${name}')">修改</button>
-                    <button style="background:linear-gradient(135deg,#D83A56,#cc0000)" onclick="managerDelete('${name}')">刪除</button>
-                </div>
-            </div>`;
-        });
-        document.getElementById("managerList").innerHTML = html || "無資料";
+        document.getElementById("managerList").innerHTML = records.length
+            ? records.map(row => `
+                <div class="item">
+                    <span class="name">${row[0]||""}</span>
+                    <span class="itemText">：${row[1]||""}</span>
+                    <div class="admin-row">
+                        <button style="background:linear-gradient(135deg,#2D6A99,#003366)" onclick="managerEdit('${row[0]||""}')">修改</button>
+                        <button style="background:linear-gradient(135deg,#D83A56,#cc0000)" onclick="managerDelete('${row[0]||""}')">刪除</button>
+                    </div>
+                </div>`).join("")
+            : "無資料";
     }
 
-    // 管理後台搜尋
     function searchManagerList() {
-        const keyword = document.getElementById("managerSearch").value.trim().toLowerCase();
-        if (!keyword) {
-            mFilteredRecords = [...mAllRecords];
-        } else {
-            mFilteredRecords = mAllRecords.filter(row => {
-                const name = (row[0] || "").toLowerCase();
-                const item = (row[1] || "").toLowerCase();
-                return name.includes(keyword) || item.includes(keyword);
-            });
-        }
-        mCurrentPage = 1;
-        mUpdatePagination();
-        mRenderCurrentPage();
+        const kw = document.getElementById("managerSearch").value.trim().toLowerCase();
+        mFilteredRecords = kw
+            ? mAllRecords.filter(r => (r[0]||"").toLowerCase().includes(kw) || (r[1]||"").toLowerCase().includes(kw))
+            : [...mAllRecords];
+        mCurrentPage = 1; mUpdatePagination(); mRenderCurrentPage();
     }
 
-    // 管理修改
     async function managerEdit(name) {
-		if(!confirm("⚠️ 確定要修改這筆資料嗎？")) return;
+        if (!confirm("⚠️ 確定要修改這筆資料嗎？")) return;
         const newItem = prompt("修改項目：", "");
-        if(!newItem) return;
-		
+        if (!newItem) return;
         let btns = event.currentTarget;
-        btns.disabled = true;
-        btns.innerText = "⏳ 修改中...";
-		showMsg("⏳ 修改中...", true);
-        
+        btns.disabled = true; btns.innerText = "⏳ 修改中...";
+        showMsg("⏳ 修改中...", true);
         try {
-            await fetch(WEB_APP_URL,{
-                method:"POST",
-                body:new URLSearchParams({ name, item: newItem, userId: currentUserId, displayName: currentDisplayName, signDate: getSignDate() })
+            await fetch(WEB_APP_URL, {
+                method: "POST",
+                body: new URLSearchParams({ name, item: newItem, userId: currentUserId, displayName: currentDisplayName, signDate: getSignDate() })
             });
             showMsg("✅ 修改完成", true);
             await loadList();
-            mAllRecords = [...allRecords];
-            mFilteredRecords = [...mAllRecords];
-            mRenderCurrentPage();
-            mUpdatePagination();
+            mAllRecords = [...allRecords]; mFilteredRecords = [...mAllRecords];
+            mRenderCurrentPage(); mUpdatePagination();
         } catch (e) {
             showMsg("❌ 修改失敗", false);
         } finally {
-            btns.disabled = false;
-            btns.innerText = "修改";
+            btns.disabled = false; btns.innerText = "修改";
         }
     }
 
-    // 管理刪除
-    async function managerDelete(name){
-		if(!confirm("⚠️ 確定永久刪除？此動作無法復原！")) return;
-		
+    async function managerDelete(name) {
+        if (!confirm("⚠️ 確定永久刪除？此動作無法復原！")) return;
         let btns = event.currentTarget;
-        btns.disabled = true;
-        btns.innerText = "⏳ 刪除中...";
-		showMsg("⏳ 刪除中...", true);
-        
+        btns.disabled = true; btns.innerText = "⏳ 刪除中...";
+        showMsg("⏳ 刪除中...", true);
         try {
-            await fetch(WEB_APP_URL,{ method:"POST", body:new URLSearchParams({ mode:"delete", name }) });
+            await fetch(WEB_APP_URL, { method: "POST", body: new URLSearchParams({ mode: "delete", name }) });
             showMsg("✅ 刪除成功", true);
             await loadList();
-            mAllRecords = [...allRecords];
-            mFilteredRecords = [...mAllRecords];
-            mRenderCurrentPage();
-            mUpdatePagination();
+            mAllRecords = [...allRecords]; mFilteredRecords = [...mAllRecords];
+            mRenderCurrentPage(); mUpdatePagination();
         } catch (e) {
             showMsg("❌ 刪除失敗", false);
         } finally {
-            btns.disabled = false;
-            btns.innerText = "刪除";
+            btns.disabled = false; btns.innerText = "刪除";
         }
     }
 
     async function updateSheet2Date() {
-        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
+        if (!isAdminUser) { showMsg("❌ 僅管理員可操作", false); return; }
         const input = prompt("請輸入新日期（範例：3月16日）", "");
         if (!input) return;
         const year = new Date().getFullYear();
         let month = input.match(/(\d+)月/)?.[1];
         let day = input.match(/(\d+)日/)?.[1];
-        if (!month || !day) {
-            showMsg("❌ 格式錯誤，請輸入 3月16日", false);
-            return;
-        }
+        if (!month || !day) { showMsg("❌ 格式錯誤，請輸入 3月16日", false); return; }
         const newDate = `${year}/${month}/${day}`;
-        
         let btn = event.currentTarget;
-        btn.disabled = true;
-        btn.innerText = "⏳ 更新中...";
+        btn.disabled = true; btn.innerText = "⏳ 更新中...";
         showMsg("⏳ 更新日期中...", true);
-
         try {
-            await fetch(WEB_APP_URL, {
-                method: "POST",
-                body: new URLSearchParams({ mode: "updateSheet2Date", newDate: newDate })
-            });
+            await fetch(WEB_APP_URL, { method: "POST", body: new URLSearchParams({ mode: "updateSheet2Date", newDate }) });
             showMsg(`✅ 日期已更新：${newDate}`, true);
             closeModal();
         } catch (e) {
             showMsg("❌ 更新失敗", false);
         } finally {
-            btn.disabled = false;
-            btn.innerText = "📅 修改『祭改日期』";
+            btn.disabled = false; btn.innerText = "📅 修改『祭改日期』";
         }
     }
 
     async function clearSheet1() {
-        if(!isAdminUser){ showMsg("❌ 僅管理員可操作", false); return; }
+        if (!isAdminUser) { showMsg("❌ 僅管理員可操作", false); return; }
         if (!confirm("⚠️ 確定清空『祭改名單』？無法復原！")) return;
-        
         let btn = event.currentTarget;
-        btn.disabled = true;
-        btn.innerText = "⏳ 清空中...";
+        btn.disabled = true; btn.innerText = "⏳ 清空中...";
         showMsg("⏳ 正在清空所有資料...", true);
-
         try {
-            await fetch(WEB_APP_URL, {
-                method: "POST",
-                body: new URLSearchParams({ mode: "clearSheet1", userId: currentUserId })
-            });
+            await fetch(WEB_APP_URL, { method: "POST", body: new URLSearchParams({ mode: "clearSheet1", userId: currentUserId }) });
             showMsg("✅ 已清空所有資料", true);
             await loadList();
             closeModal();
         } catch (e) {
             showMsg("❌ 清空失敗", false);
         } finally {
-            btn.disabled = false;
-            btn.innerText = "🗑️ 清空『祭改名單』";
+            btn.disabled = false; btn.innerText = "🗑️ 清空『祭改名單』";
         }
     }
 
@@ -1019,6 +1125,6 @@ async function loadList() {
         setTimeout(() => msg.style.display = "none", 2800);
     }
 </script>
-	
+
 </body>
 </html>
