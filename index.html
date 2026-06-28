@@ -843,14 +843,15 @@
     // ===== 統計（解析「項目×份數」格式） =====
     function parseItemsFromString(str) {
         // 支援「、」分隔，每項可以是「名稱×N」或「名稱」
+        // ×: U+00D7(×)、U+FF38(Ｘ)、半形x、X、*
         const parts = str.split(/[、,，]/);
         const result = [];
         parts.forEach(p => {
             p = p.trim();
             if (!p) return;
-            const match = p.match(/^(.+)[×x×*](\d+)$/);
+            const match = p.match(/^(.+?)[\u00D7\uFF38xX*](\d+)$/);
             if (match) {
-                result.push({ name: match[1].trim(), qty: parseInt(match[2]) });
+                result.push({ name: match[1].trim(), qty: parseInt(match[2], 10) || 1 });
             } else {
                 result.push({ name: p, qty: 1 });
             }
